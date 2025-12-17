@@ -1,0 +1,177 @@
+/* === 変数 (色だけにしておくのが安全です) === */
+:root {
+    --sidebar-bg: rgba(30, 30, 30, 0.95);
+    --sidebar-border: rgba(255, 255, 255, 0.1);
+    --item-hover-bg: rgba(255, 255, 255, 0.05);
+    --accent-color: #00aaff;
+    --text-normal: #888888;
+    --text-selected: #ffffff;
+}
+
+/* === サイドバー全体 === */
+.sidebar-container {
+    width: 100%;
+    height: 100%;
+    align-items: flex-start;
+}
+
+.sidebar {
+    width: 280px;
+    height: 100%;
+    background-color: var(--sidebar-bg);
+    border-right-width: 1px;
+    border-right-color: var(--sidebar-border);
+    padding: 20px 0px;
+}
+
+/* === アイテム (ボタン) === */
+.sidebar-item {
+    flex-direction: row;
+    align-items: center;
+    height: 70px;
+    background-color: rgba(0, 0, 0, 0); 
+    padding-left: 20px;
+    margin-bottom: 4px;
+    overflow: hidden;
+
+    /* ★修正点: 変数を使わず直接指定 (これで落ちないはず) */
+    transition-property: padding-left, scale, background-color;
+    transition-duration: 0.25s;
+    transition-timing-function: ease-out-back; /* Unity標準のイージングに戻す */
+}
+
+.sidebar-item:hover {
+    background-color: var(--item-hover-bg);
+    padding-left: 35px;
+}
+
+/* === 修正版: グラデーションをやめて単色にする === */
+
+/* ... 他の部分はそのままでOK ... */
+
+.sidebar-item.selected {
+    /* ★ここが原因でした！ */
+    /* linear-gradient を削除して、none に上書きする */
+    background-image: none;
+    
+    /* 代わりに半透明の青色を背景色として塗る */
+    background-color: rgba(59, 90, 122, 0.6); 
+    
+    padding-left: 30px;
+    border-left-width: 0px;
+}
+
+/* ついでに、もしC#側でアイコン画像がnullの時に変な画像が入らないようにチェック */
+.icon-box {
+    /* アイコンの背景も変な画像が入らないように念のためnone */
+    background-image: none;
+    background-color: rgba(255, 255, 255, 0.05);
+    /* ... 他の設定はそのまま ... */
+}
+
+/* === 左の青い棒 === */
+.selection-bar {
+    position: absolute;
+    left: 0;
+    top: 10px;
+    bottom: 10px;
+    width: 4px;
+    background-color: var(--accent-color);
+    border-radius: 2px;
+    
+    /* ★修正点: 0 に px をつける (Unityがたまにunitless 0でバグるため) */
+    translate: -10px 0px; 
+    opacity: 0;
+    
+    transition-property: translate, opacity;
+    transition-duration: 0.2s;
+    transition-timing-function: ease-out;
+}
+
+.sidebar-item.selected .selection-bar {
+    translate: 0px 0px;
+    opacity: 1;
+}
+
+/* === アイコン枠 === */
+.icon-box {
+    width: 42px;
+    height: 42px;
+    background-color: rgba(255, 255, 255, 0.05);
+    border-radius: 8px;
+    margin-right: 15px;
+    justify-content: center;
+    align-items: center;
+    position: relative;
+    
+    transition-property: scale, background-color;
+    transition-duration: 0.2s;
+}
+
+.sidebar-item.selected .icon-box {
+    background-color: rgba(0, 170, 255, 0.2);
+    scale: 1.1 1.1;
+}
+
+/* === アイコン画像 === */
+.icon-image {
+    width: 24px;
+    height: 24px;
+    -unity-background-scale-mode: scale-to-fit;
+    -unity-background-image-tint-color: var(--text-normal);
+    transition-property: -unity-background-image-tint-color;
+    transition-duration: 0.2s;
+}
+
+.sidebar-item.selected .icon-image {
+    -unity-background-image-tint-color: var(--text-selected);
+}
+
+/* === テキスト === */
+.item-label {
+    font-size: 16px;
+    color: var(--text-normal);
+    transition-property: color, scale;
+    transition-duration: 0.2s;
+    transform-origin: left;
+}
+
+.sidebar-item.selected .item-label {
+    color: var(--text-selected);
+    scale: 1.05 1.05;
+    -unity-font-style: bold;
+}
+
+/* === 通知バッジ === */
+.notification-badge {
+    position: absolute;
+    top: -4px;
+    right: -4px;
+    width: 16px;
+    height: 16px;
+    background-color: #ff3b30;
+    border-radius: 50%;
+    justify-content: center;
+    align-items: center;
+    border-width: 2px;
+    border-color: #2a2a2a;
+    display: none;
+    
+    scale: 0 0;
+    transition-property: scale;
+    transition-duration: 0.2s;
+    transition-timing-function: ease-out-back;
+}
+
+.notification-badge.show {
+    display: flex;
+    scale: 1 1;
+}
+
+.badge-text {
+    font-size: 9px;
+    color: white;
+    -unity-font-style: bold;
+    padding: 0;
+    margin: 0;
+}

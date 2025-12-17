@@ -1,0 +1,277 @@
+<ui:UXML xmlns:ui="UnityEngine.UIElements" xmlns:uie="UnityEditor.UIElements" editor-extension-mode="False">
+
+    <!-- スタイルシート読み込み -->
+    <ui:Style src="GachaStyles.uss" />
+    <ui:Style src="GachaAnimation.uss" />
+
+    <ui:VisualElement name="gacha-root" class="root">
+
+        <!-- 背景パターン -->
+        <ui:VisualElement class="background-pattern" />
+
+        <!-- 背景装飾 -->
+        <ui:VisualElement class="bg-stripe-decoration" />
+
+        <!-- コーナー装飾 -->
+        <ui:VisualElement class="corner-decoration corner-top-left" />
+        <ui:VisualElement class="corner-decoration corner-top-right" />
+        <ui:VisualElement class="corner-decoration corner-bottom-left" />
+        <ui:VisualElement class="corner-decoration corner-bottom-right" />
+
+        <!-- ========================================= -->
+        <!-- 1. メイン画面 (左右分割レイアウト) -->
+        <!-- ========================================= -->
+        <ui:VisualElement name="main-screen" class="screen main-screen-layout">
+
+            <!-- 左側：バナー表示エリア -->
+            <ui:VisualElement name="banner-area" class="banner-area">
+
+                <!-- 斜めライン装飾 -->
+                <ui:VisualElement class="banner-diagonal-line banner-diagonal-1" />
+                <ui:VisualElement class="banner-diagonal-line banner-diagonal-2" />
+                <ui:VisualElement class="banner-diagonal-line banner-diagonal-3" />
+
+                <ui:VisualElement name="banner-content" class="banner-content">
+                    <ui:VisualElement name="banner-image" class="banner-image" />
+
+                    <!-- バナータグ -->
+                    <ui:VisualElement name="banner-tag" class="banner-tag">
+                        <ui:Label name="banner-tag-text" text="LIMITED" class="banner-tag-text" />
+                    </ui:VisualElement>
+
+                    <!-- バナー情報（画像の上に重ねる） -->
+                    <ui:VisualElement name="banner-info" class="banner-info">
+                        <ui:VisualElement class="banner-info-line" />
+                        <ui:Label name="banner-name" text="STANDARD HEADHUNTING" class="banner-name" />
+                        <ui:Label name="banner-desc" text="6-STAR OPERATOR APPEARANCE RATE UP" class="banner-desc" />
+                    </ui:VisualElement>
+                </ui:VisualElement>
+
+                <!-- ページ送りボタン -->
+                <ui:Button name="btn-prev-banner" class="nav-btn nav-btn-left">
+                    <ui:Label text="&#x276E;" />
+                </ui:Button>
+                <ui:Button name="btn-next-banner" class="nav-btn nav-btn-right">
+                    <ui:Label text="&#x276F;" />
+                </ui:Button>
+            </ui:VisualElement>
+
+            <!-- 右側：操作パネルエリア -->
+            <ui:VisualElement name="side-panel" class="side-panel">
+
+                <!-- 背景装飾 -->
+                <ui:VisualElement class="side-panel-bg-decoration" />
+
+                <!-- 上部：ヘッダー -->
+                <ui:VisualElement class="side-header">
+                    <ui:Label text="RHODES ISLAND" class="rhodes-label" />
+                    <ui:VisualElement class="currency-container">
+                        <ui:VisualElement class="currency-icon" />
+                        <ui:Label name="currency-label" text="0" class="currency-label" />
+                    </ui:VisualElement>
+                </ui:VisualElement>
+
+                <!-- 中部：バナー詳細情報 -->
+                <ui:VisualElement class="side-info-box">
+                    <ui:Label text="BANNER INFO" class="info-section-title" />
+
+                    <ui:VisualElement class="info-row">
+                        <ui:Label text="COST" class="info-label" />
+                        <ui:Label name="cost-label" text="600" class="info-value" />
+                    </ui:VisualElement>
+
+                    <ui:VisualElement name="pity-row" class="info-row pity-warning">
+                        <ui:Label text="PITY" class="info-label" />
+                        <ui:Label name="pity-label" text="0 / 50" class="info-value" />
+                    </ui:VisualElement>
+
+                    <ui:VisualElement class="info-row info-highlight">
+                        <ui:Label text="PROGRESS" class="info-label" />
+                        <ui:Label name="progress-label" text="0 / 10" class="info-value" />
+                    </ui:VisualElement>
+
+                    <ui:Button name="btn-rate-info" text="VIEW RATES" class="btn-text-only" />
+                </ui:VisualElement>
+
+                <!-- 下部：アクションボタン -->
+                <ui:VisualElement class="action-area">
+                    <!-- インジケーター -->
+                    <ui:VisualElement name="banner-indicator" class="banner-indicator" />
+
+                    <!-- 1回スカウト -->
+                    <ui:Button name="btn-pull-single" class="btn-pull btn-standard">
+                        <ui:VisualElement class="btn-shine" />
+                        <ui:VisualElement class="btn-content-row">
+                            <ui:Label text="SCOUT x1" class="btn-main-text-sm" />
+                        </ui:VisualElement>
+                        <ui:VisualElement class="btn-deco-bar" />
+                    </ui:Button>
+
+                    <!-- 10回スカウト -->
+                    <ui:Button name="btn-pull-ten" class="btn-pull btn-special">
+                        <ui:VisualElement class="btn-shine" />
+                        <ui:Label text="SCOUT x10" class="btn-main-text" />
+                        <ui:Label text="5-STAR+ GUARANTEED" class="btn-sub-text" />
+                        <ui:VisualElement class="btn-deco-stripe" />
+                        <ui:VisualElement class="btn-deco-stripe-2" />
+                    </ui:Button>
+                </ui:VisualElement>
+            </ui:VisualElement>
+
+        </ui:VisualElement>
+
+        <!-- ========================================= -->
+        <!-- 2. 演出画面 (バッグ & ジッパー) - 強化版 -->
+        <!-- ========================================= -->
+        <ui:VisualElement name="BagScreen" class="screen hidden" style="background-color: #050508;">
+
+            <!-- 背景装飾 -->
+            <ui:VisualElement class="bag-screen-bg" />
+
+            <!-- 環境光 -->
+            <ui:VisualElement name="AmbientLight" class="ambient-light" />
+
+            <!-- パーティクルコンテナ -->
+            <ui:VisualElement name="ParticleContainer" class="particle-container" />
+
+            <!-- 放射状グロー -->
+            <ui:VisualElement name="RadialGlow" class="radial-glow" />
+
+            <ui:VisualElement name="BagContainer" class="bag-container">
+
+                <!-- バッグ外枠グロー -->
+                <ui:VisualElement name="BagOuterGlow" class="bag-outer-glow" />
+
+                <ui:VisualElement class="bag-body">
+                    <!-- バッグ内装飾パターン -->
+                    <ui:VisualElement class="bag-pattern">
+                        <ui:VisualElement class="bag-stripe bag-stripe-1" />
+                        <ui:VisualElement class="bag-stripe bag-stripe-2" />
+                        <ui:VisualElement class="bag-stripe bag-stripe-3" />
+                        <ui:VisualElement class="bag-stripe bag-stripe-4" />
+                        <ui:VisualElement class="bag-stripe bag-stripe-5" />
+                    </ui:VisualElement>
+
+                    <!-- エッジライン（横） -->
+                    <ui:VisualElement class="bag-edge-line bag-edge-line-top" />
+                    <ui:VisualElement class="bag-edge-line bag-edge-line-bottom" />
+
+                    <!-- エッジライン（縦） -->
+                    <ui:VisualElement class="bag-edge-line-v bag-edge-line-left" />
+                    <ui:VisualElement class="bag-edge-line-v bag-edge-line-right" />
+
+                    <!-- コーナーマーク -->
+                    <ui:VisualElement class="bag-corner-mark bag-corner-tl" />
+                    <ui:VisualElement class="bag-corner-mark bag-corner-tr" />
+                    <ui:VisualElement class="bag-corner-mark bag-corner-bl" />
+                    <ui:VisualElement class="bag-corner-mark bag-corner-br" />
+
+                    <!-- コーナードット -->
+                    <ui:VisualElement class="corner-dot corner-dot-tl" />
+                    <ui:VisualElement class="corner-dot corner-dot-tr" />
+                    <ui:VisualElement class="corner-dot corner-dot-bl" />
+                    <ui:VisualElement class="corner-dot corner-dot-br" />
+
+                    <!-- 中央シンボル -->
+                    <ui:VisualElement class="bag-center-symbol">
+                        <ui:VisualElement class="bag-center-symbol-inner">
+                            <ui:Label text="R.I." class="bag-center-text" />
+                        </ui:VisualElement>
+                    </ui:VisualElement>
+
+                    <ui:Label text="CLASSIFIED" class="bag-logo" />
+                </ui:VisualElement>
+
+                <!-- 光のビーム -->
+                <ui:VisualElement name="LightBeam" class="light-beam">
+                    <ui:VisualElement class="light-beam-inner" />
+                </ui:VisualElement>
+
+                <!-- ジッパーレール -->
+                <ui:VisualElement name="ZipperRail" class="zipper-rail">
+                    <!-- レール内側 -->
+                    <ui:VisualElement class="zipper-rail-inner" />
+
+                    <!-- 開いた部分のグロー -->
+                    <ui:VisualElement name="ZipperOpenGlow" class="zipper-open-glow" />
+
+                    <!-- ジッパーの歯 -->
+                    <ui:VisualElement class="zipper-teeth">
+                        <ui:VisualElement class="zipper-tooth" />
+                        <ui:VisualElement class="zipper-tooth" />
+                        <ui:VisualElement class="zipper-tooth" />
+                        <ui:VisualElement class="zipper-tooth" />
+                        <ui:VisualElement class="zipper-tooth" />
+                        <ui:VisualElement class="zipper-tooth" />
+                        <ui:VisualElement class="zipper-tooth" />
+                        <ui:VisualElement class="zipper-tooth" />
+                        <ui:VisualElement class="zipper-tooth" />
+                        <ui:VisualElement class="zipper-tooth" />
+                        <ui:VisualElement class="zipper-tooth" />
+                        <ui:VisualElement class="zipper-tooth" />
+                    </ui:VisualElement>
+
+                    <!-- スライダー -->
+                    <ui:VisualElement name="ZipperSlider" class="zipper-slider">
+                        <!-- グリップ模様 -->
+                        <ui:VisualElement class="zipper-slider-icon">
+                            <ui:VisualElement class="zipper-grip" />
+                            <ui:VisualElement class="zipper-grip zipper-grip-highlight" />
+                            <ui:VisualElement class="zipper-grip" />
+                        </ui:VisualElement>
+
+                        <!-- タグ -->
+                        <ui:VisualElement class="zipper-tag">
+                            <ui:VisualElement class="zipper-tag-hole" />
+                            <ui:VisualElement class="zipper-tag-line zipper-tag-line-1" />
+                            <ui:VisualElement class="zipper-tag-line zipper-tag-line-2" />
+                            <ui:VisualElement class="zipper-tag-line zipper-tag-line-3" />
+                            <ui:Label text="R.I." class="zipper-tag-label" />
+                        </ui:VisualElement>
+                    </ui:VisualElement>
+                </ui:VisualElement>
+            </ui:VisualElement>
+
+            <!-- ガイド矢印 -->
+            <ui:Label text="→→→" class="guide-arrow pulse" />
+
+            <!-- ガイドテキスト -->
+            <ui:Label text="DRAG TO OPEN" class="guide-text" />
+
+            <!-- スキップボタン -->
+            <ui:Button name="btn-skip" text="SKIP" class="btn-skip" />
+        </ui:VisualElement>
+
+        <!-- ========================================= -->
+        <!-- 3. 結果パネル - 強化版 -->
+        <!-- ========================================= -->
+        <ui:VisualElement name="result-panel" class="screen result-panel hidden">
+
+            <!-- 背景 -->
+            <ui:VisualElement class="result-bg" />
+
+            <!-- 装飾ライン -->
+            <ui:VisualElement class="result-deco-line result-deco-line-h result-deco-line-top" />
+            <ui:VisualElement class="result-deco-line result-deco-line-h result-deco-line-bottom" />
+
+            <ui:VisualElement name="result-content" class="result-content">
+                <!-- タイトルエリア -->
+                <ui:VisualElement class="result-title-area">
+                    <ui:Label text="HEADHUNTING" class="result-title-sub" />
+                    <ui:Label text="ACQUISITION REPORT" class="result-title" />
+                    <ui:VisualElement class="result-title-deco" />
+                </ui:VisualElement>
+
+                <!-- 結果コンテナ -->
+                <ui:VisualElement name="result-container" class="result-container" />
+
+                <!-- 閉じるボタン -->
+                <ui:Button name="btn-result-close" text="CONFIRM" class="btn-close btn-result-close" />
+            </ui:VisualElement>
+        </ui:VisualElement>
+
+        <!-- フラッシュオーバーレイ -->
+        <ui:VisualElement name="FlashOverlay" class="flash-overlay" />
+
+    </ui:VisualElement>
+</ui:UXML>

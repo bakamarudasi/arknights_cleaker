@@ -1,0 +1,937 @@
+/* =========================================
+   ShopView.uss
+   アークナイツ風ショップUI - フルリニューアル版
+   ========================================= */
+
+/* =========================================
+   全体設定
+   ========================================= */
+.shop-root {
+    flex-grow: 1;
+    background-color: #08080a;
+    color: #ddd;
+    overflow: hidden;
+}
+
+/* =========================================
+   背景装飾
+   ========================================= */
+.bg-decorations {
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+}
+
+/* 斜めストライプ（左下） */
+.bg-stripe-decoration {
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    width: 300px;
+    height: 300px;
+    opacity: 0.02;
+    border-right-width: 60px;
+    border-right-color: white;
+    rotate: 45deg;
+    translate: -150px 150px;
+}
+
+/* グリッドオーバーレイ */
+.deco-grid-overlay {
+    position: absolute;
+    top: 5%;
+    bottom: 5%;
+    left: 3%;
+    right: 3%;
+    border-width: 1px;
+    border-color: rgba(255, 255, 255, 0.03);
+    background-image: url("TechGridBg.png");
+    -unity-background-image-tint-color: rgba(255, 255, 255, 0.08);
+    -unity-background-scale-mode: scale-and-crop;
+}
+
+/* コーナー装飾 */
+.corner-decoration {
+    position: absolute;
+    width: 80px;
+    height: 80px;
+    border-width: 2px;
+    border-color: rgba(255, 80, 0, 0.3);
+}
+
+.corner-top-left {
+    top: 10px;
+    left: 10px;
+    border-right-width: 0;
+    border-bottom-width: 0;
+}
+
+.corner-top-right {
+    top: 10px;
+    right: 10px;
+    border-left-width: 0;
+    border-bottom-width: 0;
+}
+
+.corner-bottom-left {
+    bottom: 10px;
+    left: 10px;
+    border-right-width: 0;
+    border-top-width: 0;
+}
+
+.corner-bottom-right {
+    bottom: 10px;
+    right: 10px;
+    border-left-width: 0;
+    border-top-width: 0;
+}
+
+/* 端末テキスト */
+.deco-text-corner {
+    position: absolute;
+    top: 15px;
+    right: 100px;
+    font-size: 10px;
+    color: rgba(255, 80, 0, 0.3);
+    letter-spacing: 3px;
+}
+
+/* =========================================
+   ヘッダー
+   ========================================= */
+.shop-header {
+    flex-direction: row;
+    justify-content: space-between;
+    align-items: center;
+    padding: 15px 30px;
+    flex-shrink: 0;
+    border-bottom-width: 1px;
+    border-bottom-color: rgba(255, 255, 255, 0.05);
+}
+
+.header-title {
+    font-size: 14px;
+    color: #555;
+    letter-spacing: 6px;
+}
+
+.currency-container {
+    flex-direction: row;
+    align-items: center;
+}
+
+.currency-label {
+    font-size: 18px;
+    padding: 10px 20px;
+    margin-left: 15px;
+    background-color: rgba(15, 15, 18, 0.9);
+    border-left-width: 3px;
+    -unity-font-style: bold;
+    letter-spacing: 1px;
+}
+
+.currency-label.money {
+    color: #fbbf24;
+    border-left-color: #fbbf24;
+}
+
+.currency-label.cert {
+    color: #3b82f6;
+    border-left-color: #3b82f6;
+}
+
+/* =========================================
+   タブ - アイコン付きアンダーライン型
+   ========================================= */
+.tab-container {
+    flex-direction: row;
+    padding: 0 30px;
+    margin-top: 10px;
+    margin-bottom: 5px;
+    flex-shrink: 0;
+    border-bottom-width: 1px;
+    border-bottom-color: #222;
+}
+
+.shop-tab {
+    flex-direction: row;
+    align-items: center;
+    padding: 12px 20px 14px 20px;
+    margin-right: 8px;
+    font-size: 13px;
+    color: #555;
+    background-color: transparent;
+    border-width: 0;
+    border-bottom-width: 2px;
+    border-bottom-color: transparent;
+    transition-property: color, border-bottom-color, background-color;
+    transition-duration: 0.2s;
+    -unity-font-style: bold;
+    letter-spacing: 1px;
+    position: relative;
+}
+
+.shop-tab:hover {
+    color: #999;
+    background-color: rgba(255, 255, 255, 0.02);
+}
+
+.tab-active {
+    color: #ff5000;
+    border-bottom-color: #ff5000;
+}
+
+.tab-active:hover {
+    color: #ff5000;
+}
+
+/* タブアイコン */
+.tab-icon {
+    font-size: 16px;
+    margin-right: 8px;
+    opacity: 0.7;
+    transition-property: opacity, scale;
+    transition-duration: 0.2s;
+}
+
+.shop-tab:hover .tab-icon {
+    opacity: 1;
+}
+
+.tab-active .tab-icon {
+    opacity: 1;
+    scale: 1.1;
+}
+
+/* タブテキスト */
+.tab-text {
+    font-size: 13px;
+    letter-spacing: 1px;
+}
+
+/* タブのアンダーグロー（選択時） */
+.tab-glow {
+    position: absolute;
+    bottom: -1px;
+    left: 20%;
+    right: 20%;
+    height: 15px;
+    background-color: rgba(255, 80, 0, 0.2);
+    opacity: 0;
+    transition-property: opacity;
+    transition-duration: 0.2s;
+}
+
+.tab-active .tab-glow {
+    opacity: 1;
+}
+
+/* =========================================
+   メインコンテンツ
+   ========================================= */
+.main-content {
+    flex-grow: 1;
+    flex-direction: row;
+    padding: 20px 30px;
+    overflow: hidden;
+}
+
+/* =========================================
+   左：リストパネル
+   ========================================= */
+.list-panel {
+    flex-grow: 2;
+    flex-basis: 0;
+    margin-right: 20px;
+    background-color: rgba(12, 12, 14, 0.5);
+    border-width: 1px;
+    border-color: #1a1a1f;
+    padding: 10px;
+}
+
+.list-header {
+    flex-direction: row;
+    justify-content: space-between;
+    align-items: center;
+    padding: 10px 15px;
+    margin-bottom: 10px;
+    border-bottom-width: 1px;
+    border-bottom-color: #222;
+}
+
+.list-title {
+    font-size: 12px;
+    color: #555;
+    letter-spacing: 4px;
+}
+
+.list-count {
+    font-size: 12px;
+    color: #ff5000;
+}
+
+.upgrade-list {
+    flex-grow: 1;
+    background-color: transparent;
+}
+
+/* スクロールバー */
+.unity-scroller--vertical {
+    width: 6px;
+    border: none;
+    background-color: transparent;
+}
+
+.unity-scroller--vertical .unity-base-slider__tracker {
+    background-color: rgba(255, 255, 255, 0.03);
+    border: none;
+}
+
+.unity-scroller--vertical .unity-base-slider__dragger {
+    background-color: rgba(255, 80, 0, 0.4);
+    width: 6px;
+    border-radius: 3px;
+}
+
+.unity-scroller--vertical .unity-base-slider__dragger:hover {
+    background-color: #ff5000;
+}
+
+/* =========================================
+   アップグレードアイテム - カード風
+   ========================================= */
+.upgrade-item {
+    flex-direction: row;
+    align-items: center;
+    padding: 12px 15px;
+    margin-bottom: 6px;
+    background-color: #111114;
+    border-width: 1px;
+    border-color: #1a1a1f;
+    border-left-width: 4px;
+    border-left-color: #333;
+    transition-property: background-color, translate, border-color, border-left-color;
+    transition-duration: 0.15s;
+    position: relative;
+    overflow: hidden;
+}
+
+.upgrade-item:hover {
+    background-color: #1a1a1f;
+    translate: 4px 0;
+    border-color: #333;
+    border-left-color: #ff5000;
+}
+
+.upgrade-item:selected {
+    background-color: #1a1a1f;
+    border-color: #ff5000;
+    border-left-color: #ff5000;
+    translate: 4px 0;
+}
+
+/* アイテム内の斜め装飾 */
+.upgrade-item-deco {
+    position: absolute;
+    right: -20px;
+    top: -10px;
+    width: 40px;
+    height: 80px;
+    background-color: rgba(255, 255, 255, 0.02);
+    rotate: 15deg;
+}
+
+/* アイコン */
+.upgrade-icon {
+    width: 50px;
+    height: 50px;
+    background-color: #0a0a0c;
+    margin-right: 15px;
+    border-width: 2px;
+    border-color: #222;
+    flex-shrink: 0;
+    -unity-background-scale-mode: scale-to-fit;
+}
+
+.upgrade-item:selected .upgrade-icon {
+    border-color: #ff5000;
+}
+
+/* 情報エリア */
+.upgrade-info {
+    flex-grow: 1;
+    justify-content: center;
+    overflow: hidden;
+    margin-right: 10px;
+}
+
+.upgrade-name {
+    font-size: 15px;
+    -unity-font-style: bold;
+    color: #ccc;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    letter-spacing: 1px;
+    margin-bottom: 4px;
+}
+
+.upgrade-item:selected .upgrade-name {
+    color: white;
+}
+
+/* レベル表示 */
+.upgrade-level-container {
+    flex-direction: row;
+    align-items: center;
+}
+
+.upgrade-level {
+    font-size: 12px;
+    color: #ff5000;
+    margin-right: 10px;
+}
+
+/* レベルバー */
+.upgrade-level-bar {
+    width: 80px;
+    height: 4px;
+    background-color: #222;
+    border-radius: 2px;
+    overflow: hidden;
+}
+
+.upgrade-level-bar-fill {
+    height: 100%;
+    background-color: #ff5000;
+    border-radius: 2px;
+}
+
+/* コスト */
+.upgrade-cost-area {
+    align-items: flex-end;
+    min-width: 80px;
+}
+
+.upgrade-cost {
+    font-size: 14px;
+    color: #888;
+    -unity-font-style: bold;
+    letter-spacing: 1px;
+}
+
+.upgrade-effect-preview {
+    font-size: 11px;
+    color: #4ade80;
+    margin-top: 2px;
+}
+
+/* 状態別スタイル */
+.state-locked {
+    opacity: 0.4;
+}
+
+.state-locked .upgrade-icon {
+    border-color: #333;
+}
+
+.state-affordable {
+    border-left-color: #4ade80;
+}
+
+.state-affordable .upgrade-cost {
+    color: #4ade80;
+}
+
+.state-not-afford {
+    border-left-color: #ef4444;
+}
+
+.state-not-afford .upgrade-cost {
+    color: #ef4444;
+}
+
+.state-max {
+    border-left-color: #3b82f6;
+}
+
+.state-max .upgrade-level {
+    color: #3b82f6;
+}
+
+.state-max .upgrade-cost {
+    color: #3b82f6;
+}
+
+/* =========================================
+   右：詳細パネル
+   ========================================= */
+.detail-panel {
+    flex-grow: 3;
+    flex-basis: 0;
+    background-color: #0c0c0e;
+    border-width: 2px;
+    border-color: #1a1a1f;
+    border-left-width: 3px;
+    border-left-color: #ff5000;
+    overflow: hidden;
+    position: relative;
+}
+
+/* コーナーブラケット */
+.corner-bracket {
+    position: absolute;
+    width: 25px;
+    height: 25px;
+    border-color: #ff5000;
+    opacity: 0.6;
+}
+
+.corner-bracket.top-left {
+    top: 10px;
+    left: 10px;
+    border-top-width: 2px;
+    border-left-width: 2px;
+}
+
+.corner-bracket.top-right {
+    top: 10px;
+    right: 10px;
+    border-top-width: 2px;
+    border-right-width: 2px;
+}
+
+.corner-bracket.bottom-left {
+    bottom: 10px;
+    left: 10px;
+    border-bottom-width: 2px;
+    border-left-width: 2px;
+}
+
+.corner-bracket.bottom-right {
+    bottom: 10px;
+    right: 10px;
+    border-bottom-width: 2px;
+    border-right-width: 2px;
+}
+
+/* 背景装飾 */
+.detail-bg-deco {
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background-color: rgba(255, 80, 0, 0.02);
+}
+
+.detail-bg-stripe {
+    position: absolute;
+    width: 3px;
+    height: 150%;
+    background-color: rgba(255, 255, 255, 0.02);
+    rotate: -20deg;
+    top: -25%;
+}
+
+.detail-bg-stripe-1 { right: 10%; }
+.detail-bg-stripe-2 { right: 20%; }
+.detail-bg-stripe-3 { right: 30%; }
+
+.detail-scroll-view {
+    flex-grow: 1;
+    margin: 15px;
+}
+
+.detail-content-container {
+    padding-bottom: 20px;
+}
+
+/* =========================================
+   詳細ヘッダー
+   ========================================= */
+.detail-header-area {
+    flex-direction: row;
+    padding: 20px;
+    background-color: rgba(0, 0, 0, 0.3);
+    margin-bottom: 20px;
+}
+
+.detail-icon {
+    width: 100px;
+    height: 100px;
+    background-color: #0a0a0c;
+    border-width: 3px;
+    border-color: #222;
+    margin-right: 25px;
+    flex-shrink: 0;
+    -unity-background-scale-mode: scale-to-fit;
+}
+
+.detail-icon.highlight {
+    border-color: #ff5000;
+}
+
+.detail-title-block {
+    flex-grow: 1;
+    justify-content: center;
+    border-left-width: 4px;
+    border-left-color: #ff5000;
+    padding-left: 20px;
+    background-color: rgba(255, 80, 0, 0.05);
+}
+
+.detail-name {
+    font-size: 26px;
+    color: white;
+    -unity-font-style: bold;
+    white-space: normal;
+    letter-spacing: 2px;
+    margin-bottom: 8px;
+}
+
+.detail-level {
+    font-size: 16px;
+    color: #ff5000;
+    letter-spacing: 1px;
+}
+
+.detail-category {
+    font-size: 12px;
+    color: #666;
+    letter-spacing: 3px;
+    margin-top: 5px;
+}
+
+/* =========================================
+   詳細ボディ
+   ========================================= */
+.detail-body-area {
+    padding: 0 20px;
+}
+
+.section-label {
+    font-size: 11px;
+    color: #555;
+    letter-spacing: 4px;
+    margin-bottom: 8px;
+    margin-top: 20px;
+    padding-bottom: 5px;
+    border-bottom-width: 1px;
+    border-bottom-color: #222;
+}
+
+.detail-desc {
+    font-size: 14px;
+    color: #999;
+    white-space: normal;
+    line-height: 1.6;
+    padding: 10px 15px;
+    background-color: rgba(0, 0, 0, 0.2);
+    border-left-width: 2px;
+    border-left-color: #333;
+}
+
+/* =========================================
+   効果プレビュー（現在 → 次レベル）
+   ========================================= */
+.effect-preview-container {
+    background-color: rgba(0, 0, 0, 0.3);
+    padding: 15px 20px;
+    margin-top: 10px;
+}
+
+.effect-row {
+    flex-direction: row;
+    justify-content: space-between;
+    align-items: center;
+    padding: 8px 0;
+}
+
+/* 最後の行以外にボーダーを追加するクラス（C#側で制御） */
+.effect-row-border {
+    border-bottom-width: 1px;
+    border-bottom-color: rgba(255, 255, 255, 0.05);
+}
+
+.effect-label {
+    font-size: 13px;
+    color: #888;
+    flex-grow: 1;
+}
+
+.effect-current {
+    font-size: 14px;
+    color: #ccc;
+    min-width: 80px;
+    -unity-text-align: middle-right;
+}
+
+.effect-arrow {
+    font-size: 14px;
+    color: #ff5000;
+    margin: 0 15px;
+}
+
+.effect-next {
+    font-size: 16px;
+    color: #4ade80;
+    -unity-font-style: bold;
+    min-width: 80px;
+    -unity-text-align: middle-left;
+}
+
+.effect-max {
+    color: #3b82f6;
+}
+
+/* =========================================
+   コストエリア
+   ========================================= */
+.detail-cost-area {
+    background-color: rgba(0, 0, 0, 0.4);
+    padding: 25px;
+    margin-top: 25px;
+    border-top-width: 2px;
+    border-top-color: #1a1a1f;
+}
+
+.cost-header {
+    flex-direction: row;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 15px;
+}
+
+.cost-label {
+    font-size: 11px;
+    color: #555;
+    letter-spacing: 3px;
+}
+
+.detail-cost {
+    font-size: 28px;
+    color: #fbbf24;
+    -unity-font-style: bold;
+    letter-spacing: 2px;
+}
+
+.detail-cost.not-enough {
+    color: #ef4444;
+}
+
+/* 素材表示 */
+.detail-materials {
+    flex-direction: row;
+    flex-wrap: wrap;
+    margin-bottom: 20px;
+}
+
+.material-item {
+    flex-direction: row;
+    align-items: center;
+    margin: 5px;
+    padding: 8px 12px;
+    background-color: rgba(40, 40, 45, 0.8);
+    border-width: 1px;
+    border-color: #333;
+}
+
+.material-icon {
+    width: 30px;
+    height: 30px;
+    background-color: #222;
+    margin-right: 10px;
+    -unity-background-scale-mode: scale-to-fit;
+}
+
+.material-info {
+    justify-content: center;
+}
+
+.material-name {
+    font-size: 12px;
+    color: #ccc;
+}
+
+.material-count {
+    font-size: 11px;
+    color: #888;
+}
+
+.material-count.enough {
+    color: #4ade80;
+}
+
+.material-count.not-enough {
+    color: #ef4444;
+}
+
+/* =========================================
+   一括購入ボタン
+   ========================================= */
+.bulk-buy-container {
+    flex-direction: row;
+    justify-content: space-between;
+    margin-top: 10px;
+}
+
+.bulk-buy-btn {
+    flex-grow: 1;
+    height: 50px;
+    margin: 0 4px;
+    font-size: 16px;
+    -unity-font-style: bold;
+    background-color: #1a1a20;
+    color: #ccc;
+    border-width: 1px;
+    border-color: #333;
+    border-bottom-width: 3px;
+    border-bottom-color: #222;
+    letter-spacing: 2px;
+    transition-property: background-color, color, border-color, scale;
+    transition-duration: 0.1s;
+}
+
+.bulk-buy-btn:first-child {
+    margin-left: 0;
+}
+
+.bulk-buy-btn:hover {
+    background-color: #252530;
+    color: white;
+    border-color: #ff5000;
+}
+
+.bulk-buy-btn:active {
+    scale: 0.97;
+    border-bottom-width: 1px;
+}
+
+.bulk-buy-btn:disabled {
+    background-color: #111115;
+    color: #444;
+    border-color: #222;
+    border-bottom-color: #1a1a1a;
+}
+
+/* ×1 ボタン */
+.bulk-buy-btn.buy-x1 {
+    border-left-width: 3px;
+    border-left-color: #4ade80;
+}
+
+.bulk-buy-btn.buy-x1:hover {
+    border-color: #4ade80;
+    color: #4ade80;
+}
+
+/* ×10 ボタン */
+.bulk-buy-btn.buy-x10 {
+    border-left-width: 3px;
+    border-left-color: #3b82f6;
+}
+
+.bulk-buy-btn.buy-x10:hover {
+    border-color: #3b82f6;
+    color: #3b82f6;
+}
+
+/* MAX ボタン */
+.bulk-buy-btn.buy-max {
+    border-left-width: 3px;
+    border-left-color: #ff5000;
+    background-color: rgba(255, 80, 0, 0.1);
+}
+
+.bulk-buy-btn.buy-max:hover {
+    background-color: #ff5000;
+    color: white;
+    border-color: #ff5000;
+}
+
+.bulk-buy-btn.buy-max:disabled {
+    background-color: #111115;
+    border-left-color: #333;
+}
+
+/* =========================================
+   空状態
+   ========================================= */
+.empty-state {
+    flex-grow: 1;
+    justify-content: center;
+    align-items: center;
+}
+
+.empty-icon {
+    font-size: 48px;
+    color: #333;
+    margin-bottom: 20px;
+}
+
+.empty-text {
+    font-size: 16px;
+    color: #555;
+    letter-spacing: 4px;
+}
+
+/* =========================================
+   アニメーション
+   ========================================= */
+.fade-in {
+    opacity: 0;
+    transition-property: opacity;
+    transition-duration: 0.3s;
+}
+
+.fade-in.active {
+    opacity: 1;
+}
+
+.slide-in-right {
+    translate: 30px 0;
+    opacity: 0;
+    transition-property: translate, opacity;
+    transition-duration: 0.3s;
+}
+
+.slide-in-right.active {
+    translate: 0 0;
+    opacity: 1;
+}
+
+/* フラッシュ演出 */
+.flash-overlay {
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background-color: white;
+    opacity: 0;
+}
+
+.flash-overlay.flash {
+    opacity: 0.3;
+    transition-property: opacity;
+    transition-duration: 0.2s;
+}
+
+/* アイコンバウンスアニメーション */
+.icon-bounce {
+    scale: 1.15;
+    transition-property: scale;
+    transition-duration: 0.15s;
+    transition-timing-function: ease-out;
+}
+
+/* 効果値の緑フラッシュ */
+.effect-flash {
+    background-color: rgba(74, 222, 128, 0.3);
+    transition-property: background-color;
+    transition-duration: 0.4s;
+}

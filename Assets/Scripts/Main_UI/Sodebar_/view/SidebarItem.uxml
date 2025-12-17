@@ -1,0 +1,16 @@
+<ui:UXML xmlns:ui="UnityEngine.UIElements" editor-extension-mode="False">
+    <ui:VisualElement class="sidebar-item">
+        
+        <ui:VisualElement name="selection-bar" class="selection-bar" />
+        
+        <ui:VisualElement name="icon-box" class="icon-box">
+            <ui:VisualElement name="icon-image" class="icon-image" />
+            <ui:VisualElement name="notification-badge" class="notification-badge">
+                <ui:Label name="badge-text" text="!" class="badge-text" />
+            </ui:VisualElement>
+        </ui:VisualElement>
+        
+        <ui:Label name="item-label" text="Menu Item" class="item-label" />
+        
+    </ui:VisualElement>
+</ui:UXML>

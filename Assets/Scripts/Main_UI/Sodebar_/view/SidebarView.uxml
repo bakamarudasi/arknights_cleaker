@@ -1,0 +1,9 @@
+<ui:UXML xmlns:ui="UnityEngine.UIElements" xmlns:uie="UnityEditor.UIElements" editor-extension-mode="False">
+    <Style src="project://database/Assets/Scripts/Main_UI/Sodebar_/view/Sidebar.uss?fileID=7433441132597879392&amp;guid=dcfa35f5d6d84e4459a3336e5107ca31&amp;type=3#Sidebar" />
+    <ui:VisualElement class="sidebar-container">
+        <ui:VisualElement class="sidebar" style="width: 212px;">
+            <ui:Label text="NAVIGATION" class="sidebar-title" />
+            <ui:VisualElement name="sidebar-list" style="flex-grow: 1;" />
+        </ui:VisualElement>
+    </ui:VisualElement>
+</ui:UXML>

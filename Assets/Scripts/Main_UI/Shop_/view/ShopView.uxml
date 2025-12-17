@@ -1,0 +1,113 @@
+<?xml version="1.0" encoding="utf-8"?>
+<ui:UXML
+    xmlns:ui="UnityEngine.UIElements"
+    xmlns:uie="UnityEditor.UIElements"
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xsi:noNamespaceSchemaLocation="../../UIElementsSchema/UIElements.xsd"
+    editor-extension-mode="False">
+
+    <Style src="ShopView.uss" />
+    <ui:VisualElement name="shop-root" class="shop-root">
+
+        <!-- ▼ 背景デコレーション ▼ -->
+        <ui:VisualElement name="bg-decorations" class="bg-decorations" picking-mode="Ignore">
+            <!-- 斜めストライプ -->
+            <ui:VisualElement class="bg-stripe-decoration"/>
+            <!-- グリッドオーバーレイ -->
+            <ui:VisualElement class="deco-grid-overlay"/>
+            <!-- コーナー装飾 -->
+            <ui:VisualElement class="corner-decoration corner-top-left"/>
+            <ui:VisualElement class="corner-decoration corner-top-right"/>
+            <ui:VisualElement class="corner-decoration corner-bottom-left"/>
+            <ui:VisualElement class="corner-decoration corner-bottom-right"/>
+            <!-- 端末テキスト -->
+            <ui:Label text="RHODES_ISLAND // TERMINAL_V4.2" class="deco-text-corner"/>
+        </ui:VisualElement>
+
+        <!-- ヘッダー -->
+        <ui:VisualElement name="header" class="shop-header">
+            <ui:Label text="UPGRADE SHOP" class="header-title"/>
+            <ui:VisualElement class="currency-container">
+                <ui:Label name="money-label" text="LMD: 0" class="currency-label money"/>
+                <ui:Label name="cert-label" text="資格証: 0" class="currency-label cert"/>
+            </ui:VisualElement>
+        </ui:VisualElement>
+
+        <!-- タブ -->
+        <ui:VisualElement name="tab-container" class="tab-container"/>
+
+        <!-- メインコンテンツ -->
+        <ui:VisualElement name="main-content" class="main-content">
+
+            <!-- 左：リスト -->
+            <ui:VisualElement name="list-panel" class="list-panel">
+                <ui:VisualElement class="list-header">
+                    <ui:Label text="AVAILABLE MODULES" class="list-title"/>
+                    <ui:Label name="list-count" text="0 items" class="list-count"/>
+                </ui:VisualElement>
+                <ui:ListView name="upgrade-list" class="upgrade-list"/>
+            </ui:VisualElement>
+
+            <!-- 右：詳細 -->
+            <ui:VisualElement name="detail-panel" class="detail-panel">
+
+                <!-- 四隅の装飾ブラケット -->
+                <ui:VisualElement class="corner-bracket top-left" picking-mode="Ignore"/>
+                <ui:VisualElement class="corner-bracket top-right" picking-mode="Ignore"/>
+                <ui:VisualElement class="corner-bracket bottom-left" picking-mode="Ignore"/>
+                <ui:VisualElement class="corner-bracket bottom-right" picking-mode="Ignore"/>
+
+                <!-- 背景装飾 -->
+                <ui:VisualElement class="detail-bg-deco" picking-mode="Ignore">
+                    <ui:VisualElement class="detail-bg-stripe detail-bg-stripe-1"/>
+                    <ui:VisualElement class="detail-bg-stripe detail-bg-stripe-2"/>
+                    <ui:VisualElement class="detail-bg-stripe detail-bg-stripe-3"/>
+                </ui:VisualElement>
+
+                <ui:ScrollView name="detail-scroll-view" mode="Vertical" class="detail-scroll-view">
+                    <ui:VisualElement class="detail-content-container">
+
+                        <!-- 上部: アイコンと名前 -->
+                        <ui:VisualElement class="detail-header-area">
+                            <ui:VisualElement name="detail-icon" class="detail-icon"/>
+                            <ui:VisualElement class="detail-title-block">
+                                <ui:Label name="detail-name" text="SELECT MODULE" class="detail-name"/>
+                                <ui:Label name="detail-level" text="--" class="detail-level"/>
+                                <ui:Label name="detail-category" text="" class="detail-category"/>
+                            </ui:VisualElement>
+                        </ui:VisualElement>
+
+                        <!-- 中部: 説明 -->
+                        <ui:VisualElement class="detail-body-area">
+                            <ui:Label text="DESCRIPTION" class="section-label"/>
+                            <ui:Label name="detail-desc" text="Awaiting selection... // 待機中" class="detail-desc"/>
+
+                            <!-- ▼ 効果プレビュー（現在 → 次レベル）▼ -->
+                            <ui:Label text="EFFECT PREVIEW" class="section-label"/>
+                            <ui:VisualElement name="effect-preview-container" class="effect-preview-container">
+                                <!-- 動的に追加される効果行 -->
+                            </ui:VisualElement>
+                        </ui:VisualElement>
+
+                        <!-- 下部: コストとボタン -->
+                        <ui:VisualElement class="detail-cost-area">
+                            <ui:VisualElement class="cost-header">
+                                <ui:Label text="UPGRADE COST" class="cost-label"/>
+                                <ui:Label name="detail-cost" text="" class="detail-cost"/>
+                            </ui:VisualElement>
+                            <ui:VisualElement name="detail-materials" class="detail-materials"/>
+                            <!-- 一括購入ボタン -->
+                            <ui:VisualElement name="bulk-buy-container" class="bulk-buy-container">
+                                <ui:Button name="buy-x1-btn" text="×1" class="bulk-buy-btn"/>
+                                <ui:Button name="buy-x10-btn" text="×10" class="bulk-buy-btn"/>
+                                <ui:Button name="buy-max-btn" text="MAX" class="bulk-buy-btn buy-max"/>
+                            </ui:VisualElement>
+                        </ui:VisualElement>
+                    </ui:VisualElement>
+                </ui:ScrollView>
+            </ui:VisualElement>
+
+        </ui:VisualElement>
+
+    </ui:VisualElement>
+</ui:UXML>

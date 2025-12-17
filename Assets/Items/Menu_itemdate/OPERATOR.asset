@@ -1,0 +1,20 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: f30d2a322f3e2684b8dee7f51eff9b3d, type: 3}
+  m_Name: OPERATOR
+  m_EditorClassIdentifier: 
+  menuType: 2
+  displayName: OPERATOR
+  icon: {fileID: -2733375497592909482, guid: 97f9f0b1570e81e48aa79641c9ff3c94, type: 3}
+  showBadgeOnStart: 0
+  viewTemplate: {fileID: 9197481963319205126, guid: f938d5e1e4228e5489ba2c0fc03caad6, type: 3}
+  logMessage: Menu switched.

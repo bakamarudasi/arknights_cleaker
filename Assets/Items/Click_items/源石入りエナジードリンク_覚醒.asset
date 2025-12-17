@@ -1,0 +1,40 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 65ddf594aa741f742a71c5cd5dd864e0, type: 3}
+  m_Name: "\u6E90\u77F3\u5165\u308A\u30A8\u30CA\u30B8\u30FC\u30C9\u30EA\u30F3\u30AF_\u899A\u9192"
+  m_EditorClassIdentifier: 
+  id: Click_1
+  displayName: "\u6E90\u77F3\u5165\u308A\u30A8\u30CA\u30B8\u30FC\u30C9\u30EA\u30F3\u30AF   
+    \u899A\u9192"
+  description: "\u300C\u6DF1\u591C\u6B8B\u696D\u7D9A\u304D\u306E\u30C9\u30AF\u30BF\u30FC\u306B\u6717\u5831\uFF01\u4E00\u53E3\u98F2\u3080\u3060\u3051\u3067\u8133\u5185\u306E\u9727\u304C\u6674\u308C\u3001\u6307\u304C\u52DD\u624B\u306B\u52D5\u304D\u51FA\u3059\u9B54\u6CD5\u306E\u30C9\u30EA\u30F3\u30AF\u3060\u3088\uFF01
+    \u526F\u4F5C\u7528\uFF1F \u7D30\u304B\u3044\u3053\u3068\u306F\u6C17\u306B\u3057\u306A\u3044\uFF01
+    \u4ECA\u3059\u3050\u696D\u52D9\u3092\u7247\u4ED8\u3051\u3061\u3083\u304A\u3046\uFF01\u300D
+    \u2015\u2015\u30AF\u30ED\u30FC\u30B8\u30E3\u306E\u30BB\u30FC\u30EB\u30B9\u30C8\u30FC\u30AF"
+  icon: {fileID: 871623070641233648, guid: 5389249101c5c8447897634e5b52ae56, type: 3}
+  affiliatedCompany: {fileID: 11400000, guid: bc3dc4dfffd6b96448707179de2b6c4c, type: 2}
+  upgradeType: 0
+  category: 0
+  effectValue: 1
+  maxLevel: 10
+  currencyType: 0
+  baseCost: 100
+  costMultiplier: 1.15
+  requiredMaterials: []
+  materialScaling: 1
+  requiredUnlockItem: {fileID: 0}
+  prerequisiteUpgrade: {fileID: 0}
+  prerequisiteLevel: 1
+  sortOrder: 0
+  effectFormat: +{0}
+  isPercentDisplay: 0
+  categoryIcon: "\u2694\uFE0F"
+  isSpecial: 0

@@ -1,0 +1,798 @@
+/* =========================================
+   GachaStyles.uss
+   アークナイツ風ガチャUI - フルリニューアル版
+   ========================================= */
+
+/* =========================================
+   ベース設定 & ルート
+   ========================================= */
+.root {
+    width: 100%;
+    height: 100%;
+    background-color: #0a0a0c;
+    color: white;
+    font-size: 16px;
+}
+
+.screen {
+    position: absolute;
+    width: 100%;
+    height: 100%;
+}
+
+.hidden {
+    display: none;
+}
+
+/* 背景パターン - スキャンライン風 */
+.background-pattern {
+    position: absolute;
+    width: 100%;
+    height: 100%;
+    background-color: #08080a;
+}
+
+/* 斜めストライプ装飾（左下） */
+.bg-stripe-decoration {
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    width: 400px;
+    height: 400px;
+    opacity: 0.03;
+    border-right-width: 80px;
+    border-right-color: white;
+    rotate: 45deg;
+    translate: -200px 200px;
+}
+
+/* コーナー装飾 */
+.corner-decoration {
+    position: absolute;
+    width: 120px;
+    height: 120px;
+    border-width: 2px;
+    border-color: rgba(255, 80, 0, 0.3);
+}
+
+.corner-top-left {
+    top: 15px;
+    left: 15px;
+    border-right-width: 0;
+    border-bottom-width: 0;
+}
+
+.corner-top-right {
+    top: 15px;
+    right: 15px;
+    border-left-width: 0;
+    border-bottom-width: 0;
+}
+
+.corner-bottom-left {
+    bottom: 15px;
+    left: 15px;
+    border-right-width: 0;
+    border-top-width: 0;
+}
+
+.corner-bottom-right {
+    bottom: 15px;
+    right: 15px;
+    border-left-width: 0;
+    border-top-width: 0;
+}
+
+/* =========================================
+   メイン画面レイアウト (左右分割)
+   ========================================= */
+.main-screen-layout {
+    display: flex;
+    flex-direction: row;
+    width: 100%;
+    height: 100%;
+}
+
+/* =========================================
+   左側：バナーエリア
+   ========================================= */
+.banner-area {
+    flex-grow: 1;
+    background-color: #0c0c0e;
+    margin: 20px;
+    margin-right: 0;
+    border-width: 2px;
+    border-color: #1a1a1f;
+    position: relative;
+    overflow: hidden;
+}
+
+/* バナー内の斜めライン装飾 */
+.banner-diagonal-line {
+    position: absolute;
+    width: 3px;
+    height: 200%;
+    background-color: rgba(255, 80, 0, 0.15);
+    rotate: -35deg;
+    top: -50%;
+}
+
+.banner-diagonal-1 {
+    right: 15%;
+}
+
+.banner-diagonal-2 {
+    right: 25%;
+    opacity: 0.5;
+}
+
+.banner-diagonal-3 {
+    right: 35%;
+    opacity: 0.3;
+}
+
+.banner-content {
+    width: 100%;
+    height: 100%;
+    overflow: hidden;
+}
+
+.banner-image {
+    width: 100%;
+    height: 100%;
+    background-color: #111114;
+    -unity-background-scale-mode: scale-and-crop;
+}
+
+/* バナー情報オーバーレイ */
+.banner-info {
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    width: 100%;
+    padding: 40px;
+    padding-top: 80px;
+    background-color: rgba(0, 0, 0, 0.85);
+}
+
+/* バナー情報の上部ライン */
+.banner-info-line {
+    position: absolute;
+    top: 0;
+    left: 40px;
+    right: 40px;
+    height: 2px;
+    background-color: #ff5000;
+}
+
+.banner-name {
+    font-size: 64px;
+    color: white;
+    margin: 0;
+    padding: 0;
+    letter-spacing: -1px;
+    -unity-font-style: bold;
+}
+
+.banner-desc {
+    font-size: 22px;
+    color: #ff5000;
+    margin-top: 5px;
+    letter-spacing: 3px;
+}
+
+/* タグ装飾 */
+.banner-tag {
+    position: absolute;
+    top: 20px;
+    left: 0;
+    background-color: #ff5000;
+    padding: 8px 20px;
+    padding-right: 30px;
+}
+
+.banner-tag-text {
+    font-size: 14px;
+    color: white;
+    letter-spacing: 2px;
+    -unity-font-style: bold;
+}
+
+/* バナータグの斜めカット */
+.banner-tag-cut {
+    position: absolute;
+    right: 0;
+    top: 0;
+    width: 0;
+    height: 0;
+    border-left-width: 20px;
+    border-left-color: transparent;
+    border-top-width: 40px;
+    border-top-color: #0c0c0e;
+}
+
+/* ページ送りボタン */
+.nav-btn {
+    position: absolute;
+    top: 50%;
+    width: 60px;
+    height: 140px;
+    margin-top: -70px;
+    background-color: rgba(0, 0, 0, 0.7);
+    border-width: 2px;
+    border-color: #333;
+    font-size: 32px;
+    color: rgba(255, 255, 255, 0.5);
+    transition-property: background-color, border-color, color;
+    transition-duration: 0.15s;
+}
+
+.nav-btn:hover {
+    background-color: #ff5000;
+    border-color: #ff5000;
+    color: white;
+}
+
+.nav-btn-left {
+    left: 0;
+    border-left-width: 0;
+    border-top-left-radius: 0;
+    border-bottom-left-radius: 0;
+}
+
+.nav-btn-right {
+    right: 0;
+    border-right-width: 0;
+    border-top-right-radius: 0;
+    border-bottom-right-radius: 0;
+}
+
+/* =========================================
+   右側：サイドパネル
+   ========================================= */
+.side-panel {
+    width: 500px;
+    min-width: 500px;
+    background-color: #0e0e10;
+    border-left-width: 3px;
+    border-left-color: #ff5000;
+    margin: 20px;
+    margin-left: 0;
+    padding: 25px;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    position: relative;
+    overflow: hidden;
+}
+
+/* サイドパネル背景装飾 */
+.side-panel-bg-decoration {
+    position: absolute;
+    bottom: -50px;
+    right: -50px;
+    width: 300px;
+    height: 300px;
+    border-width: 40px;
+    border-color: rgba(255, 80, 0, 0.03);
+    border-radius: 150px;
+}
+
+/* サイドパネル上部 */
+.side-header {
+    border-bottom-width: 1px;
+    border-bottom-color: #2a2a30;
+    padding-bottom: 15px;
+    margin-bottom: 20px;
+    flex-direction: row;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.rhodes-label {
+    font-size: 14px;
+    color: #555;
+    letter-spacing: 6px;
+}
+
+.currency-container {
+    flex-direction: row;
+    align-items: center;
+}
+
+.currency-icon {
+    width: 24px;
+    height: 24px;
+    background-color: #ff5000;
+    border-radius: 4px;
+    margin-right: 10px;
+}
+
+.currency-label {
+    font-size: 26px;
+    color: #fbbf24;
+    -unity-font-style: bold;
+}
+
+/* =========================================
+   情報ボックス
+   ========================================= */
+.side-info-box {
+    flex-grow: 1;
+    padding: 10px 0;
+}
+
+.info-section-title {
+    font-size: 12px;
+    color: #555;
+    letter-spacing: 4px;
+    margin-bottom: 15px;
+    padding-bottom: 8px;
+    border-bottom-width: 1px;
+    border-bottom-color: #222;
+}
+
+.info-row {
+    flex-direction: row;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 12px;
+    padding: 10px 15px;
+    background-color: rgba(255, 255, 255, 0.02);
+    border-left-width: 3px;
+    border-left-color: #333;
+}
+
+.info-row:hover {
+    background-color: rgba(255, 255, 255, 0.04);
+    border-left-color: #ff5000;
+}
+
+.info-label {
+    font-size: 14px;
+    color: #666;
+    letter-spacing: 1px;
+}
+
+.info-value {
+    font-size: 20px;
+    color: #ccc;
+    -unity-font-style: bold;
+}
+
+/* 天井警告スタイル */
+.pity-warning {
+    border-left-color: #ff5000;
+    background-color: rgba(255, 80, 0, 0.08);
+}
+
+.pity-warning .info-value {
+    color: #ff5000;
+}
+
+/* ハイライトスタイル */
+.info-highlight {
+    border-left-color: #fbbf24;
+}
+
+.info-highlight .info-value {
+    color: #fbbf24;
+}
+
+/* テキストボタン */
+.btn-text-only {
+    background-color: transparent;
+    border-width: 1px;
+    border-color: #333;
+    color: #666;
+    align-self: flex-start;
+    font-size: 13px;
+    padding: 8px 16px;
+    margin-top: 15px;
+    letter-spacing: 2px;
+    transition-property: border-color, color, background-color;
+    transition-duration: 0.15s;
+}
+
+.btn-text-only:hover {
+    border-color: #ff5000;
+    color: #ff5000;
+    background-color: rgba(255, 80, 0, 0.1);
+}
+
+/* =========================================
+   アクションエリア（ガチャボタン）
+   ========================================= */
+.action-area {
+    margin-top: auto;
+    padding-top: 20px;
+}
+
+/* バナーインジケーター */
+.banner-indicator {
+    flex-direction: row;
+    justify-content: center;
+    height: 20px;
+    margin-bottom: 20px;
+}
+
+.indicator-dot {
+    width: 50px;
+    height: 4px;
+    background-color: #2a2a30;
+    margin: 0 4px;
+    transition-property: background-color, scale;
+    transition-duration: 0.2s;
+}
+
+.indicator-dot:hover {
+    background-color: #444;
+}
+
+.indicator-dot.active {
+    background-color: #ff5000;
+    scale: 1.1;
+}
+
+/* =========================================
+   ガチャボタン共通
+   ========================================= */
+.btn-pull {
+    height: 90px;
+    margin-top: 12px;
+    border-width: 0;
+    flex-direction: row;
+    align-items: center;
+    transition-property: scale, background-color;
+    transition-duration: 0.1s;
+    overflow: hidden;
+    position: relative;
+}
+
+.btn-pull:active {
+    scale: 0.97;
+}
+
+.btn-pull.btn-disabled {
+    opacity: 0.4;
+}
+
+/* ボタン内のシャイン効果用 */
+.btn-shine {
+    position: absolute;
+    width: 60px;
+    height: 200%;
+    background-color: rgba(255, 255, 255, 0.1);
+    rotate: 20deg;
+    left: -80px;
+    transition-property: left;
+    transition-duration: 0.4s;
+}
+
+.btn-pull:hover .btn-shine {
+    left: 120%;
+}
+
+/* 1回ボタン */
+.btn-standard {
+    background-color: #1a1a1f;
+    color: white;
+    justify-content: space-between;
+    padding-left: 25px;
+    border-width: 2px;
+    border-color: #2a2a30;
+    border-bottom-width: 4px;
+    border-bottom-color: #111;
+}
+
+.btn-standard:hover {
+    background-color: #222228;
+    border-color: #444;
+}
+
+.btn-content-row {
+    flex-direction: row;
+    align-items: center;
+}
+
+.btn-deco-bar {
+    width: 6px;
+    height: 100%;
+    background-color: #333;
+    transition-property: background-color;
+    transition-duration: 0.15s;
+}
+
+.btn-standard:hover .btn-deco-bar {
+    background-color: #ff5000;
+}
+
+/* 10回ボタン - メインCTA */
+.btn-special {
+    background-color: #ff5000;
+    color: white;
+    justify-content: center;
+    flex-direction: column;
+    align-items: center;
+    border-bottom-width: 5px;
+    border-bottom-color: #cc4000;
+    position: relative;
+}
+
+.btn-special:hover {
+    background-color: #ff6620;
+    border-bottom-color: #dd5010;
+}
+
+.btn-special:active {
+    border-bottom-width: 2px;
+    margin-top: 15px;
+}
+
+/* ボタンテキスト */
+.btn-main-text {
+    font-size: 42px;
+    -unity-font-style: bold;
+    margin: 0;
+    padding: 0;
+    letter-spacing: 2px;
+}
+
+.btn-main-text-sm {
+    font-size: 28px;
+    -unity-font-style: bold;
+    letter-spacing: 2px;
+}
+
+.btn-sub-text {
+    font-size: 13px;
+    letter-spacing: 3px;
+    opacity: 0.9;
+    margin-top: 2px;
+}
+
+/* 10連ボタンの斜めストライプ装飾 */
+.btn-deco-stripe {
+    position: absolute;
+    right: -30px;
+    top: -20px;
+    width: 60px;
+    height: 150px;
+    background-color: rgba(0, 0, 0, 0.15);
+    rotate: 20deg;
+}
+
+.btn-deco-stripe-2 {
+    position: absolute;
+    right: 10px;
+    top: -20px;
+    width: 20px;
+    height: 150px;
+    background-color: rgba(0, 0, 0, 0.1);
+    rotate: 20deg;
+}
+
+/* =========================================
+   結果画面
+   ========================================= */
+.result-panel {
+    background-color: rgba(5, 5, 8, 0.98);
+    justify-content: center;
+    align-items: center;
+}
+
+.result-content {
+    width: 90%;
+    height: 85%;
+    align-items: center;
+    padding: 30px;
+}
+
+/* 結果タイトル */
+.result-title {
+    font-size: 48px;
+    color: white;
+    margin-bottom: 40px;
+    padding-bottom: 15px;
+    letter-spacing: 8px;
+    border-bottom-width: 3px;
+    border-bottom-color: #ff5000;
+}
+
+/* 結果コンテナ - 5×2グリッド */
+.result-container {
+    flex-direction: row;
+    flex-wrap: wrap;
+    justify-content: center;
+    align-content: center;
+    width: 100%;
+    max-width: 900px;
+    padding: 15px 10px;
+}
+
+/* 結果アイテムカード - 5×2用にコンパクト */
+.result-item {
+    width: 140px;
+    height: 200px;
+    margin: 8px;
+    background-color: #111115;
+    border-width: 2px;
+    border-color: #2a2a30;
+    align-items: center;
+    overflow: hidden;
+    transition-property: scale, border-color, background-color;
+    transition-duration: 0.2s;
+    position: relative;
+}
+
+.result-item:hover {
+    scale: 1.08;
+    border-color: #555;
+    background-color: #1a1a1f;
+}
+
+/* アイテムカード内の斜め装飾 */
+.result-item-decoration {
+    position: absolute;
+    top: 0;
+    right: 0;
+    width: 40px;
+    height: 40px;
+    border-left-width: 40px;
+    border-left-color: transparent;
+    border-top-width: 40px;
+}
+
+/* レアリティ別スタイル */
+.rarity-6 {
+    border-color: #ff5000;
+    border-width: 2px;
+    border-bottom-width: 6px;
+    border-bottom-color: #ff5000;
+}
+
+.rarity-6:hover {
+    border-color: #ff6620;
+}
+
+.rarity-6 .result-item-decoration {
+    border-top-color: rgba(255, 80, 0, 0.3);
+}
+
+.rarity-6 .result-item-name {
+    color: #ff5000;
+}
+
+.rarity-5 {
+    border-color: #fbbf24;
+    border-bottom-width: 6px;
+    border-bottom-color: #fbbf24;
+}
+
+.rarity-5:hover {
+    border-color: #fcd34d;
+}
+
+.rarity-5 .result-item-decoration {
+    border-top-color: rgba(251, 191, 36, 0.3);
+}
+
+.rarity-5 .result-item-name {
+    color: #fbbf24;
+}
+
+.rarity-4 {
+    border-color: #a855f7;
+    border-bottom-width: 5px;
+    border-bottom-color: #a855f7;
+}
+
+.rarity-4:hover {
+    border-color: #c084fc;
+}
+
+.rarity-3 {
+    border-color: #3b82f6;
+    border-bottom-width: 4px;
+    border-bottom-color: #3b82f6;
+}
+
+.rarity-2 {
+    border-color: #6b7280;
+    border-bottom-width: 3px;
+    border-bottom-color: #6b7280;
+}
+
+.rarity-1 {
+    border-color: #4b5563;
+    border-bottom-width: 3px;
+    border-bottom-color: #4b5563;
+}
+
+/* アイテム画像エリア */
+.result-item-image {
+    width: 100%;
+    height: 120px;
+    background-color: #0a0a0c;
+    -unity-background-scale-mode: scale-to-fit;
+}
+
+.result-item-name {
+    margin-top: auto;
+    margin-bottom: 6px;
+    font-size: 14px;
+    color: white;
+    -unity-font-style: bold;
+    -unity-text-align: middle-center;
+    padding: 0 4px;
+}
+
+.result-item-rarity {
+    font-size: 11px;
+    color: #888;
+    margin-bottom: 8px;
+    letter-spacing: 1px;
+}
+
+/* 閉じるボタン */
+.btn-close {
+    margin-top: 20px;
+    width: 280px;
+    height: 55px;
+    font-size: 20px;
+    letter-spacing: 4px;
+    background-color: #1a1a1f;
+    color: white;
+    -unity-font-style: bold;
+    border-width: 2px;
+    border-color: #333;
+    border-bottom-width: 4px;
+    border-bottom-color: #111;
+    transition-property: background-color, border-color, scale;
+    transition-duration: 0.15s;
+}
+
+.btn-close:hover {
+    background-color: #ff5000;
+    border-color: #ff5000;
+    border-bottom-color: #cc4000;
+    scale: 1.03;
+}
+
+/* =========================================
+   フラッシュオーバーレイ
+   ========================================= */
+.flash-overlay {
+    position: absolute;
+    width: 100%;
+    height: 100%;
+    background-color: white;
+    opacity: 0;
+    display: none;
+}
+
+/* =========================================
+   NEW/DUPE バッジ
+   ========================================= */
+.badge-new {
+    position: absolute;
+    top: 10px;
+    left: 10px;
+    background-color: #ff5000;
+    padding: 4px 10px;
+    font-size: 11px;
+    color: white;
+    letter-spacing: 1px;
+    -unity-font-style: bold;
+}
+
+.badge-dupe {
+    position: absolute;
+    top: 10px;
+    left: 10px;
+    background-color: #444;
+    padding: 4px 10px;
+    font-size: 11px;
+    color: #999;
+    letter-spacing: 1px;
+}

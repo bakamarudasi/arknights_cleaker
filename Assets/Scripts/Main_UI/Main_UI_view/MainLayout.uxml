@@ -1,0 +1,16 @@
+<ui:UXML xmlns:ui="UnityEngine.UIElements" xmlns:uie="UnityEditor.UIElements" editor-extension-mode="False">
+    <Style src="Assets/Scripts/Main_UI/Main_UI_view/MainStyles.uss?fileID=7433441132597879392&amp;guid=7674eee8127a3934bb1140d73727ea00&amp;type=3#MainStyles" />
+    <ui:VisualElement class="main-container">
+        <ui:VisualElement name="sidebar-container" />
+        <ui:VisualElement class="right-container">
+            <ui:VisualElement name="content-area" class="content-area" />
+            <ui:VisualElement name="log-area" class="bottom-log-area">
+                <ui:VisualElement class="log-header">
+                    <ui:Label text="SYSTEM LOG // ONLINE" data-source="project://database/Assets/font/%E4%BD%BF%E7%94%A8%E3%83%95%E3%82%A9%E3%83%B3%E3%83%88/Koruri_Pop_SDF.asset?fileID=11400000&amp;guid=a166317cab88cae489f8adc6fecce7ba&amp;type=2#Koruri_Pop_SDF" class="log-title" />
+                    <ui:Label text="● REC" class="log-title" style="color: rgb(255, 59, 48);" />
+                </ui:VisualElement>
+                <ui:ScrollView class="log-scroll-view" />
+            </ui:VisualElement>
+        </ui:VisualElement>
+    </ui:VisualElement>
+</ui:UXML>

@@ -1,0 +1,988 @@
+/* =========================================
+   GachaAnimation.uss
+   ジッパー演出、バッグ、エフェクト関連
+   強化リニューアル版
+   ========================================= */
+
+/* =========================================
+   演出画面の背景
+   ========================================= */
+.bag-screen-bg {
+    position: absolute;
+    width: 100%;
+    height: 100%;
+    background-color: #050508;
+}
+
+/* グリッドパターン */
+.bag-screen-grid {
+    position: absolute;
+    width: 100%;
+    height: 100%;
+    opacity: 0.03;
+}
+
+.grid-line-h, .grid-line-v {
+    position: absolute;
+    background-color: #ff5000;
+}
+
+.grid-line-h {
+    width: 100%;
+    height: 1px;
+}
+
+.grid-line-v {
+    width: 1px;
+    height: 100%;
+}
+
+/* =========================================
+   環境光・雰囲気演出
+   ========================================= */
+.ambient-light {
+    position: absolute;
+    width: 100%;
+    height: 100%;
+    opacity: 0;
+    transition-property: opacity;
+    transition-duration: 0.3s;
+}
+
+/* レアリティ別の環境光 */
+.ambient-light-6 {
+    background-color: rgba(255, 80, 0, 0.2);
+}
+
+.ambient-light-5 {
+    background-color: rgba(251, 191, 36, 0.15);
+}
+
+.ambient-light-4 {
+    background-color: rgba(168, 85, 247, 0.12);
+}
+
+/* 放射状のグロー */
+.radial-glow {
+    position: absolute;
+    width: 800px;
+    height: 800px;
+    align-self: center;
+    top: 15%;
+    border-radius: 400px;
+    opacity: 0;
+    transition-property: opacity;
+    transition-duration: 0.5s;
+}
+
+.radial-glow-6 {
+    background-color: rgba(255, 80, 0, 0.3);
+}
+
+.radial-glow-5 {
+    background-color: rgba(251, 191, 36, 0.25);
+}
+
+/* =========================================
+   バッグコンテナ
+   ========================================= */
+.bag-container {
+    width: 750px;
+    height: 450px;
+    align-self: center;
+    top: 20%;
+    position: relative;
+}
+
+/* バッグ本体 */
+.bag-body {
+    position: absolute;
+    width: 100%;
+    height: 100%;
+    background-color: #0a0a0c;
+    border-width: 3px;
+    border-color: #1a1a1f;
+    border-radius: 8px;
+    overflow: hidden;
+}
+
+/* バッグの外枠グロー */
+.bag-outer-glow {
+    position: absolute;
+    width: 100%;
+    height: 100%;
+    border-width: 2px;
+    border-color: transparent;
+    border-radius: 8px;
+    transition-property: border-color;
+    transition-duration: 0.3s;
+}
+
+.bag-outer-glow.active-6 {
+    border-color: rgba(255, 80, 0, 0.5);
+}
+
+.bag-outer-glow.active-5 {
+    border-color: rgba(251, 191, 36, 0.4);
+}
+
+/* バッグのエッジライン */
+.bag-edge-line {
+    position: absolute;
+    height: 2px;
+    left: 40px;
+    right: 40px;
+    background-color: #ff5000;
+}
+
+.bag-edge-line-top {
+    top: 20px;
+}
+
+.bag-edge-line-bottom {
+    bottom: 20px;
+}
+
+/* バッグの縦ライン */
+.bag-edge-line-v {
+    position: absolute;
+    width: 2px;
+    top: 40px;
+    bottom: 40px;
+    background-color: #ff5000;
+    opacity: 0.5;
+}
+
+.bag-edge-line-left {
+    left: 20px;
+}
+
+.bag-edge-line-right {
+    right: 20px;
+}
+
+/* バッグロゴ */
+.bag-logo {
+    position: absolute;
+    bottom: -30px;
+    right: -40px;
+    font-size: 140px;
+    color: rgba(255, 255, 255, 0.015);
+    rotate: -12deg;
+    -unity-font-style: bold;
+    letter-spacing: -5px;
+}
+
+/* バッグ内のパターン装飾 */
+.bag-pattern {
+    position: absolute;
+    width: 100%;
+    height: 100%;
+    opacity: 0.02;
+}
+
+.bag-stripe {
+    position: absolute;
+    width: 3px;
+    height: 200%;
+    background-color: white;
+    rotate: -25deg;
+    top: -50%;
+}
+
+.bag-stripe-1 { left: 15%; }
+.bag-stripe-2 { left: 35%; }
+.bag-stripe-3 { left: 55%; }
+.bag-stripe-4 { left: 75%; }
+.bag-stripe-5 { left: 95%; }
+
+/* コーナーマーク - より洗練されたデザイン */
+.bag-corner-mark {
+    position: absolute;
+    width: 50px;
+    height: 50px;
+    border-width: 2px;
+    border-color: #333;
+}
+
+.bag-corner-tl {
+    top: 30px;
+    left: 30px;
+    border-right-width: 0;
+    border-bottom-width: 0;
+}
+
+.bag-corner-tr {
+    top: 30px;
+    right: 30px;
+    border-left-width: 0;
+    border-bottom-width: 0;
+}
+
+.bag-corner-bl {
+    bottom: 30px;
+    left: 30px;
+    border-right-width: 0;
+    border-top-width: 0;
+}
+
+.bag-corner-br {
+    bottom: 30px;
+    right: 30px;
+    border-left-width: 0;
+    border-top-width: 0;
+}
+
+/* コーナーのドット装飾 */
+.corner-dot {
+    position: absolute;
+    width: 6px;
+    height: 6px;
+    background-color: #ff5000;
+    border-radius: 3px;
+}
+
+.corner-dot-tl { top: 32px; left: 32px; }
+.corner-dot-tr { top: 32px; right: 32px; }
+.corner-dot-bl { bottom: 32px; left: 32px; }
+.corner-dot-br { bottom: 32px; right: 32px; }
+
+/* バッグ中央のシンボル */
+.bag-center-symbol {
+    position: absolute;
+    width: 120px;
+    height: 120px;
+    align-self: center;
+    top: 35%;
+    border-width: 3px;
+    border-color: #222;
+    border-radius: 60px;
+    justify-content: center;
+    align-items: center;
+}
+
+.bag-center-symbol-inner {
+    width: 80px;
+    height: 80px;
+    border-width: 2px;
+    border-color: #333;
+    border-radius: 40px;
+    justify-content: center;
+    align-items: center;
+}
+
+.bag-center-text {
+    font-size: 24px;
+    color: #444;
+    letter-spacing: 2px;
+    -unity-font-style: bold;
+}
+
+/* =========================================
+   ジッパー演出 - 強化版
+   ========================================= */
+.zipper-rail {
+    width: 650px;
+    height: 32px;
+    background-color: #0a0a0c;
+    align-self: center;
+    border-radius: 16px;
+    border-width: 2px;
+    border-color: #222;
+    justify-content: center;
+    overflow: visible;
+    position: relative;
+    margin-top: 209px;
+}
+
+/* レールの内側シャドウ */
+.zipper-rail-inner {
+    position: absolute;
+    width: 100%;
+    height: 100%;
+    border-radius: 16px;
+    background-color: rgba(0, 0, 0, 0.5);
+}
+
+/* 開いた部分のグロー */
+.zipper-open-glow {
+    position: absolute;
+    height: 100%;
+    left: 0;
+    width: 0;
+    background-color: rgba(255, 80, 0, 0.3);
+    border-radius: 16px;
+    transition-property: background-color;
+    transition-duration: 0.2s;
+}
+
+/* ジッパーの歯 */
+.zipper-teeth {
+    position: absolute;
+    width: 100%;
+    height: 100%;
+    flex-direction: row;
+    justify-content: space-around;
+    align-items: center;
+    padding: 0 40px;
+}
+
+.zipper-tooth {
+    width: 6px;
+    height: 16px;
+    background-color: #222;
+    border-radius: 2px;
+}
+
+/* ジッパースライダー - コンパクト版 */
+.zipper-slider {
+    position: absolute;
+    width: 50px;
+    height: 38px;
+    left: 0;
+    top: -3px;
+    background-color: #1a1a1f;
+    border-radius: 6px;
+    border-width: 2px;
+    border-color: #333;
+    border-bottom-width: 3px;
+    border-bottom-color: #111;
+    align-items: center;
+    justify-content: center;
+    transition-property: border-color, scale;
+    transition-duration: 0.15s;
+}
+
+.zipper-slider:hover {
+    border-color: #ff5000;
+    scale: 1.08;
+}
+
+.zipper-slider:active {
+    scale: 0.95;
+    border-bottom-width: 1px;
+}
+
+/* スライダー内のアイコン */
+.zipper-slider-icon {
+    width: 28px;
+    height: 20px;
+    justify-content: center;
+    align-items: center;
+}
+
+/* グリップ模様 - コンパクト版 */
+.zipper-grip {
+    width: 22px;
+    height: 2px;
+    background-color: #444;
+    margin: 2px 0;
+    border-radius: 1px;
+}
+
+.zipper-grip-highlight {
+    background-color: #666;
+}
+
+/* ジッパータグ - コンパクト版 */
+.zipper-tag {
+    position: absolute;
+    top: 32px;
+    left: 12px;
+    width: 28px;
+    height: 65px;
+    background-color: #121215;
+    border-color: #2a2a30;
+    border-width: 1px;
+    border-radius: 4px;
+    rotate: -10deg;
+    transition-property: rotate, translate;
+    transition-duration: 0.2s;
+    overflow: hidden;
+}
+
+.zipper-slider:hover .zipper-tag {
+    rotate: 12deg;
+    translate: 3px 0;
+}
+
+/* タグの穴 */
+.zipper-tag-hole {
+    position: absolute;
+    top: 6px;
+    left: 50%;
+    margin-left: -6px;
+    width: 12px;
+    height: 12px;
+    border-radius: 6px;
+    border-width: 2px;
+    border-color: #333;
+    background-color: #0a0a0c;
+}
+
+/* タグのライン装飾 */
+.zipper-tag-line {
+    position: absolute;
+    width: 16px;
+    height: 1px;
+    left: 6px;
+    background-color: #2a2a30;
+}
+
+.zipper-tag-line-1 { top: 28px; }
+.zipper-tag-line-2 { top: 35px; }
+.zipper-tag-line-3 { top: 42px; }
+
+/* タグのラベル */
+.zipper-tag-label {
+    position: absolute;
+    bottom: 6px;
+    width: 100%;
+    font-size: 7px;
+    color: #ff5000;
+    -unity-text-align: middle-center;
+    letter-spacing: 1px;
+    -unity-font-style: bold;
+}
+
+/* =========================================
+   光のビーム演出 - 強化版
+   ========================================= */
+.light-beam {
+    position: absolute;
+    height: 50px;
+    width: 0;
+    left: 0;
+    top: -9px;
+    background-color: rgba(255, 255, 255, 0.95);
+    opacity: 0;
+    border-radius: 25px;
+    transition-property: width, opacity;
+    transition-duration: 0.05s;
+}
+
+/* レアリティ別ビーム色 */
+.light-beam-6 {
+    background-color: rgba(255, 80, 0, 0.98);
+}
+
+.light-beam-5 {
+    background-color: rgba(251, 191, 36, 0.98);
+}
+
+.light-beam-4 {
+    background-color: rgba(168, 85, 247, 0.95);
+}
+
+/* ビームの内側グロー - より強く */
+.light-beam-inner {
+    position: absolute;
+    width: 100%;
+    height: 40%;
+    top: 30%;
+    background-color: rgba(255, 255, 255, 0.9);
+    border-radius: 50px;
+}
+
+/* ビームから出る光線 */
+.light-ray {
+    position: absolute;
+    width: 2px;
+    height: 300px;
+    background-color: rgba(255, 255, 255, 0.3);
+    align-self: center;
+    opacity: 0;
+}
+
+.light-ray-1 { rotate: -30deg; }
+.light-ray-2 { rotate: -15deg; }
+.light-ray-3 { rotate: 0deg; }
+.light-ray-4 { rotate: 15deg; }
+.light-ray-5 { rotate: 30deg; }
+
+/* =========================================
+   ガイドテキスト
+   ========================================= */
+.guide-text {
+    position: absolute;
+    bottom: 100px;
+    align-self: center;
+    font-size: 18px;
+    color: #555;
+    letter-spacing: 10px;
+}
+
+/* 矢印アニメーション用 */
+.guide-arrow {
+    position: absolute;
+    bottom: 140px;
+    align-self: center;
+    font-size: 24px;
+    color: #ff5000;
+    opacity: 0.6;
+}
+
+/* パルス効果 */
+.pulse {
+    transition-property: opacity;
+    transition-duration: 0.8s;
+}
+
+.pulse-dim {
+    opacity: 0.3;
+}
+
+.pulse-bright {
+    opacity: 1;
+}
+
+/* =========================================
+   スキップボタン
+   ========================================= */
+.btn-skip {
+    position: absolute;
+    bottom: 40px;
+    right: 40px;
+    padding: 14px 28px;
+    background-color: rgba(10, 10, 12, 0.8);
+    border-width: 2px;
+    border-color: #333;
+    color: #666;
+    font-size: 14px;
+    letter-spacing: 4px;
+    transition-property: background-color, border-color, color, scale;
+    transition-duration: 0.15s;
+}
+
+.btn-skip:hover {
+    background-color: rgba(255, 80, 0, 0.15);
+    border-color: #ff5000;
+    color: #ff5000;
+    scale: 1.05;
+}
+
+/* =========================================
+   パーティクル・エフェクト - 強化版
+   ========================================= */
+.particle-container {
+    position: absolute;
+    width: 100%;
+    height: 100%;
+    overflow: visible;
+}
+
+.particle {
+    position: absolute;
+    width: 6px;
+    height: 6px;
+    background-color: #ff5000;
+    border-radius: 3px;
+    opacity: 1;
+    transition-property: translate, opacity;
+    transition-timing-function: ease-out;
+}
+
+.particle-large {
+    width: 10px;
+    height: 10px;
+    border-radius: 5px;
+}
+
+.particle-glow {
+    width: 16px;
+    height: 16px;
+    border-radius: 8px;
+    background-color: rgba(255, 80, 0, 0.7);
+}
+
+/* 高レア用の輝くパーティクル */
+.particle-star {
+    width: 8px;
+    height: 8px;
+    border-radius: 4px;
+    background-color: white;
+}
+
+/* =========================================
+   結果画面 - 強化版
+   ========================================= */
+
+/* 結果画面背景 */
+.result-bg {
+    position: absolute;
+    width: 100%;
+    height: 100%;
+    background-color: #050508;
+}
+
+/* 結果画面の装飾ライン */
+.result-deco-line {
+    position: absolute;
+    background-color: #ff5000;
+    opacity: 0.3;
+}
+
+.result-deco-line-h {
+    height: 1px;
+    left: 5%;
+    right: 5%;
+}
+
+.result-deco-line-top { top: 8%; }
+.result-deco-line-bottom { bottom: 8%; }
+
+/* 結果タイトルエリア */
+.result-title-area {
+    width: 100%;
+    align-items: center;
+    padding: 20px 0;
+    margin-bottom: 30px;
+}
+
+.result-title-deco {
+    width: 200px;
+    height: 2px;
+    background-color: #ff5000;
+    margin: 15px 0;
+}
+
+.result-title-sub {
+    font-size: 14px;
+    color: #666;
+    letter-spacing: 6px;
+}
+
+/* 結果アイテム表示アニメーション - 通常 */
+.result-item-appear {
+    scale: 0.5;
+    opacity: 0;
+    transition-property: scale, opacity;
+    transition-duration: 0.4s;
+    transition-timing-function: ease-out;
+}
+
+.result-item-appear.visible {
+    scale: 1;
+    opacity: 1;
+}
+
+/* ★6 カード回転アニメーション - ダイナミック回転 */
+.result-item-spin-6 {
+    scale: 0.3;
+    opacity: 0;
+    rotate: -180deg;
+    transition-property: scale, opacity, rotate;
+    transition-duration: 0.7s;
+    transition-timing-function: ease-out;
+}
+
+.result-item-spin-6.visible {
+    scale: 1;
+    opacity: 1;
+    rotate: 0deg;
+}
+
+/* ★5 カード回転アニメーション - 控えめ回転 */
+.result-item-spin-5 {
+    scale: 0.4;
+    opacity: 0;
+    rotate: -90deg;
+    transition-property: scale, opacity, rotate;
+    transition-duration: 0.5s;
+    transition-timing-function: ease-out;
+}
+
+.result-item-spin-5.visible {
+    scale: 1;
+    opacity: 1;
+    rotate: 0deg;
+}
+
+/* ★4 カード - 軽い回転 */
+.result-item-spin-4 {
+    scale: 0.5;
+    opacity: 0;
+    rotate: -45deg;
+    transition-property: scale, opacity, rotate;
+    transition-duration: 0.4s;
+    transition-timing-function: ease-out;
+}
+
+.result-item-spin-4.visible {
+    scale: 1;
+    opacity: 1;
+    rotate: 0deg;
+}
+
+/* 結果アイテムカード - 強化版 */
+.result-item-card {
+    width: 160px;
+    height: 240px;
+    margin: 15px;
+    background-color: #0c0c0e;
+    border-width: 2px;
+    border-color: #222;
+    align-items: center;
+    overflow: hidden;
+    transition-property: scale, border-color;
+    transition-duration: 0.2s;
+    position: relative;
+}
+
+.result-item-card:hover {
+    scale: 1.1;
+}
+
+/* レアリティ別カードスタイル */
+.result-item-card.rarity-6 {
+    border-color: #ff5000;
+    border-width: 3px;
+}
+
+.result-item-card.rarity-6:hover {
+    border-color: #ff7040;
+}
+
+.result-item-card.rarity-5 {
+    border-color: #fbbf24;
+    border-width: 2px;
+}
+
+.result-item-card.rarity-5:hover {
+    border-color: #fcd34d;
+}
+
+.result-item-card.rarity-4 {
+    border-color: #a855f7;
+}
+
+.result-item-card.rarity-3 {
+    border-color: #3b82f6;
+}
+
+/* カード下部のレアリティバー */
+.result-item-rarity-bar {
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    height: 6px;
+}
+
+.rarity-6 .result-item-rarity-bar {
+    background-color: #ff5000;
+}
+
+.rarity-5 .result-item-rarity-bar {
+    background-color: #fbbf24;
+}
+
+.rarity-4 .result-item-rarity-bar {
+    background-color: #a855f7;
+}
+
+.rarity-3 .result-item-rarity-bar {
+    background-color: #3b82f6;
+}
+
+/* カード内の斜め装飾 */
+.result-item-corner-deco {
+    position: absolute;
+    top: 0;
+    right: 0;
+    width: 0;
+    height: 0;
+    border-style: solid;
+    border-width: 0 40px 40px 0;
+    border-color: transparent;
+}
+
+.rarity-6 .result-item-corner-deco {
+    border-right-color: rgba(255, 80, 0, 0.3);
+}
+
+.rarity-5 .result-item-corner-deco {
+    border-right-color: rgba(251, 191, 36, 0.25);
+}
+
+/* アイコンエリア */
+.result-item-icon {
+    width: 120px;
+    height: 120px;
+    margin-top: 20px;
+    background-color: #111;
+    border-radius: 4px;
+    -unity-background-scale-mode: scale-to-fit;
+}
+
+/* 高レアリティ用グロー効果 */
+.result-item-glow {
+    position: absolute;
+    width: 100%;
+    height: 100%;
+    opacity: 0;
+    transition-property: opacity;
+    transition-duration: 0.3s;
+}
+
+.result-item-card:hover .result-item-glow {
+    opacity: 1;
+}
+
+.glow-6 {
+    background-color: rgba(255, 80, 0, 0.1);
+}
+
+.glow-5 {
+    background-color: rgba(251, 191, 36, 0.08);
+}
+
+/* アイテム名 */
+.result-item-name {
+    margin-top: auto;
+    margin-bottom: 8px;
+    font-size: 16px;
+    color: white;
+    -unity-font-style: bold;
+    -unity-text-align: middle-center;
+    padding: 0 8px;
+}
+
+.rarity-6 .result-item-name {
+    color: #ff5000;
+}
+
+.rarity-5 .result-item-name {
+    color: #fbbf24;
+}
+
+/* レアリティ星表示 */
+.result-item-stars {
+    font-size: 12px;
+    color: #fbbf24;
+    margin-bottom: 15px;
+    letter-spacing: 2px;
+}
+
+/* NEW/PICKUP バッジ */
+.badge-new {
+    position: absolute;
+    top: 10px;
+    left: 10px;
+    background-color: #ff5000;
+    padding: 4px 10px;
+    font-size: 10px;
+    color: white;
+    letter-spacing: 1px;
+    -unity-font-style: bold;
+}
+
+.badge-pickup {
+    position: absolute;
+    top: 10px;
+    right: 10px;
+    background-color: #fbbf24;
+    padding: 4px 8px;
+    font-size: 9px;
+    color: #111;
+    letter-spacing: 1px;
+    -unity-font-style: bold;
+}
+
+/* 閉じるボタン - 強化版 */
+.btn-result-close {
+    margin-top: 40px;
+    width: 350px;
+    height: 70px;
+    font-size: 22px;
+    letter-spacing: 6px;
+    background-color: #1a1a1f;
+    color: white;
+    -unity-font-style: bold;
+    border-width: 2px;
+    border-color: #333;
+    border-bottom-width: 5px;
+    border-bottom-color: #111;
+    transition-property: background-color, border-color, scale;
+    transition-duration: 0.15s;
+}
+
+.btn-result-close:hover {
+    background-color: #ff5000;
+    border-color: #ff5000;
+    border-bottom-color: #cc4000;
+    scale: 1.03;
+}
+
+.btn-result-close:active {
+    border-bottom-width: 2px;
+    scale: 0.98;
+}
+
+/* =========================================
+   フェード/スライドトランジション
+   ========================================= */
+.fade-in {
+    opacity: 0;
+    transition-property: opacity;
+    transition-duration: 0.4s;
+}
+
+.fade-in.active {
+    opacity: 1;
+}
+
+.fade-out {
+    opacity: 1;
+    transition-property: opacity;
+    transition-duration: 0.3s;
+}
+
+.fade-out.active {
+    opacity: 0;
+}
+
+.slide-up {
+    translate: 0 40px;
+    opacity: 0;
+    transition-property: translate, opacity;
+    transition-duration: 0.5s;
+    transition-timing-function: ease-out;
+}
+
+.slide-up.active {
+    translate: 0 0;
+    opacity: 1;
+}
+
+.scale-in {
+    scale: 0.8;
+    opacity: 0;
+    transition-property: scale, opacity;
+    transition-duration: 0.3s;
+}
+
+.scale-in.active {
+    scale: 1;
+    opacity: 1;
+}
+
+/* =========================================
+   フラッシュオーバーレイ
+   ========================================= */
+.flash-overlay {
+    position: absolute;
+    width: 100%;
+    height: 100%;
+    background-color: white;
+    opacity: 0;
+    display: none;
+}
+
+.flash-overlay.flash-6 {
+    background-color: #ff5000;
+}
+
+.flash-overlay.flash-5 {
+    background-color: #fbbf24;
+}

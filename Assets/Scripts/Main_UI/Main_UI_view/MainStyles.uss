@@ -1,0 +1,200 @@
+/* ========================================
+   MainStyles.uss
+   サイドバー開閉アニメーション + L字レイアウト
+   ======================================== */
+
+.main-container {
+    flex-direction: row;
+    width: 100%;
+    height: 100%;
+    background-color: #000000;
+    font-size: 16px;
+}
+
+/* --- 左側：サイドバー --- */
+.sidebar {
+    width: 280px; /* 通常時の幅 */
+    height: 100%;
+    background-color: rgba(30, 30, 30, 0.95);
+    border-right-width: 1px;
+    border-right-color: rgba(255, 255, 255, 0.1);
+    padding: 20px 0px;
+    display: flex;
+    flex-direction: column;
+    overflow: hidden; /* 縮小時に中身を隠す */
+
+    /* ★アニメーション設定 */
+    transition-property: width;
+    transition-duration: 0.3s;
+    transition-timing-function: ease-out-expo;
+}
+
+/* ★閉じた状態 */
+.sidebar.collapsed {
+    width: 80px; /* アイコン幅まで縮小 */
+}
+
+/* --- 右側全体コンテナ (縦並び) --- */
+.right-container {
+    flex-grow: 1;
+    height: 100%;
+    flex-direction: column;
+}
+
+/* 1. 右上：メインコンテンツエリア */
+.content-area {
+    flex-grow: 1; /* 残りの高さを全部使う */
+    background-color: #1c1917;
+    overflow: hidden;
+    position: relative;
+
+    /* ★背景画像調整: 画面サイズが変わっても中心を基準にトリミング */
+    -unity-background-scale-mode: scale-and-crop;
+}
+
+/* 2. 右下：ログ/チャットエリア */
+.bottom-log-area {
+    height: 220px; /* 高さ固定 */
+    background-color: #111111;
+    border-top-width: 2px;
+    border-top-color: #d97706;
+    padding: 10px;
+    justify-content: flex-end; /* 下詰め表示 */
+}
+
+/* --- ログエリアのスタイル --- */
+.log-header {
+    flex-direction: row;
+    justify-content: space-between;
+    padding-bottom: 5px;
+    border-bottom-width: 1px;
+    border-bottom-color: #333;
+    margin-bottom: 5px;
+}
+.log-title { color: #888; font-size: 12px; -unity-font-style: bold; letter-spacing: 1px; }
+
+.log-scroll-view { flex-grow: 1; }
+
+.log-entry { 
+    flex-direction: row; 
+    margin-bottom: 2px; 
+    font-size: 14px; 
+    color: #cccccc; 
+}
+.log-time { color: #d97706; margin-right: 8px; width: 70px; }
+.log-msg { color: #e5e5e5; white-space: normal; flex-shrink: 1; }
+
+/* --- サイドバー部品 --- */
+.sidebar-header {
+    padding-left: 20px;
+    margin-bottom: 30px;
+    flex-direction: row;
+    align-items: center;
+    justify-content: space-between; /* タイトルとボタンを左右配置 */
+    padding-right: 20px;
+    height: 50px;
+    flex-shrink: 0;
+}
+
+/* タイトル群（閉じた時に消す用） */
+.header-text-group {
+    width: 180px;
+    opacity: 1;
+    transition-property: opacity;
+    transition-duration: 0.2s;
+}
+.sidebar.collapsed .header-text-group {
+    opacity: 0;
+    display: none;
+}
+
+.app-title { color: #ffffff; font-size: 24px; -unity-font-style: bold; letter-spacing: 2px; }
+.app-subtitle { color: #888888; font-size: 12px; margin-top: 5px; }
+
+/* 開閉トグルボタン */
+.toggle-btn {
+    width: 32px;
+    height: 32px;
+    background-color: transparent;
+    border-width: 1px;
+    border-color: #444;
+    border-radius: 4px;
+    color: #888;
+    font-size: 18px;
+    -unity-text-align: middle-center;
+    transition-duration: 0.2s;
+}
+.toggle-btn:hover {
+    border-color: #d97706;
+    color: #fff;
+    background-color: rgba(217, 119, 6, 0.2);
+}
+
+/* サイドバーアイテム */
+.sidebar-item {
+    flex-direction: row;
+    align-items: center;
+    height: 60px;
+    background-color: transparent;
+    padding-left: 18px;
+    margin-bottom: 4px;
+    overflow: hidden;
+    flex-shrink: 0;
+    transition-property: background-color;
+    transition-duration: 0.2s;
+}
+.sidebar-item:hover {
+    background-color: rgba(255, 255, 255, 0.05);
+}
+.sidebar-item.selected {
+    background-color: rgba(59, 90, 122, 0.3);
+}
+
+/* 閉じた時の中央寄せ調整 */
+.sidebar.collapsed .sidebar-item {
+    padding-left: 18px; /* アイコン位置が変わらないように */
+}
+
+/* アイコンボックス */
+.icon-box {
+    width: 42px;
+    height: 42px;
+    background-color: rgba(255, 255, 255, 0.05);
+    border-radius: 8px;
+    margin-right: 15px;
+    justify-content: center;
+    align-items: center;
+    flex-shrink: 0;
+}
+.sidebar.collapsed .icon-box {
+    background-color: transparent;
+    margin-right: 0;
+}
+
+.icon-text { color: #aaa; font-size: 20px; -unity-text-align: middle-center; }
+.sidebar-item.selected .icon-text { color: #fff; }
+
+/* ラベル（閉じた時に消す） */
+.item-label {
+    font-size: 16px;
+    color: #888;
+    white-space: nowrap;
+    opacity: 1;
+    transition-property: opacity, translate;
+    transition-duration: 0.2s;
+}
+.sidebar.collapsed .item-label {
+    opacity: 0;
+    translate: 20px 0;
+}
+
+/* 選択時の青いバー */
+.selection-bar {
+    position: absolute;
+    left: 0; top: 0; bottom: 0;
+    width: 4px;
+    background-color: #00aaff;
+    translate: -10px 0;
+    transition-duration: 0.2s;
+}
+.sidebar-item.selected .selection-bar { translate: 0 0; }

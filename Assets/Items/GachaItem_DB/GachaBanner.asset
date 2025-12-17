@@ -1,0 +1,34 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: f9e00074080aca3458eba5be4064bf12, type: 3}
+  m_Name: GachaBanner
+  m_EditorClassIdentifier: 
+  bannerId: Gacha_01
+  bannerName: "\u30D3\u30AE\u30CA\u30FC\u30AC\u30C1\u30E3"
+  description: 
+  bannerSprite: {fileID: 0}
+  isLimited: 0
+  currencyType: 0
+  costSingle: 600
+  costTen: 6000
+  hasPity: 0
+  pityCount: 50
+  softPityStart: 40
+  pool:
+  - item: {fileID: 11400000, guid: d5681b3a95be40747ad8476116fa356f, type: 2}
+    weight: 0
+    isPickup: 0
+  pickupItems: []
+  pickupRateBoost: 0.5
+  startsLocked: 0
+  prerequisiteBanner: {fileID: 0}
+  requiredUnlockItem: {fileID: 0}

@@ -1,0 +1,75 @@
+<ui:UXML xmlns:ui="UnityEngine.UIElements" xmlns:uie="UnityEditor.UIElements" editor-extension-mode="False">
+
+    <ui:Style src="OperatorStyles.uss" />
+
+    <ui:VisualElement name="operator-root" class="root">
+
+        <!-- 背景 -->
+        <ui:VisualElement class="background-pattern" />
+
+        <!-- メイン画面 (左右分割) -->
+        <ui:VisualElement name="main-screen" class="main-screen-layout">
+
+            <!-- 左側：キャラクター表示エリア -->
+            <ui:VisualElement name="character-area" class="character-area">
+
+                <!-- キャラクター画像 (2レイヤー方式) -->
+                <ui:VisualElement name="character-display" class="character-display">
+                    <ui:VisualElement name="layer-base" class="character-layer" />
+                    <ui:VisualElement name="layer-clothes" class="character-layer" />
+                </ui:VisualElement>
+
+                <!-- キャラ名 -->
+                <ui:VisualElement class="character-name-area">
+                    <ui:Label name="character-name" text="SHU" class="character-name" />
+                    <ui:Label name="character-class" text="CASTER" class="character-class" />
+                </ui:VisualElement>
+
+            </ui:VisualElement>
+
+            <!-- 右側：操作パネル -->
+            <ui:VisualElement name="side-panel" class="side-panel">
+
+                <!-- ヘッダー -->
+                <ui:VisualElement class="side-header">
+                    <ui:Label text="OPERATOR FILE" class="header-title" />
+                </ui:VisualElement>
+
+                <!-- 着せ替えセクション -->
+                <ui:VisualElement class="outfit-section">
+                    <ui:Label text="OUTFIT" class="section-title" />
+
+                    <ui:VisualElement class="outfit-buttons">
+                        <ui:Button name="btn-outfit-default" text="DEFAULT" class="btn-outfit active" />
+                        <ui:Button name="btn-outfit-skin1" text="SKIN 1" class="btn-outfit" />
+                        <ui:Button name="btn-outfit-skin2" text="SKIN 2" class="btn-outfit" />
+                    </ui:VisualElement>
+                </ui:VisualElement>
+
+                <!-- 衣装パーツ切り替え（レンズ機能的なやつ） -->
+                <ui:VisualElement class="lens-section">
+                    <ui:Label text="LENS MODE" class="section-title" />
+
+                    <ui:VisualElement class="lens-buttons">
+                        <ui:Button name="btn-lens-normal" text="NORMAL" class="btn-lens active" />
+                        <ui:Button name="btn-lens-clothes" text="CLOTHES" class="btn-lens" />
+                    </ui:VisualElement>
+                </ui:VisualElement>
+
+                <!-- ステータス情報 (将来用) -->
+                <ui:VisualElement class="stats-section">
+                    <ui:Label text="STATS" class="section-title" />
+                    <ui:VisualElement class="stats-placeholder">
+                        <ui:Label text="Coming Soon..." class="placeholder-text" />
+                    </ui:VisualElement>
+                </ui:VisualElement>
+
+                <!-- 戻るボタン -->
+                <ui:Button name="btn-back" text="BACK" class="btn-back" />
+
+            </ui:VisualElement>
+
+        </ui:VisualElement>
+
+    </ui:VisualElement>
+</ui:UXML>
