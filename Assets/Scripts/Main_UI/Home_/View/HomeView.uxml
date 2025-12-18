@@ -3,40 +3,138 @@
 
     <ui:VisualElement name="home-container" class="home-container">
 
-        <!-- 背景レイヤー -->
+        <!-- ========================================
+             背景レイヤー
+             ======================================== -->
         <ui:VisualElement name="background-layer" class="background-layer">
             <ui:VisualElement name="background-image" class="background-image" />
+            <ui:VisualElement name="grid-overlay" class="grid-overlay" />
+            <ui:VisualElement name="vignette" class="vignette" />
         </ui:VisualElement>
 
-        <!-- キャラクターレイヤー（クリック対象） -->
+        <!-- ========================================
+             パーティクルレイヤー（背景の光）
+             ======================================== -->
+        <ui:VisualElement name="particle-layer" class="particle-layer">
+            <!-- パーティクルはコードで動的に追加 -->
+        </ui:VisualElement>
+
+        <!-- ========================================
+             キャラクターレイヤー（クリック対象）
+             ======================================== -->
         <ui:VisualElement name="character-layer" class="character-layer">
             <ui:VisualElement name="click-target" class="click-target">
-                <!-- 仮置き：クリックエリア -->
+                <ui:VisualElement name="click-ripple" class="click-ripple" />
+                <ui:VisualElement name="character-glow" class="character-glow" />
             </ui:VisualElement>
         </ui:VisualElement>
 
-        <!-- UIオーバーレイレイヤー -->
+        <!-- ========================================
+             エフェクトレイヤー（ダメージ数字など）
+             ======================================== -->
+        <ui:VisualElement name="effect-layer" class="effect-layer">
+            <!-- ダメージ数字はコードで動的に追加 -->
+        </ui:VisualElement>
+
+        <!-- ========================================
+             Feverオーバーレイ
+             ======================================== -->
+        <ui:VisualElement name="fever-overlay" class="fever-overlay">
+            <ui:VisualElement name="fever-flash" class="fever-flash" />
+            <ui:Label name="fever-big-text" text="FEVER!!" class="fever-big-text" />
+        </ui:VisualElement>
+
+        <!-- ========================================
+             UIレイヤー
+             ======================================== -->
         <ui:VisualElement name="ui-layer" class="ui-layer">
 
             <!-- 上部：ステータス表示 -->
             <ui:VisualElement name="top-bar" class="top-bar">
-                <ui:VisualElement class="currency-display">
-                    <ui:Label name="money-label" text="LMD: 0" class="money-label" />
+
+                <!-- 左側：通貨表示 -->
+                <ui:VisualElement class="top-left">
+                    <ui:VisualElement class="currency-panel">
+                        <ui:VisualElement class="currency-icon lmd-icon" />
+                        <ui:Label name="money-label" text="0" class="money-label" />
+                        <ui:Label name="income-rate" text="+0/s" class="income-rate" />
+                    </ui:VisualElement>
+                </ui:VisualElement>
+
+                <!-- 中央：コンボ表示 -->
+                <ui:VisualElement class="top-center">
+                    <ui:VisualElement name="combo-container" class="combo-container">
+                        <ui:Label name="combo-count" text="0" class="combo-count" />
+                        <ui:Label text="COMBO" class="combo-label" />
+                    </ui:VisualElement>
+                </ui:VisualElement>
+
+                <!-- 右側：統計表示 -->
+                <ui:VisualElement class="top-right">
+                    <ui:VisualElement class="stats-panel">
+                        <ui:VisualElement class="stat-row">
+                            <ui:Label text="DPS" class="stat-label" />
+                            <ui:Label name="dps-value" text="0" class="stat-value" />
+                        </ui:VisualElement>
+                        <ui:VisualElement class="stat-row">
+                            <ui:Label text="CLICKS" class="stat-label" />
+                            <ui:Label name="clicks-value" text="0" class="stat-value" />
+                        </ui:VisualElement>
+                        <ui:VisualElement class="stat-row">
+                            <ui:Label text="CRIT%" class="stat-label" />
+                            <ui:Label name="crit-value" text="5%" class="stat-value crit" />
+                        </ui:VisualElement>
+                    </ui:VisualElement>
+                </ui:VisualElement>
+
+            </ui:VisualElement>
+
+            <!-- 中央：クリック威力表示 -->
+            <ui:VisualElement class="center-area">
+                <ui:VisualElement name="power-display" class="power-display">
+                    <ui:Label text="CLICK POWER" class="power-title" />
+                    <ui:Label name="power-value" text="10" class="power-value" />
+                    <ui:Label name="multiplier-label" text="x1.0" class="multiplier-label" />
                 </ui:VisualElement>
             </ui:VisualElement>
 
-            <!-- 中央：クリックエフェクト表示エリア -->
-            <ui:VisualElement name="effect-area" class="effect-area" />
-
             <!-- 下部：SPゲージ -->
             <ui:VisualElement name="bottom-bar" class="bottom-bar">
+
+                <!-- SPゲージコンテナ -->
                 <ui:VisualElement name="sp-container" class="sp-container">
-                    <ui:Label name="sp-label" text="SP" class="sp-label" />
-                    <ui:VisualElement name="sp-gauge-bg" class="sp-gauge-bg">
-                        <ui:VisualElement name="sp-gauge-fill" class="sp-gauge-fill" />
+
+                    <!-- SPアイコン -->
+                    <ui:VisualElement class="sp-icon-container">
+                        <ui:VisualElement name="sp-icon" class="sp-icon" />
+                        <ui:VisualElement name="sp-icon-glow" class="sp-icon-glow" />
                     </ui:VisualElement>
-                    <ui:Label name="fever-label" text="" class="fever-label" />
+
+                    <!-- SPゲージ -->
+                    <ui:VisualElement class="sp-gauge-wrapper">
+                        <ui:VisualElement name="sp-gauge-bg" class="sp-gauge-bg">
+                            <ui:VisualElement name="sp-gauge-glow" class="sp-gauge-glow" />
+                            <ui:VisualElement name="sp-gauge-fill" class="sp-gauge-fill" />
+                            <ui:VisualElement name="sp-gauge-shine" class="sp-gauge-shine" />
+                        </ui:VisualElement>
+                        <ui:Label name="sp-text" text="0 / 100" class="sp-text" />
+                    </ui:VisualElement>
+
+                    <!-- Feverラベル -->
+                    <ui:VisualElement name="fever-indicator" class="fever-indicator">
+                        <ui:Label name="fever-label" text="FEVER" class="fever-label" />
+                        <ui:Label name="fever-timer" text="" class="fever-timer" />
+                    </ui:VisualElement>
+
                 </ui:VisualElement>
+
+                <!-- スキルボタン（将来用） -->
+                <ui:VisualElement class="skill-buttons">
+                    <ui:Button name="btn-skill-1" class="skill-button locked">
+                        <ui:Label text="?" class="skill-icon" />
+                    </ui:Button>
+                </ui:VisualElement>
+
             </ui:VisualElement>
 
         </ui:VisualElement>

@@ -1,14 +1,19 @@
 /* ========================================
-   Home Screen Styles
+   Home Screen Styles - Enhanced Edition
+   ======================================== */
+
+/* ========================================
+   Root Container
    ======================================== */
 
 .home-container {
     flex-grow: 1;
     position: relative;
+    overflow: hidden;
 }
 
 /* ========================================
-   レイヤー構造
+   Background Layer
    ======================================== */
 
 .background-layer {
@@ -18,42 +23,215 @@
 }
 
 .background-image {
-    flex-grow: 1;
-    background-color: rgb(30, 35, 45);
-    /* 仮置き：背景画像がある場合は background-image で設定 */
+    position: absolute;
+    width: 100%;
+    height: 100%;
+    background-color: rgb(15, 18, 25);
+    /* background-image: url('/path/to/bg.png'); */
+    -unity-background-scale-mode: scale-and-crop;
 }
+
+.grid-overlay {
+    position: absolute;
+    width: 100%;
+    height: 100%;
+    opacity: 0.03;
+    /* グリッドパターン用 - 実際はコードで描画 */
+    background-color: rgba(100, 200, 255, 0.02);
+}
+
+.vignette {
+    position: absolute;
+    width: 100%;
+    height: 100%;
+    /* 擬似的なビネット効果 */
+    border-width: 80px;
+    border-color: rgba(0, 0, 0, 0.6);
+    border-radius: 0;
+}
+
+/* ========================================
+   Particle Layer
+   ======================================== */
+
+.particle-layer {
+    position: absolute;
+    width: 100%;
+    height: 100%;
+    overflow: hidden;
+}
+
+/* パーティクル個別スタイル（コードで生成） */
+.particle {
+    position: absolute;
+    width: 4px;
+    height: 4px;
+    background-color: rgba(255, 215, 0, 0.6);
+    border-radius: 50%;
+}
+
+.particle.large {
+    width: 8px;
+    height: 8px;
+    background-color: rgba(100, 200, 255, 0.4);
+}
+
+/* ========================================
+   Character Layer
+   ======================================== */
 
 .character-layer {
     position: absolute;
     width: 100%;
     height: 100%;
     justify-content: center;
-    align-items: flex-end;
+    align-items: center;
 }
 
 .click-target {
-    width: 400px;
-    height: 600px;
-    margin-right: 50px;
-    margin-bottom: 50px;
-    background-color: rgba(255, 255, 255, 0.1);
-    border-width: 2px;
-    border-color: rgba(255, 255, 255, 0.3);
-    border-radius: 10px;
-    /* 仮置き：キャラ画像がある場合は background-image で設定 */
+    width: 350px;
+    height: 500px;
+    margin-bottom: 60px;
+    background-color: rgba(255, 255, 255, 0.02);
+    border-width: 0;
+    border-radius: 16px;
+    justify-content: center;
+    align-items: center;
     transition-property: scale, background-color;
-    transition-duration: 0.1s;
+    transition-duration: 0.08s;
+    transition-timing-function: ease-out;
 }
 
 .click-target:hover {
-    background-color: rgba(255, 255, 255, 0.15);
-    border-color: rgba(255, 200, 100, 0.5);
+    background-color: rgba(255, 255, 255, 0.05);
 }
 
 .click-target:active {
-    scale: 0.98;
-    background-color: rgba(255, 200, 100, 0.2);
+    scale: 0.96;
+    background-color: rgba(255, 200, 100, 0.1);
 }
+
+.click-ripple {
+    position: absolute;
+    width: 100%;
+    height: 100%;
+    border-radius: 16px;
+    background-color: rgba(255, 215, 0, 0);
+    transition-property: background-color;
+    transition-duration: 0.3s;
+}
+
+.click-ripple.active {
+    background-color: rgba(255, 215, 0, 0.15);
+}
+
+.character-glow {
+    position: absolute;
+    width: 120%;
+    height: 120%;
+    background-color: rgba(255, 200, 100, 0);
+    border-radius: 50%;
+    transition-property: background-color;
+    transition-duration: 0.5s;
+}
+
+.character-glow.active {
+    background-color: rgba(255, 200, 100, 0.1);
+}
+
+/* ========================================
+   Effect Layer (Damage Numbers)
+   ======================================== */
+
+.effect-layer {
+    position: absolute;
+    width: 100%;
+    height: 100%;
+    overflow: visible;
+}
+
+/* ダメージ数字の基本スタイル */
+.damage-number {
+    position: absolute;
+    font-size: 36px;
+    color: rgb(255, 255, 255);
+    -unity-font-style: bold;
+    text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.8);
+    transition-property: translate, opacity, scale;
+    transition-duration: 0.6s;
+    transition-timing-function: ease-out;
+}
+
+.damage-number.critical {
+    font-size: 52px;
+    color: rgb(255, 200, 50);
+    text-shadow: 0 0 10px rgba(255, 200, 50, 0.8), 2px 2px 4px rgba(0, 0, 0, 0.8);
+}
+
+.damage-number.super-critical {
+    font-size: 64px;
+    color: rgb(255, 100, 100);
+    text-shadow: 0 0 15px rgba(255, 100, 100, 0.8), 0 0 30px rgba(255, 50, 50, 0.5);
+}
+
+.damage-number.combo-bonus {
+    font-size: 28px;
+    color: rgb(150, 255, 150);
+}
+
+/* ========================================
+   Fever Overlay
+   ======================================== */
+
+.fever-overlay {
+    position: absolute;
+    width: 100%;
+    height: 100%;
+    justify-content: center;
+    align-items: center;
+    opacity: 0;
+    transition-property: opacity;
+    transition-duration: 0.3s;
+}
+
+.fever-overlay.active {
+    opacity: 1;
+}
+
+.fever-flash {
+    position: absolute;
+    width: 100%;
+    height: 100%;
+    background-color: rgba(255, 50, 50, 0);
+    transition-property: background-color;
+    transition-duration: 0.15s;
+}
+
+.fever-flash.pulse {
+    background-color: rgba(255, 50, 50, 0.2);
+}
+
+.fever-big-text {
+    font-size: 120px;
+    color: rgb(255, 80, 80);
+    -unity-font-style: bold;
+    letter-spacing: 20px;
+    text-shadow: 0 0 30px rgba(255, 50, 50, 0.9), 0 0 60px rgba(255, 0, 0, 0.6);
+    opacity: 0;
+    scale: 0.5;
+    transition-property: opacity, scale;
+    transition-duration: 0.4s;
+    transition-timing-function: ease-out;
+}
+
+.fever-big-text.show {
+    opacity: 1;
+    scale: 1;
+}
+
+/* ========================================
+   UI Layer
+   ======================================== */
 
 .ui-layer {
     position: absolute;
@@ -61,100 +239,515 @@
     height: 100%;
     flex-direction: column;
     justify-content: space-between;
-    padding: 20px;
+    padding: 24px;
 }
 
 /* ========================================
-   上部バー（通貨表示）
+   Top Bar
    ======================================== */
 
 .top-bar {
     flex-direction: row;
-    justify-content: flex-start;
+    justify-content: space-between;
     align-items: flex-start;
 }
 
-.currency-display {
-    background-color: rgba(0, 0, 0, 0.6);
-    padding: 10px 20px;
+.top-left {
+    flex-direction: column;
+    align-items: flex-start;
+}
+
+.top-center {
+    flex-direction: column;
+    align-items: center;
+}
+
+.top-right {
+    flex-direction: column;
+    align-items: flex-end;
+}
+
+/* ========================================
+   Currency Panel
+   ======================================== */
+
+.currency-panel {
+    flex-direction: row;
+    align-items: center;
+    background-color: rgba(0, 0, 0, 0.7);
+    padding: 12px 20px;
     border-radius: 8px;
     border-width: 1px;
-    border-color: rgba(255, 200, 100, 0.4);
+    border-color: rgba(255, 215, 0, 0.3);
+    border-left-width: 4px;
+    border-left-color: rgb(255, 215, 0);
+}
+
+.currency-icon {
+    width: 32px;
+    height: 32px;
+    margin-right: 12px;
+    background-color: rgba(255, 215, 0, 0.3);
+    border-radius: 4px;
+}
+
+.lmd-icon {
+    /* LMD通貨アイコン */
+    background-color: rgba(255, 215, 0, 0.4);
 }
 
 .money-label {
-    font-size: 24px;
+    font-size: 28px;
     color: rgb(255, 220, 100);
     -unity-font-style: bold;
+    letter-spacing: 2px;
+    min-width: 120px;
+}
+
+.income-rate {
+    font-size: 14px;
+    color: rgb(150, 255, 150);
+    margin-left: 12px;
+    padding: 4px 8px;
+    background-color: rgba(100, 255, 100, 0.1);
+    border-radius: 4px;
 }
 
 /* ========================================
-   中央エフェクトエリア
+   Combo Display
    ======================================== */
 
-.effect-area {
-    flex-grow: 1;
-    /* クリック時のダメージ数字などを表示 */
+.combo-container {
+    flex-direction: row;
+    align-items: baseline;
+    background-color: rgba(0, 0, 0, 0.6);
+    padding: 8px 24px;
+    border-radius: 30px;
+    border-width: 2px;
+    border-color: rgba(255, 150, 50, 0.5);
+    opacity: 0;
+    scale: 0.8;
+    transition-property: opacity, scale, border-color;
+    transition-duration: 0.2s;
+}
+
+.combo-container.active {
+    opacity: 1;
+    scale: 1;
+}
+
+.combo-container.high {
+    border-color: rgb(255, 100, 100);
+    background-color: rgba(255, 50, 50, 0.2);
+}
+
+.combo-count {
+    font-size: 48px;
+    color: rgb(255, 200, 50);
+    -unity-font-style: bold;
+    margin-right: 8px;
+    transition-property: scale, color;
+    transition-duration: 0.1s;
+}
+
+.combo-count.pulse {
+    scale: 1.2;
+    color: rgb(255, 255, 100);
+}
+
+.combo-label {
+    font-size: 16px;
+    color: rgb(200, 150, 100);
+    -unity-font-style: bold;
+    letter-spacing: 3px;
 }
 
 /* ========================================
-   下部バー（SPゲージ）
+   Stats Panel
+   ======================================== */
+
+.stats-panel {
+    background-color: rgba(0, 0, 0, 0.6);
+    padding: 12px 16px;
+    border-radius: 8px;
+    border-width: 1px;
+    border-color: rgba(255, 255, 255, 0.1);
+    min-width: 140px;
+}
+
+.stat-row {
+    flex-direction: row;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 4px;
+}
+
+.stat-row:last-child {
+    margin-bottom: 0;
+}
+
+.stat-label {
+    font-size: 11px;
+    color: rgb(120, 120, 140);
+    letter-spacing: 2px;
+    margin-right: 16px;
+}
+
+.stat-value {
+    font-size: 14px;
+    color: rgb(200, 200, 220);
+    -unity-font-style: bold;
+    min-width: 60px;
+    -unity-text-align: middle-right;
+}
+
+.stat-value.crit {
+    color: rgb(255, 200, 100);
+}
+
+/* ========================================
+   Center Area - Power Display
+   ======================================== */
+
+.center-area {
+    flex-grow: 1;
+    justify-content: center;
+    align-items: flex-end;
+    padding-right: 40px;
+}
+
+.power-display {
+    flex-direction: column;
+    align-items: center;
+    background-color: rgba(0, 0, 0, 0.5);
+    padding: 16px 32px;
+    border-radius: 12px;
+    border-width: 1px;
+    border-color: rgba(255, 255, 255, 0.15);
+    opacity: 0.8;
+    transition-property: opacity, scale;
+    transition-duration: 0.2s;
+}
+
+.power-display:hover {
+    opacity: 1;
+}
+
+.power-title {
+    font-size: 10px;
+    color: rgb(150, 150, 170);
+    letter-spacing: 3px;
+    margin-bottom: 4px;
+}
+
+.power-value {
+    font-size: 42px;
+    color: rgb(255, 255, 255);
+    -unity-font-style: bold;
+    transition-property: scale, color;
+    transition-duration: 0.15s;
+}
+
+.power-value.boosted {
+    color: rgb(255, 200, 100);
+    scale: 1.1;
+}
+
+.multiplier-label {
+    font-size: 14px;
+    color: rgb(100, 200, 255);
+    margin-top: 4px;
+    opacity: 0;
+    transition-property: opacity;
+    transition-duration: 0.2s;
+}
+
+.multiplier-label.active {
+    opacity: 1;
+}
+
+/* ========================================
+   Bottom Bar
    ======================================== */
 
 .bottom-bar {
     flex-direction: row;
     justify-content: center;
-    align-items: flex-end;
-    padding-bottom: 10px;
+    align-items: center;
 }
+
+/* ========================================
+   SP Container
+   ======================================== */
 
 .sp-container {
     flex-direction: row;
     align-items: center;
-    background-color: rgba(0, 0, 0, 0.6);
-    padding: 10px 20px;
-    border-radius: 8px;
+    background-color: rgba(0, 0, 0, 0.7);
+    padding: 12px 20px;
+    border-radius: 12px;
     border-width: 1px;
-    border-color: rgba(100, 200, 255, 0.4);
-    min-width: 300px;
+    border-color: rgba(100, 200, 255, 0.3);
+    flex-grow: 1;
+    max-width: 600px;
 }
 
-.sp-label {
-    font-size: 18px;
-    color: rgb(100, 200, 255);
-    -unity-font-style: bold;
-    margin-right: 10px;
+/* SP Icon */
+.sp-icon-container {
+    position: relative;
+    width: 44px;
+    height: 44px;
+    margin-right: 16px;
+}
+
+.sp-icon {
+    position: absolute;
+    width: 100%;
+    height: 100%;
+    background-color: rgba(100, 200, 255, 0.3);
+    border-radius: 8px;
+    border-width: 2px;
+    border-color: rgb(100, 200, 255);
+}
+
+.sp-icon-glow {
+    position: absolute;
+    width: 100%;
+    height: 100%;
+    border-radius: 8px;
+    background-color: rgba(100, 200, 255, 0);
+    transition-property: background-color;
+    transition-duration: 0.3s;
+}
+
+.sp-icon-glow.ready {
+    background-color: rgba(100, 200, 255, 0.4);
+}
+
+.sp-icon-glow.fever {
+    background-color: rgba(255, 100, 100, 0.5);
+}
+
+/* SP Gauge */
+.sp-gauge-wrapper {
+    flex-grow: 1;
+    position: relative;
 }
 
 .sp-gauge-bg {
-    flex-grow: 1;
-    height: 20px;
-    background-color: rgba(50, 50, 60, 0.8);
-    border-radius: 4px;
+    position: relative;
+    height: 24px;
+    background-color: rgba(30, 35, 50, 0.9);
+    border-radius: 12px;
+    border-width: 1px;
+    border-color: rgba(100, 200, 255, 0.3);
     overflow: hidden;
 }
 
-.sp-gauge-fill {
+.sp-gauge-glow {
+    position: absolute;
+    width: 100%;
     height: 100%;
+    background-color: rgba(100, 200, 255, 0);
+    border-radius: 12px;
+    transition-property: background-color;
+    transition-duration: 0.3s;
+}
+
+.sp-gauge-glow.active {
+    background-color: rgba(100, 200, 255, 0.15);
+}
+
+.sp-gauge-fill {
+    position: absolute;
+    left: 2px;
+    top: 2px;
+    bottom: 2px;
     width: 0%;
     background-color: rgb(100, 200, 255);
-    border-radius: 4px;
+    border-radius: 10px;
     transition-property: width, background-color;
-    transition-duration: 0.2s;
+    transition-duration: 0.15s;
 }
 
 .sp-gauge-fill.fever {
-    background-color: rgb(255, 80, 80);
+    background-color: rgb(255, 100, 100);
+}
+
+.sp-gauge-fill.ready {
+    background-color: rgb(150, 255, 150);
+}
+
+.sp-gauge-shine {
+    position: absolute;
+    left: 2px;
+    top: 2px;
+    width: 30%;
+    height: 40%;
+    background-color: rgba(255, 255, 255, 0.3);
+    border-radius: 10px 10px 0 0;
+}
+
+.sp-text {
+    position: absolute;
+    width: 100%;
+    height: 100%;
+    -unity-text-align: middle-center;
+    font-size: 12px;
+    color: rgb(255, 255, 255);
+    -unity-font-style: bold;
+    text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.8);
+}
+
+/* Fever Indicator */
+.fever-indicator {
+    flex-direction: row;
+    align-items: center;
+    margin-left: 16px;
+    padding: 8px 16px;
+    background-color: rgba(255, 80, 80, 0.2);
+    border-radius: 8px;
+    border-width: 2px;
+    border-color: rgb(255, 80, 80);
+    opacity: 0;
+    scale: 0.8;
+    transition-property: opacity, scale;
+    transition-duration: 0.2s;
+}
+
+.fever-indicator.active {
+    opacity: 1;
+    scale: 1;
 }
 
 .fever-label {
-    font-size: 20px;
-    color: rgb(255, 80, 80);
+    font-size: 18px;
+    color: rgb(255, 100, 100);
     -unity-font-style: bold;
-    margin-left: 10px;
-    display: none;
+    letter-spacing: 3px;
 }
 
-.fever-label.active {
-    display: flex;
+.fever-timer {
+    font-size: 24px;
+    color: rgb(255, 200, 100);
+    -unity-font-style: bold;
+    margin-left: 8px;
+}
+
+/* ========================================
+   Skill Buttons
+   ======================================== */
+
+.skill-buttons {
+    flex-direction: row;
+    margin-left: 20px;
+}
+
+.skill-button {
+    width: 56px;
+    height: 56px;
+    margin-left: 8px;
+    background-color: rgba(100, 200, 255, 0.2);
+    border-width: 2px;
+    border-color: rgb(100, 200, 255);
+    border-radius: 8px;
+    justify-content: center;
+    align-items: center;
+    transition-property: background-color, border-color, scale;
+    transition-duration: 0.15s;
+}
+
+.skill-button:hover {
+    background-color: rgba(100, 200, 255, 0.4);
+    scale: 1.05;
+}
+
+.skill-button:active {
+    scale: 0.95;
+}
+
+.skill-button.locked {
+    background-color: rgba(60, 60, 80, 0.5);
+    border-color: rgba(100, 100, 120, 0.5);
+}
+
+.skill-button.locked:hover {
+    background-color: rgba(60, 60, 80, 0.5);
+    scale: 1;
+}
+
+.skill-button.ready {
+    background-color: rgba(150, 255, 150, 0.3);
+    border-color: rgb(150, 255, 150);
+}
+
+.skill-button.active {
+    background-color: rgba(255, 200, 100, 0.4);
+    border-color: rgb(255, 200, 100);
+}
+
+.skill-icon {
+    font-size: 24px;
+    color: rgb(200, 200, 220);
+    -unity-font-style: bold;
+}
+
+.skill-button.locked .skill-icon {
+    color: rgb(100, 100, 120);
+}
+
+/* ========================================
+   Animation Utilities
+   ======================================== */
+
+.shake {
+    translate: 2px 0;
+}
+
+.bounce {
+    scale: 1.15;
+}
+
+.flash-white {
+    background-color: rgba(255, 255, 255, 0.3);
+}
+
+.flash-gold {
+    background-color: rgba(255, 215, 0, 0.3);
+}
+
+.flash-red {
+    background-color: rgba(255, 50, 50, 0.3);
+}
+
+/* ========================================
+   Floating Text Effects
+   ======================================== */
+
+.floating-text {
+    position: absolute;
+    font-size: 20px;
+    color: rgb(255, 255, 255);
+    -unity-font-style: bold;
+    opacity: 1;
+    transition-property: translate, opacity;
+    transition-duration: 1s;
+    transition-timing-function: ease-out;
+}
+
+.floating-text.fade-out {
+    translate: 0 -50px;
+    opacity: 0;
+}
+
+.floating-text.money {
+    color: rgb(255, 220, 100);
+}
+
+.floating-text.sp {
+    color: rgb(100, 200, 255);
+}
+
+.floating-text.affection {
+    color: rgb(255, 150, 200);
 }
