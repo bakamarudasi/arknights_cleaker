@@ -781,3 +781,446 @@
     font-size: 12px;
     color: #555;
 }
+
+/* =========================================
+   PVE: 防衛戦イベント
+   ========================================= */
+.defense-event-panel {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    translate: -50% -50%;
+    width: 500px;
+    background-color: rgba(10, 10, 12, 0.95);
+    border-width: 2px;
+    border-color: #ef4444;
+    padding: 20px;
+    display: none;
+}
+
+.defense-event-panel.visible {
+    display: flex;
+}
+
+.defense-header {
+    flex-direction: row;
+    align-items: center;
+    margin-bottom: 15px;
+    padding-bottom: 10px;
+    border-bottom-width: 1px;
+    border-bottom-color: rgba(239, 68, 68, 0.3);
+}
+
+.defense-icon {
+    font-size: 32px;
+    margin-right: 15px;
+}
+
+.defense-title {
+    font-size: 20px;
+    color: #ef4444;
+    -unity-font-style: bold;
+    letter-spacing: 2px;
+}
+
+.defense-subtitle {
+    font-size: 12px;
+    color: #888;
+    margin-top: 3px;
+}
+
+.defense-progress-container {
+    margin: 15px 0;
+}
+
+.defense-progress-label {
+    font-size: 12px;
+    color: #888;
+    margin-bottom: 5px;
+}
+
+.defense-progress-bar {
+    height: 20px;
+    background-color: #1a1a1f;
+    border-width: 1px;
+    border-color: #333;
+}
+
+.defense-progress-fill {
+    height: 100%;
+    background-color: #4ade80;
+    transition-property: width;
+    transition-duration: 0.1s;
+}
+
+.defense-timer {
+    font-size: 24px;
+    color: #ef4444;
+    -unity-font-style: bold;
+    -unity-text-align: middle-center;
+    margin: 10px 0;
+}
+
+.defense-click-area {
+    height: 80px;
+    background-color: rgba(74, 222, 128, 0.1);
+    border-width: 2px;
+    border-color: #4ade80;
+    justify-content: center;
+    align-items: center;
+    margin-top: 15px;
+    transition-property: background-color, scale;
+    transition-duration: 0.1s;
+}
+
+.defense-click-area:hover {
+    background-color: rgba(74, 222, 128, 0.2);
+}
+
+.defense-click-area:active {
+    scale: 0.98;
+    background-color: rgba(74, 222, 128, 0.3);
+}
+
+.defense-click-text {
+    font-size: 18px;
+    color: #4ade80;
+    -unity-font-style: bold;
+    letter-spacing: 2px;
+}
+
+/* =========================================
+   PVE: 敵対的買収バトル
+   ========================================= */
+.takeover-battle-panel {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    translate: -50% -50%;
+    width: 600px;
+    background-color: rgba(10, 10, 12, 0.95);
+    border-width: 2px;
+    border-color: #a855f7;
+    padding: 25px;
+    display: none;
+}
+
+.takeover-battle-panel.visible {
+    display: flex;
+}
+
+.takeover-header {
+    flex-direction: row;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 20px;
+}
+
+.boss-info {
+    flex-direction: row;
+    align-items: center;
+}
+
+.boss-icon {
+    width: 60px;
+    height: 60px;
+    background-color: #1a1a1f;
+    border-width: 2px;
+    border-color: #a855f7;
+    margin-right: 15px;
+}
+
+.boss-name {
+    font-size: 22px;
+    color: white;
+    -unity-font-style: bold;
+}
+
+.boss-title {
+    font-size: 12px;
+    color: #a855f7;
+    margin-top: 3px;
+}
+
+.boss-speech {
+    font-size: 14px;
+    color: #888;
+    font-style: italic;
+    padding: 10px 15px;
+    background-color: rgba(168, 85, 247, 0.1);
+    border-left-width: 3px;
+    border-left-color: #a855f7;
+    margin: 15px 0;
+}
+
+.battle-target {
+    font-size: 16px;
+    color: #fbbf24;
+    -unity-text-align: middle-center;
+    margin-bottom: 20px;
+}
+
+.battle-progress-section {
+    margin: 10px 0;
+}
+
+.battle-progress-row {
+    flex-direction: row;
+    align-items: center;
+    margin-bottom: 10px;
+}
+
+.battle-progress-label {
+    font-size: 12px;
+    color: #888;
+    width: 100px;
+}
+
+.battle-progress-bar {
+    flex-grow: 1;
+    height: 24px;
+    background-color: #1a1a1f;
+    border-width: 1px;
+    border-color: #333;
+    margin: 0 10px;
+}
+
+.battle-progress-fill.boss {
+    background-color: #ef4444;
+}
+
+.battle-progress-fill.player {
+    background-color: #4ade80;
+}
+
+.battle-progress-value {
+    font-size: 14px;
+    color: white;
+    width: 60px;
+    -unity-text-align: middle-right;
+}
+
+.battle-timer {
+    font-size: 28px;
+    color: #a855f7;
+    -unity-font-style: bold;
+    -unity-text-align: middle-center;
+    margin: 15px 0;
+}
+
+.battle-actions {
+    flex-direction: row;
+    justify-content: center;
+    margin-top: 20px;
+}
+
+.defend-btn {
+    width: 150px;
+    height: 50px;
+    margin: 0 10px;
+    font-size: 14px;
+    -unity-font-style: bold;
+    letter-spacing: 1px;
+    transition-property: background-color, scale;
+    transition-duration: 0.1s;
+}
+
+.defend-btn:active {
+    scale: 0.97;
+}
+
+.defend-btn.small {
+    background-color: rgba(74, 222, 128, 0.15);
+    border-width: 1px;
+    border-color: #4ade80;
+    color: #4ade80;
+}
+
+.defend-btn.medium {
+    background-color: rgba(59, 130, 246, 0.15);
+    border-width: 1px;
+    border-color: #3b82f6;
+    color: #3b82f6;
+}
+
+.defend-btn.large {
+    background-color: rgba(255, 80, 0, 0.15);
+    border-width: 2px;
+    border-color: #ff5000;
+    color: #ff5000;
+}
+
+/* =========================================
+   PVE: インサイダー情報
+   ========================================= */
+.insider-tip-panel {
+    background-color: rgba(10, 10, 12, 0.8);
+    border-width: 1px;
+    border-color: #1a1a1f;
+    border-left-width: 3px;
+    border-left-color: #fbbf24;
+    padding: 12px;
+    margin-top: 10px;
+}
+
+.insider-tip-header {
+    flex-direction: row;
+    align-items: center;
+    margin-bottom: 8px;
+}
+
+.insider-tip-icon {
+    font-size: 16px;
+    margin-right: 8px;
+}
+
+.insider-tip-source {
+    font-size: 12px;
+    color: #fbbf24;
+    -unity-font-style: bold;
+}
+
+.insider-tip-text {
+    font-size: 13px;
+    color: #ccc;
+    white-space: normal;
+    font-style: italic;
+}
+
+.insider-tip-stock {
+    font-size: 11px;
+    color: #888;
+    margin-top: 5px;
+}
+
+.insider-tip-timer {
+    font-size: 10px;
+    color: #666;
+    margin-top: 3px;
+}
+
+.insider-tip-positive {
+    border-left-color: #4ade80;
+}
+
+.insider-tip-positive .insider-tip-source {
+    color: #4ade80;
+}
+
+.insider-tip-negative {
+    border-left-color: #ef4444;
+}
+
+.insider-tip-negative .insider-tip-source {
+    color: #ef4444;
+}
+
+/* =========================================
+   PVE: インサイダー情報ポップアップ
+   ========================================= */
+.insider-tip-panel {
+    position: absolute;
+    bottom: 100px;
+    right: 30px;
+    width: 350px;
+    background-color: rgba(10, 10, 12, 0.95);
+    border-width: 2px;
+    border-color: #fbbf24;
+    padding: 15px;
+    display: none;
+}
+
+.insider-tip-panel.visible {
+    display: flex;
+}
+
+.insider-header {
+    flex-direction: row;
+    align-items: center;
+    margin-bottom: 10px;
+    padding-bottom: 8px;
+    border-bottom-width: 1px;
+    border-bottom-color: rgba(251, 191, 36, 0.3);
+}
+
+.insider-icon {
+    font-size: 24px;
+    margin-right: 10px;
+}
+
+.insider-source {
+    font-size: 14px;
+    color: #fbbf24;
+    -unity-font-style: bold;
+}
+
+.insider-hint-text {
+    font-size: 13px;
+    color: #ccc;
+    white-space: normal;
+    font-style: italic;
+    padding: 10px 0;
+    line-height: 18px;
+}
+
+.insider-info-row {
+    flex-direction: row;
+    align-items: center;
+    margin: 10px 0;
+}
+
+.insider-target {
+    font-size: 12px;
+    color: #888;
+    flex-grow: 1;
+}
+
+.insider-signal {
+    width: 24px;
+    height: 24px;
+    border-radius: 12px;
+}
+
+.insider-signal.positive {
+    background-color: #4ade80;
+}
+
+.insider-signal.negative {
+    background-color: #ef4444;
+}
+
+.insider-timers {
+    flex-direction: row;
+    justify-content: space-between;
+    margin: 10px 0;
+}
+
+.insider-trigger-time {
+    font-size: 11px;
+    color: #4ade80;
+}
+
+.insider-expire-time {
+    font-size: 11px;
+    color: #888;
+}
+
+.insider-dismiss-btn {
+    height: 36px;
+    background-color: rgba(251, 191, 36, 0.15);
+    border-width: 1px;
+    border-color: #fbbf24;
+    color: #fbbf24;
+    font-size: 14px;
+    margin-top: 10px;
+    transition-property: background-color, scale;
+    transition-duration: 0.1s;
+}
+
+.insider-dismiss-btn:hover {
+    background-color: rgba(251, 191, 36, 0.25);
+}
+
+.insider-dismiss-btn:active {
+    scale: 0.98;
+}

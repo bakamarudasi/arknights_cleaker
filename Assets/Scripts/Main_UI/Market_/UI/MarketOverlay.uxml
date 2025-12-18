@@ -165,5 +165,81 @@
         <!-- 損切り演出 -->
         <ui:VisualElement name="loss-cut-overlay" class="loss-cut-overlay" />
 
+        <!-- PVE: 防衛戦イベントパネル -->
+        <ui:VisualElement name="defense-event-panel" class="defense-event-panel">
+            <ui:VisualElement class="defense-header">
+                <ui:Label text="⚠️" class="defense-icon" />
+                <ui:VisualElement>
+                    <ui:Label name="defense-title" text="緊急：企業が襲撃を受けています" class="defense-title" />
+                    <ui:Label name="defense-subtitle" text="クリック連打で買い支えろ！" class="defense-subtitle" />
+                </ui:VisualElement>
+            </ui:VisualElement>
+            <ui:VisualElement class="defense-progress-container">
+                <ui:Label text="防衛進捗" class="defense-progress-label" />
+                <ui:VisualElement class="defense-progress-bar">
+                    <ui:VisualElement name="defense-progress-fill" class="defense-progress-fill" style="width: 0%;" />
+                </ui:VisualElement>
+            </ui:VisualElement>
+            <ui:Label name="defense-timer" text="残り 60秒" class="defense-timer" />
+            <ui:VisualElement name="defense-click-area" class="defense-click-area">
+                <ui:Label text="🖱️ ここをクリック連打！" class="defense-click-text" />
+            </ui:VisualElement>
+        </ui:VisualElement>
+
+        <!-- PVE: 敵対的買収バトルパネル -->
+        <ui:VisualElement name="takeover-battle-panel" class="takeover-battle-panel">
+            <ui:VisualElement class="takeover-header">
+                <ui:VisualElement class="boss-info">
+                    <ui:VisualElement name="boss-icon" class="boss-icon" />
+                    <ui:VisualElement>
+                        <ui:Label name="boss-name" text="謎の投資家" class="boss-name" />
+                        <ui:Label name="boss-title" text="闇のファンドマネージャー" class="boss-title" />
+                    </ui:VisualElement>
+                </ui:VisualElement>
+            </ui:VisualElement>
+            <ui:Label name="boss-speech" text="「この会社、いただくよ」" class="boss-speech" />
+            <ui:Label name="battle-target" text="🎯 ターゲット: ライン生命" class="battle-target" />
+            <ui:VisualElement class="battle-progress-section">
+                <ui:VisualElement class="battle-progress-row">
+                    <ui:Label text="敵の買い占め" class="battle-progress-label" />
+                    <ui:VisualElement class="battle-progress-bar">
+                        <ui:VisualElement name="boss-progress-fill" class="battle-progress-fill boss" style="width: 0%;" />
+                    </ui:VisualElement>
+                    <ui:Label name="boss-progress-value" text="0%" class="battle-progress-value" />
+                </ui:VisualElement>
+                <ui:VisualElement class="battle-progress-row">
+                    <ui:Label text="あなたの防衛" class="battle-progress-label" />
+                    <ui:VisualElement class="battle-progress-bar">
+                        <ui:VisualElement name="player-progress-fill" class="battle-progress-fill player" style="width: 0%;" />
+                    </ui:VisualElement>
+                    <ui:Label name="player-progress-value" text="0%" class="battle-progress-value" />
+                </ui:VisualElement>
+            </ui:VisualElement>
+            <ui:Label name="battle-timer" text="残り 02:00" class="battle-timer" />
+            <ui:VisualElement class="battle-actions">
+                <ui:Button name="defend-small" text="1,000 LMD" class="defend-btn small" />
+                <ui:Button name="defend-medium" text="10,000 LMD" class="defend-btn medium" />
+                <ui:Button name="defend-large" text="ALL IN" class="defend-btn large" />
+            </ui:VisualElement>
+        </ui:VisualElement>
+
+        <!-- PVE: インサイダー情報パネル -->
+        <ui:VisualElement name="insider-tip-panel" class="insider-tip-panel">
+            <ui:VisualElement class="insider-header">
+                <ui:Label text="📩" class="insider-icon" />
+                <ui:Label name="insider-source" text="クロージャより" class="insider-source" />
+            </ui:VisualElement>
+            <ui:Label name="insider-hint-text" text="「○○について面白い話があるの...」" class="insider-hint-text" />
+            <ui:VisualElement class="insider-info-row">
+                <ui:Label name="insider-target" text="対象: ライン生命" class="insider-target" />
+                <ui:VisualElement name="insider-signal" class="insider-signal positive" />
+            </ui:VisualElement>
+            <ui:VisualElement class="insider-timers">
+                <ui:Label name="insider-trigger-time" text="実現まで: 5分" class="insider-trigger-time" />
+                <ui:Label name="insider-expire-time" text="有効期限: 10分" class="insider-expire-time" />
+            </ui:VisualElement>
+            <ui:Button name="insider-dismiss" text="確認" class="insider-dismiss-btn" />
+        </ui:VisualElement>
+
     </ui:VisualElement>
 </ui:UXML>

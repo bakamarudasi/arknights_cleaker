@@ -57,7 +57,9 @@ public static class StockPriceEngine
             double jumpDirection = UnityEngine.Random.value < 0.45 ? -1 : 1;
 
             // ジャンプの大きさ（指数分布）
-            double jumpMagnitude = -Math.Log(1 - UnityEngine.Random.value) * jumpIntensity;
+            // Random.valueが1.0の場合のLog(0)防止
+            double randomVal = Math.Min(UnityEngine.Random.value, 0.9999);
+            double jumpMagnitude = -Math.Log(1 - randomVal) * jumpIntensity;
 
             newPrice *= (1 + jumpDirection * jumpMagnitude);
         }
