@@ -165,7 +165,7 @@ public class RhodosStockManager : MonoBehaviour
 
         if (IncomeManager.Instance != null)
         {
-            dps = IncomeManager.Instance.GetCurrentIncomePerSecond();
+            dps = IncomeManager.Instance.IncomePerSecond;
         }
 
         // ポートフォリオの評価額も加算
@@ -339,7 +339,7 @@ public class RhodosStockManager : MonoBehaviour
         {
             foreach (var reward in payment.itemRewards)
             {
-                InventoryManager.Instance.AddItem(reward.itemId, reward.amount);
+                InventoryManager.Instance.Add(reward.itemId, reward.amount);
             }
         }
 

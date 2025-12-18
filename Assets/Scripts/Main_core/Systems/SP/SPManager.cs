@@ -50,6 +50,20 @@ public class SPManager : MonoBehaviour
     /// <summary>最終フィーバー倍率</summary>
     public float FinalFeverMultiplier => _baseFeverMultiplier + _feverPowerBonus;
 
+    /// <summary>フィーバー持続時間</summary>
+    public float FeverDuration => _feverDuration;
+
+    // フィーバー開始時刻
+    private float _feverStartTime;
+
+    /// <summary>フィーバー残り時間を取得</summary>
+    public float GetFeverRemainingTime()
+    {
+        if (!_isFeverActive) return 0f;
+        float elapsed = Time.time - _feverStartTime;
+        return Mathf.Max(0f, _feverDuration - elapsed);
+    }
+
     // ========================================
     // イベント
     // ========================================
@@ -105,6 +119,7 @@ public class SPManager : MonoBehaviour
         if (_isFeverActive) return;
 
         _isFeverActive = true;
+        _feverStartTime = Time.time;
         OnFeverStarted?.Invoke();
         Invoke(nameof(EndFever), _feverDuration);
     }

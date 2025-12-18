@@ -23,10 +23,10 @@
              キャラクターレイヤー（クリック対象）
              ======================================== -->
         <ui:VisualElement name="character-layer" class="character-layer">
-            <ui:VisualElement name="click-target" class="click-target">
+            <ui:Button name="click-target" class="click-target">
                 <ui:VisualElement name="click-ripple" class="click-ripple" />
                 <ui:VisualElement name="character-glow" class="character-glow" />
-            </ui:VisualElement>
+            </ui:Button>
         </ui:VisualElement>
 
         <!-- ========================================

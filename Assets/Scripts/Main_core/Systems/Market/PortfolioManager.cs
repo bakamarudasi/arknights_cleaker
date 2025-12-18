@@ -126,7 +126,7 @@ public class PortfolioManager : MonoBehaviour
             return false;
         }
 
-        if (!WalletManager.Instance.CanAfford(totalCost))
+        if (!WalletManager.Instance.CanAffordMoney(totalCost))
         {
             Debug.Log($"[Portfolio] Insufficient funds: need {totalCost:F0}, have {WalletManager.Instance.Money:F0}");
             return false;

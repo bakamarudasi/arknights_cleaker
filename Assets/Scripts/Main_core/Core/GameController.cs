@@ -70,6 +70,25 @@ public class GameController : MonoBehaviour
     private double _finalCritMultiplier;
 
     // ========================================
+    // 外部アクセス用プロパティ
+    // ========================================
+
+    /// <summary>最終クリック威力</summary>
+    public double FinalClickPower => _finalClickValue;
+
+    /// <summary>最終クリティカル確率</summary>
+    public float FinalCritChance => _finalCritChance;
+
+    /// <summary>最終クリティカル倍率</summary>
+    public double FinalCritMultiplier => _finalCritMultiplier;
+
+    /// <summary>グローバル倍率</summary>
+    public double GlobalMultiplier => globalMultiplier;
+
+    /// <summary>基本収入（秒あたり）</summary>
+    public double BaseIncomePerSecond => Income?.IncomePerSecond ?? 0;
+
+    // ========================================
     // イベントコールバック参照（解除用）
     // ========================================
 

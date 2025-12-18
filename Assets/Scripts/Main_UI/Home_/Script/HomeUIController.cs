@@ -131,6 +131,8 @@ public class HomeUIController : IViewController
 
     private void QueryElements()
     {
+        Debug.Log($"[HomeUI] QueryElements - root = {root}");
+
         // レイヤー
         particleLayer = root.Q<VisualElement>("particle-layer");
         effectLayer = root.Q<VisualElement>("effect-layer");
@@ -140,6 +142,8 @@ public class HomeUIController : IViewController
         clickTarget = root.Q<VisualElement>("click-target");
         clickRipple = root.Q<VisualElement>("click-ripple");
         characterGlow = root.Q<VisualElement>("character-glow");
+
+        Debug.Log($"[HomeUI] QueryElements - clickTarget = {clickTarget}");
 
         // 上部UI
         moneyLabel = root.Q<Label>("money-label");
@@ -193,8 +197,24 @@ public class HomeUIController : IViewController
 
     private void SetupCallbacks()
     {
+        Debug.Log($"[HomeUI] SetupCallbacks - clickTarget = {clickTarget}");
+
+        if (clickTarget == null)
+        {
+            Debug.LogError("[HomeUI] clickTarget is NULL! Click events will not work.");
+            return;
+        }
+
         onClickCallback = OnClickTarget;
-        clickTarget?.RegisterCallback(onClickCallback);
+        clickTarget.RegisterCallback(onClickCallback);
+
+        // レイアウト完了時にサイズを確認
+        clickTarget.RegisterCallback<GeometryChangedEvent>(evt =>
+        {
+            Debug.Log($"[HomeUI] clickTarget geometry changed: width={evt.newRect.width}, height={evt.newRect.height}");
+        });
+
+        Debug.Log("[HomeUI] Click callback registered successfully.");
     }
 
     private void BindGameEvents()
@@ -254,8 +274,16 @@ public class HomeUIController : IViewController
 
     private void OnClickTarget(ClickEvent evt)
     {
+        Debug.Log($"[HomeUI] Click detected! GameController.Instance = {GameController.Instance}");
+
         var gc = GameController.Instance;
-        if (gc == null) return;
+        if (gc == null)
+        {
+            Debug.LogError("[HomeUI] GameController.Instance is NULL!");
+            return;
+        }
+
+        Debug.Log($"[HomeUI] Wallet = {gc.Wallet}, SP = {gc.SP}");
 
         // クリック実行
         gc.ClickMainButton();
@@ -283,21 +311,21 @@ public class HomeUIController : IViewController
         if (gc == null) return;
 
         // 基本ダメージ取得
-        double baseDamage = gc.GetClickPower();
+        double baseDamage = gc.FinalClickPower;
 
         // クリティカル判定
-        bool isCritical = UnityEngine.Random.value < gc.GetCritChance();
+        bool isCritical = UnityEngine.Random.value < gc.FinalCritChance;
         bool isSuperCritical = isCritical && UnityEngine.Random.value < 0.1f;
 
         double finalDamage = baseDamage;
         if (isSuperCritical)
         {
-            finalDamage *= gc.GetCritMultiplier() * 2;
+            finalDamage *= gc.FinalCritMultiplier * 2;
             _criticalHits++;
         }
         else if (isCritical)
         {
-            finalDamage *= gc.GetCritMultiplier();
+            finalDamage *= gc.FinalCritMultiplier;
             _criticalHits++;
         }
 
@@ -557,7 +585,7 @@ public class HomeUIController : IViewController
         // 収入レート計算
         if (incomeRateLabel != null)
         {
-            double incomePerSecond = gc.GetBaseIncome();
+            double incomePerSecond = gc.BaseIncomePerSecond;
             incomeRateLabel.text = $"+{FormatNumber(incomePerSecond)}/s";
         }
     }
@@ -616,15 +644,15 @@ public class HomeUIController : IViewController
 
         if (powerValueLabel != null)
         {
-            double power = gc.GetClickPower();
+            double power = gc.FinalClickPower;
             powerValueLabel.text = FormatNumber(power);
         }
 
         // 倍率表示
         if (multiplierLabel != null)
         {
-            float mult = gc.GetGlobalMultiplier();
-            if (mult > 1f)
+            double mult = gc.GlobalMultiplier;
+            if (mult > 1.0)
             {
                 multiplierLabel.text = $"x{mult:F1}";
                 multiplierLabel.AddToClassList("active");

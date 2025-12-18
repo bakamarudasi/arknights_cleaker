@@ -108,10 +108,10 @@ public class InsiderTipManager : MonoBehaviour
         }
     }
 
-    private void OnAffectionLevelUp(string characterId, int newLevel)
+    private void OnAffectionLevelUp(string characterId, AffectionLevel levelData)
     {
         // 特定レベルでインサイダー情報を付与
-        if (newLevel % 5 == 0) // 5レベルごと
+        if (levelData.level % 5 == 0) // 5レベルごと
         {
             GiveRandomTip(characterId);
         }

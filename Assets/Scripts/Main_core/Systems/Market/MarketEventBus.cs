@@ -57,12 +57,12 @@ public static class MarketEventBus
     /// <summary>
     /// 経済イベントが開始した時（防衛戦など）
     /// </summary>
-    public static event Action<MarketEventData> OnMarketEventStarted;
+    public static event Action<MarketEventSnapshot> OnMarketEventStarted;
 
     /// <summary>
     /// 経済イベントが終了した時
     /// </summary>
-    public static event Action<MarketEventData, bool> OnMarketEventEnded; // eventData, success
+    public static event Action<MarketEventSnapshot, bool> OnMarketEventEnded; // eventData, success
 
     /// <summary>
     /// 敵対的買収が開始した時
@@ -149,12 +149,12 @@ public static class MarketEventBus
         }
     }
 
-    public static void PublishMarketEventStarted(MarketEventData data)
+    public static void PublishMarketEventStarted(MarketEventSnapshot data)
     {
         OnMarketEventStarted?.Invoke(data);
     }
 
-    public static void PublishMarketEventEnded(MarketEventData data, bool success)
+    public static void PublishMarketEventEnded(MarketEventSnapshot data, bool success)
     {
         OnMarketEventEnded?.Invoke(data, success);
     }
@@ -224,10 +224,11 @@ public static class MarketEventBus
 // ========================================
 
 /// <summary>
-/// マーケットイベント（防衛戦）データ
+/// マーケットイベント（防衛戦）スナップショット
+/// ※ MarketEventData（ScriptableObject）とは別の実行時データ構造
 /// </summary>
 [Serializable]
-public struct MarketEventData
+public struct MarketEventSnapshot
 {
     public string eventId;
     public string targetStockId;

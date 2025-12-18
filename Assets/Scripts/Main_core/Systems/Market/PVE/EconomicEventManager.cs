@@ -254,9 +254,9 @@ public class EconomicEventManager : MonoBehaviour
         }
     }
 
-    private MarketEventData CreateEventData(ActiveEconomicEvent evt)
+    private MarketEventSnapshot CreateEventData(ActiveEconomicEvent evt)
     {
-        return new MarketEventData
+        return new MarketEventSnapshot
         {
             eventId = evt.eventId,
             targetStockId = evt.stockId,

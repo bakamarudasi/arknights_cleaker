@@ -148,6 +148,22 @@ public class OwnershipBonus
 }
 
 /// <summary>
+/// 保有ボーナスの効果タイプ
+/// </summary>
+public enum HoldingBonusType
+{
+    UpgradeCostReduction,   // 強化費用軽減（effectValue=0.1なら10%オフ）
+    ClickEfficiency,        // クリック効率アップ
+    AutoIncomeBoost,        // 自動収入アップ
+    GachaRateUp,            // ガチャ確率アップ（この企業のキャラ）
+    DividendBonus,          // 配当金ボーナス
+    ExpBonus,               // 経験値ボーナス
+    CriticalRate,           // クリティカル率アップ
+    SellPriceBonus,         // 売却価格アップ
+    TransactionFeeReduction // 取引手数料軽減
+}
+
+/// <summary>
 /// 株式保有ボーナス：一定以上の保有率で効果発動
 /// </summary>
 [Serializable]
@@ -165,18 +181,6 @@ public class StockHoldingBonus
 
     [Tooltip("ボーナスの説明文")]
     public string description;
-
-    public enum HoldingBonusType
-    {
-        UpgradeCostReduction,   // 強化費用軽減（effectValue=0.1なら10%オフ）
-        ClickEfficiency,        // クリック効率アップ
-        AutoIncomeBoost,        // 自動収入アップ
-        GachaRateUp,            // ガチャ確率アップ（この企業のキャラ）
-        DividendBonus,          // 配当金ボーナス
-        ExpBonus,               // 経験値ボーナス
-        CriticalRate,           // クリティカル率アップ
-        SellPriceBonus          // 売却価格アップ
-    }
 }
 
 /// <summary>

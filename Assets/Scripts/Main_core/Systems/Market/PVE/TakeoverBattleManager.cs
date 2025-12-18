@@ -270,7 +270,7 @@ public class TakeoverBattleManager : MonoBehaviour
         if (currentBattle == null) return false;
 
         // 残高チェック
-        if (WalletManager.Instance == null || !WalletManager.Instance.CanAfford(amount))
+        if (WalletManager.Instance == null || !WalletManager.Instance.CanAffordMoney(amount))
         {
             return false;
         }
