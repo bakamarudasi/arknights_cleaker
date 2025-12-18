@@ -14,14 +14,10 @@
             <ui:VisualElement name="character-area" class="character-area">
 
                 <!-- キャラクター画像 (2レイヤー方式) -->
+                <!-- インタラクションゾーン（頭なで等）はキャラクタープレハブ内のCharacterInteractionZoneで定義 -->
                 <ui:VisualElement name="character-display" class="character-display">
                     <ui:VisualElement name="layer-base" class="character-layer" />
                     <ui:VisualElement name="layer-clothes" class="character-layer" />
-
-                    <!-- 頭なでエリア（キャラの頭付近） -->
-                    <ui:VisualElement name="head-pet-area" class="head-pet-area">
-                        <ui:Label text="" class="head-pet-hint" />
-                    </ui:VisualElement>
                 </ui:VisualElement>
 
                 <!-- キャラ名 -->

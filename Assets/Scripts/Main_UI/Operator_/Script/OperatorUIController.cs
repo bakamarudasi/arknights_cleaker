@@ -38,9 +38,8 @@ public class OperatorUIController : IViewController
     private VisualElement giftContainer;
     private List<VisualElement> giftItemElements = new();
 
-    // インタラクションエリア
+    // インタラクションエリア（UIベース、プレハブ側のCharacterInteractionZoneと併用）
     private VisualElement characterDisplay;
-    private VisualElement headPetArea;
 
     // コールバック参照（解除用に保持）
     private EventCallback<ClickEvent> callbackOutfit0;
@@ -50,14 +49,11 @@ public class OperatorUIController : IViewController
     private EventCallback<ClickEvent> callbackLensClothes;
     private EventCallback<ClickEvent> callbackBack;
     private EventCallback<ClickEvent> callbackCharacterClick;
-    private EventCallback<ClickEvent> callbackHeadPet;
 
     // 現在の状態
     private int currentOutfit = 0;
     private int currentLensMode = 0; // 0: Normal, 1+: 透視レベル
-    private int headPetCount = 0;
-    private float lastHeadPetTime;
-    private const float HEAD_PET_COMBO_TIMEOUT = 1.5f;
+    // 頭なで等のインタラクションはCharacterInteractionZone（プレハブ）で処理
 
     // イベント
     public event Action OnBackRequested;
@@ -185,9 +181,9 @@ public class OperatorUIController : IViewController
         // プレゼントUI
         giftContainer = root.Q<VisualElement>("gift-container");
 
-        // キャラクター表示エリア（インタラクション用）
+        // キャラクター表示エリア（全体クリック用）
+        // 詳細なインタラクション（頭なで等）はCharacterInteractionZone（プレハブ）で処理
         characterDisplay = root.Q<VisualElement>("character-display");
-        headPetArea = root.Q<VisualElement>("head-pet-area");
     }
 
     private void SetupCallbacks()
@@ -200,7 +196,6 @@ public class OperatorUIController : IViewController
         callbackLensClothes = evt => SetLensMode(1);
         callbackBack = evt => OnBackRequested?.Invoke();
         callbackCharacterClick = evt => OnCharacterClicked();
-        callbackHeadPet = evt => OnHeadPetted();
 
         // 着せ替えボタン
         btnOutfitDefault?.RegisterCallback(callbackOutfit0);
@@ -214,9 +209,9 @@ public class OperatorUIController : IViewController
         // 戻るボタン
         btnBack?.RegisterCallback(callbackBack);
 
-        // キャラクターインタラクション
+        // キャラクター表示エリア（全体クリック）
+        // 詳細なインタラクションはプレハブ側で処理
         characterDisplay?.RegisterCallback(callbackCharacterClick);
-        headPetArea?.RegisterCallback(callbackHeadPet);
     }
 
     /// <summary>
@@ -685,7 +680,8 @@ public class OperatorUIController : IViewController
     // ========================================
 
     /// <summary>
-    /// キャラクタークリック時
+    /// キャラクタークリック時（UI Toolkit側）
+    /// 詳細なインタラクション（頭なで等）はCharacterInteractionZone（プレハブ）で処理
     /// </summary>
     private void OnCharacterClicked()
     {
@@ -696,65 +692,6 @@ public class OperatorUIController : IViewController
 
         // クリック演出
         // TODO: ハートエフェクトなど
-    }
-
-    /// <summary>
-    /// 頭なで時
-    /// </summary>
-    private void OnHeadPetted()
-    {
-        float currentTime = Time.time;
-
-        // コンボ判定
-        if (currentTime - lastHeadPetTime > HEAD_PET_COMBO_TIMEOUT)
-        {
-            headPetCount = 0;
-        }
-
-        headPetCount++;
-        lastHeadPetTime = currentTime;
-
-        // 好感度ボーナス（頭なで専用処理）
-        if (AffectionManager.Instance != null)
-        {
-            int bonus = GetHeadPetBonus();
-            AffectionManager.Instance.OnHeadPetted(bonus);
-        }
-
-        // 演出
-        string reaction = GetHeadPetReaction();
-        LogUIController.Msg(reaction);
-
-        // コンボ数表示
-        if (headPetCount > 1)
-        {
-            LogUIController.Msg($"<color=#FFD700>なでなでコンボ x{headPetCount}!</color>");
-        }
-    }
-
-    /// <summary>
-    /// 頭なでボーナス計算
-    /// </summary>
-    private int GetHeadPetBonus()
-    {
-        if (headPetCount >= 10) return 5;
-        if (headPetCount >= 5) return 3;
-        if (headPetCount >= 3) return 2;
-        return 1;
-    }
-
-    /// <summary>
-    /// 頭なでリアクション取得
-    /// </summary>
-    private string GetHeadPetReaction()
-    {
-        if (headPetCount >= 10)
-            return "「もう...///」";
-        if (headPetCount >= 5)
-            return "「えへへ...♪」";
-        if (headPetCount >= 3)
-            return "「...悪くないわね」";
-        return "「...？」";
     }
 
     // ========================================
@@ -777,7 +714,6 @@ public class OperatorUIController : IViewController
         if (callbackLensClothes != null) btnLensClothes?.UnregisterCallback(callbackLensClothes);
         if (callbackBack != null) btnBack?.UnregisterCallback(callbackBack);
         if (callbackCharacterClick != null) characterDisplay?.UnregisterCallback(callbackCharacterClick);
-        if (callbackHeadPet != null) headPetArea?.UnregisterCallback(callbackHeadPet);
 
         // 参照をクリア
         callbackOutfit0 = null;
@@ -787,9 +723,8 @@ public class OperatorUIController : IViewController
         callbackLensClothes = null;
         callbackBack = null;
         callbackCharacterClick = null;
-        callbackHeadPet = null;
 
-        // レンズアイテム要素のコールバック解除
+        // UI要素のクリア
         giftItemElements.Clear();
 
         LogUIController.LogSystem("Operator View Disposed.");
