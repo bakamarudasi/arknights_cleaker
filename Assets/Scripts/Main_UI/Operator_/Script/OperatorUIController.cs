@@ -18,6 +18,14 @@ public class OperatorUIController : IViewController
     private Button btnLensClothes;
     private Button btnBack;
 
+    // コールバック参照（解除用に保持）
+    private EventCallback<ClickEvent> callbackOutfit0;
+    private EventCallback<ClickEvent> callbackOutfit1;
+    private EventCallback<ClickEvent> callbackOutfit2;
+    private EventCallback<ClickEvent> callbackLensNormal;
+    private EventCallback<ClickEvent> callbackLensClothes;
+    private EventCallback<ClickEvent> callbackBack;
+
 
     // 現在の状態
     private int currentOutfit = 0;
@@ -87,17 +95,25 @@ public class OperatorUIController : IViewController
 
     private void SetupCallbacks()
     {
+        // コールバックをフィールドに保存（解除時に同じ参照を使うため）
+        callbackOutfit0 = evt => SetOutfit(0);
+        callbackOutfit1 = evt => SetOutfit(1);
+        callbackOutfit2 = evt => SetOutfit(2);
+        callbackLensNormal = evt => SetLensMode(0);
+        callbackLensClothes = evt => SetLensMode(1);
+        callbackBack = evt => OnBackRequested?.Invoke();
+
         // 着せ替えボタン
-        btnOutfitDefault?.RegisterCallback<ClickEvent>(evt => SetOutfit(0));
-        btnOutfitSkin1?.RegisterCallback<ClickEvent>(evt => SetOutfit(1));
-        btnOutfitSkin2?.RegisterCallback<ClickEvent>(evt => SetOutfit(2));
+        btnOutfitDefault?.RegisterCallback(callbackOutfit0);
+        btnOutfitSkin1?.RegisterCallback(callbackOutfit1);
+        btnOutfitSkin2?.RegisterCallback(callbackOutfit2);
 
         // レンズボタン
-        btnLensNormal?.RegisterCallback<ClickEvent>(evt => SetLensMode(0));
-        btnLensClothes?.RegisterCallback<ClickEvent>(evt => SetLensMode(1));
+        btnLensNormal?.RegisterCallback(callbackLensNormal);
+        btnLensClothes?.RegisterCallback(callbackLensClothes);
 
         // 戻るボタン
-        btnBack?.RegisterCallback<ClickEvent>(evt => OnBackRequested?.Invoke());
+        btnBack?.RegisterCallback(callbackBack);
     }
 
     /// <summary>
@@ -179,12 +195,21 @@ public class OperatorUIController : IViewController
         // Overlay非表示
         HideCharacterOverlay();
 
-        // イベント解除
-        btnOutfitDefault?.UnregisterCallback<ClickEvent>(evt => SetOutfit(0));
-        btnOutfitSkin1?.UnregisterCallback<ClickEvent>(evt => SetOutfit(1));
-        btnOutfitSkin2?.UnregisterCallback<ClickEvent>(evt => SetOutfit(2));
-        btnLensNormal?.UnregisterCallback<ClickEvent>(evt => SetLensMode(0));
-        btnLensClothes?.UnregisterCallback<ClickEvent>(evt => SetLensMode(1));
+        // イベント解除（保存した参照を使用）
+        if (callbackOutfit0 != null) btnOutfitDefault?.UnregisterCallback(callbackOutfit0);
+        if (callbackOutfit1 != null) btnOutfitSkin1?.UnregisterCallback(callbackOutfit1);
+        if (callbackOutfit2 != null) btnOutfitSkin2?.UnregisterCallback(callbackOutfit2);
+        if (callbackLensNormal != null) btnLensNormal?.UnregisterCallback(callbackLensNormal);
+        if (callbackLensClothes != null) btnLensClothes?.UnregisterCallback(callbackLensClothes);
+        if (callbackBack != null) btnBack?.UnregisterCallback(callbackBack);
+
+        // 参照をクリア
+        callbackOutfit0 = null;
+        callbackOutfit1 = null;
+        callbackOutfit2 = null;
+        callbackLensNormal = null;
+        callbackLensClothes = null;
+        callbackBack = null;
 
         LogUIController.LogSystem("Operator View Disposed.");
     }
