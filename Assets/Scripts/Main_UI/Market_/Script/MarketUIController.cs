@@ -61,6 +61,9 @@ public class MarketUIController : IViewController
     private VisualElement crashOverlay;
     private VisualElement lossCutOverlay;
 
+    // PVE UIコントローラ
+    private MarketPVEUIController pveUIController;
+
     // ========================================
     // 状態
     // ========================================
@@ -92,6 +95,10 @@ public class MarketUIController : IViewController
         QueryElements();
         BindUIEvents();
         BindMarketEvents();
+
+        // PVE UIコントローラを初期化
+        pveUIController = new MarketPVEUIController();
+        pveUIController.Initialize(root);
 
         // 更新ループ開始（30fps）
         updateTimer = root.schedule.Execute(OnUpdateTick).Every(33);
@@ -1041,6 +1048,10 @@ public class MarketUIController : IViewController
     public void Dispose()
     {
         UnbindMarketEvents();
+
+        // PVE UIコントローラを破棄
+        pveUIController?.Dispose();
+        pveUIController = null;
 
         if (updateTimer != null)
         {
