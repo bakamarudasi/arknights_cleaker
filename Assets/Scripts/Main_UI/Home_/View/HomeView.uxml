@@ -48,10 +48,25 @@
              スロットオーバーレイ
              ======================================== -->
         <ui:VisualElement name="slot-overlay" class="slot-overlay">
+            <!-- 虹色背景 -->
+            <ui:VisualElement name="slot-rainbow" class="slot-rainbow">
+                <ui:VisualElement name="slot-rainbow-inner" class="slot-rainbow-inner" />
+            </ui:VisualElement>
+            <!-- フラッシュ -->
             <ui:VisualElement name="slot-flash" class="slot-flash" />
+            <!-- コインレイヤー -->
+            <ui:VisualElement name="slot-coin-layer" class="slot-coin-layer">
+                <!-- コインはコードで動的に追加 -->
+            </ui:VisualElement>
+            <!-- メインコンテンツ -->
             <ui:VisualElement name="slot-content" class="slot-content">
                 <ui:Label name="slot-big-text" text="JACKPOT!!" class="slot-big-text" />
-                <ui:Label name="slot-bonus-text" text="x10 BONUS!" class="slot-bonus-text" />
+                <!-- ルーレット -->
+                <ui:VisualElement name="slot-roulette" class="slot-roulette">
+                    <ui:Label text="MULTIPLIER" class="slot-roulette-label" />
+                    <ui:Label name="slot-multiplier" text="x???" class="slot-multiplier" />
+                </ui:VisualElement>
+                <ui:Label name="slot-bonus-text" text="" class="slot-bonus-text" />
             </ui:VisualElement>
         </ui:VisualElement>
 

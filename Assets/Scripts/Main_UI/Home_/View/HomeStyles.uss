@@ -827,3 +827,128 @@
     opacity: 1;
     translate: 0 0;
 }
+
+/* 虹色背景エフェクト */
+.slot-rainbow {
+    position: absolute;
+    width: 100%;
+    height: 100%;
+    opacity: 0;
+    transition-property: opacity;
+    transition-duration: 0.3s;
+}
+
+.slot-rainbow.active {
+    opacity: 1;
+}
+
+.slot-rainbow-inner {
+    position: absolute;
+    width: 200%;
+    height: 200%;
+    left: -50%;
+    top: -50%;
+    background: linear-gradient(
+        135deg,
+        rgba(255, 0, 0, 0.15) 0%,
+        rgba(255, 127, 0, 0.15) 14%,
+        rgba(255, 255, 0, 0.15) 28%,
+        rgba(0, 255, 0, 0.15) 42%,
+        rgba(0, 127, 255, 0.15) 57%,
+        rgba(75, 0, 130, 0.15) 71%,
+        rgba(143, 0, 255, 0.15) 85%,
+        rgba(255, 0, 0, 0.15) 100%
+    );
+}
+
+/* コインパーティクル */
+.slot-coin {
+    position: absolute;
+    width: 32px;
+    height: 32px;
+    background-color: rgb(255, 215, 0);
+    border-radius: 50%;
+    border-width: 3px;
+    border-color: rgb(255, 180, 0);
+    opacity: 1;
+    transition-property: translate, opacity, rotate;
+    transition-duration: 1.5s;
+    transition-timing-function: ease-out;
+}
+
+.slot-coin.animate {
+    opacity: 0;
+}
+
+.slot-coin-shine {
+    position: absolute;
+    width: 10px;
+    height: 10px;
+    background-color: rgba(255, 255, 255, 0.8);
+    border-radius: 50%;
+    left: 6px;
+    top: 6px;
+}
+
+/* ルーレット表示 */
+.slot-roulette {
+    flex-direction: column;
+    align-items: center;
+    margin-top: 20px;
+    opacity: 0;
+    scale: 0.8;
+    transition-property: opacity, scale;
+    transition-duration: 0.2s;
+}
+
+.slot-roulette.show {
+    opacity: 1;
+    scale: 1;
+}
+
+.slot-roulette-label {
+    font-size: 24px;
+    color: rgb(200, 200, 220);
+    letter-spacing: 4px;
+    margin-bottom: 8px;
+}
+
+.slot-multiplier {
+    font-size: 72px;
+    color: rgb(255, 255, 255);
+    -unity-font-style: bold;
+    text-shadow: 0 0 20px rgba(255, 255, 255, 0.8), 0 0 40px rgba(255, 215, 0, 0.6);
+    padding: 8px 24px;
+    background-color: rgba(0, 0, 0, 0.6);
+    border-radius: 12px;
+    border-width: 3px;
+    border-color: rgb(255, 215, 0);
+}
+
+.slot-multiplier.spinning {
+    color: rgb(150, 150, 150);
+    text-shadow: none;
+    border-color: rgb(100, 100, 100);
+}
+
+.slot-multiplier.mega {
+    font-size: 84px;
+    color: rgb(255, 100, 100);
+    text-shadow: 0 0 30px rgba(255, 50, 50, 1), 0 0 60px rgba(255, 0, 0, 0.8);
+    border-color: rgb(255, 100, 100);
+}
+
+.slot-multiplier.legendary {
+    font-size: 96px;
+    color: rgb(255, 50, 255);
+    text-shadow: 0 0 40px rgba(255, 50, 255, 1), 0 0 80px rgba(200, 0, 255, 0.8);
+    border-color: rgb(255, 50, 255);
+}
+
+/* コインレイヤー */
+.slot-coin-layer {
+    position: absolute;
+    width: 100%;
+    height: 100%;
+    overflow: hidden;
+}

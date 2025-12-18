@@ -52,9 +52,17 @@ public class HomeUIController : IViewController
 
     // スロットオーバーレイ
     private VisualElement slotOverlay;
+    private VisualElement slotRainbow;
     private VisualElement slotFlash;
+    private VisualElement slotCoinLayer;
     private Label slotBigText;
+    private VisualElement slotRoulette;
+    private Label slotMultiplier;
     private Label slotBonusText;
+
+    // スロットコインプール
+    private readonly List<VisualElement> _slotCoins = new();
+    private const int SlotCoinCount = 20;
 
     // ========================================
     // 状態管理
@@ -93,7 +101,7 @@ public class HomeUIController : IViewController
     private Action onFeverStartedCallback;
     private Action onFeverEndedCallback;
     private Action<string, int, int> onAffectionChangedCallback;
-    private UnityEngine.Events.UnityAction onSlotTriggeredCallback;
+    private UnityEngine.Events.UnityAction<int> onSlotTriggeredCallback;
 
     // 更新用
     private IVisualElementScheduledItem _updateSchedule;
@@ -155,8 +163,12 @@ public class HomeUIController : IViewController
 
         // スロットオーバーレイ
         slotOverlay = root.Q<VisualElement>("slot-overlay");
+        slotRainbow = root.Q<VisualElement>("slot-rainbow");
         slotFlash = root.Q<VisualElement>("slot-flash");
+        slotCoinLayer = root.Q<VisualElement>("slot-coin-layer");
         slotBigText = root.Q<Label>("slot-big-text");
+        slotRoulette = root.Q<VisualElement>("slot-roulette");
+        slotMultiplier = root.Q<Label>("slot-multiplier");
         slotBonusText = root.Q<Label>("slot-bonus-text");
     }
 
@@ -709,48 +721,170 @@ public class HomeUIController : IViewController
     // スロット処理
     // ========================================
 
-    private void OnSlotTriggered()
+    private void OnSlotTriggered(int finalMultiplier)
     {
         // オーバーレイ表示
         slotOverlay?.AddToClassList("active");
 
+        // 虹色背景
+        slotRainbow?.AddToClassList("active");
+
         // フラッシュエフェクト
-        if (slotFlash != null)
+        PlaySlotFlash();
+
+        // コイン生成
+        SpawnSlotCoins();
+
+        // ビッグテキストアニメーション
+        slotBigText?.AddToClassList("show");
+
+        // ルーレット表示
+        slotRoulette?.AddToClassList("show");
+        slotMultiplier?.AddToClassList("spinning");
+
+        // ルーレットアニメーション開始
+        StartRouletteAnimation(finalMultiplier);
+
+        LogUIController.Msg("<color=#FFD700><b>★★★ JACKPOT!! ★★★</b></color>");
+    }
+
+    private void PlaySlotFlash()
+    {
+        if (slotFlash == null) return;
+
+        // 3連続フラッシュ
+        for (int i = 0; i < 3; i++)
         {
-            slotFlash.AddToClassList("pulse");
-            root.schedule.Execute(() => slotFlash.RemoveFromClassList("pulse")).ExecuteLater(100);
+            int delay = i * 150;
             root.schedule.Execute(() =>
             {
                 slotFlash.AddToClassList("pulse");
-                root.schedule.Execute(() => slotFlash.RemoveFromClassList("pulse")).ExecuteLater(100);
-            }).ExecuteLater(200);
+                root.schedule.Execute(() => slotFlash.RemoveFromClassList("pulse")).ExecuteLater(80);
+            }).ExecuteLater(delay);
         }
+    }
 
-        // ビッグテキストアニメーション
-        if (slotBigText != null)
+    private void SpawnSlotCoins()
+    {
+        if (slotCoinLayer == null) return;
+
+        // 既存のコインをクリア
+        foreach (var coin in _slotCoins)
         {
-            slotBigText.AddToClassList("show");
+            slotCoinLayer.Remove(coin);
         }
+        _slotCoins.Clear();
 
-        // ボーナステキストアニメーション
-        if (slotBonusText != null)
+        // 新しいコインを生成
+        for (int i = 0; i < SlotCoinCount; i++)
         {
-            slotBonusText.AddToClassList("show");
+            var coin = new VisualElement();
+            coin.AddToClassList("slot-coin");
+
+            var shine = new VisualElement();
+            shine.AddToClassList("slot-coin-shine");
+            coin.Add(shine);
+
+            // ランダムな開始位置（画面端から）
+            bool fromLeft = UnityEngine.Random.value > 0.5f;
+            float startX = fromLeft ? -50 : slotCoinLayer.resolvedStyle.width + 50;
+            float startY = UnityEngine.Random.Range(100f, slotCoinLayer.resolvedStyle.height - 100);
+
+            coin.style.left = startX;
+            coin.style.top = startY;
+
+            slotCoinLayer.Add(coin);
+            _slotCoins.Add(coin);
+
+            // 中央に向かって飛ぶアニメーション
+            int coinDelay = i * 50;
+            float targetX = slotCoinLayer.resolvedStyle.width / 2 + UnityEngine.Random.Range(-100f, 100f);
+            float targetY = slotCoinLayer.resolvedStyle.height / 2 + UnityEngine.Random.Range(-100f, 100f);
+
+            root.schedule.Execute(() =>
+            {
+                coin.style.translate = new Translate(targetX - startX, targetY - startY);
+                coin.style.rotate = new Rotate(UnityEngine.Random.Range(180f, 720f));
+                coin.AddToClassList("animate");
+            }).ExecuteLater(coinDelay + 50);
         }
 
-        // 3秒後に非表示
+        // コインを削除
+        root.schedule.Execute(() =>
+        {
+            foreach (var coin in _slotCoins)
+            {
+                slotCoinLayer.Remove(coin);
+            }
+            _slotCoins.Clear();
+        }).ExecuteLater(2000);
+    }
+
+    private void StartRouletteAnimation(int finalMultiplier)
+    {
+        if (slotMultiplier == null) return;
+
+        int spinCount = 0;
+        const int totalSpins = 20; // 約1秒間（50ms × 20）
+
+        // ルーレット回転
+        var rouletteSchedule = root.schedule.Execute(() =>
+        {
+            if (spinCount < totalSpins)
+            {
+                // ランダムな数字を表示
+                int randomMult = UnityEngine.Random.Range(2, 10000);
+                slotMultiplier.text = $"x{randomMult}";
+                spinCount++;
+            }
+        }).Every(50);
+
+        // 回転停止
+        root.schedule.Execute(() =>
+        {
+            rouletteSchedule.Pause();
+
+            // 最終結果を表示
+            slotMultiplier.text = $"x{finalMultiplier}";
+            slotMultiplier.RemoveFromClassList("spinning");
+
+            // 倍率に応じたスタイル
+            if (finalMultiplier >= 1000)
+            {
+                slotMultiplier.AddToClassList("legendary");
+            }
+            else if (finalMultiplier >= 100)
+            {
+                slotMultiplier.AddToClassList("mega");
+            }
+
+            // ボーナステキスト表示
+            if (slotBonusText != null)
+            {
+                slotBonusText.text = $"+{finalMultiplier}x BONUS!";
+                slotBonusText.AddToClassList("show");
+            }
+
+            // 追加フラッシュ
+            PlaySlotFlash();
+
+        }).ExecuteLater(1100);
+
+        // 非表示処理
         root.schedule.Execute(() =>
         {
             slotBigText?.RemoveFromClassList("show");
             slotBonusText?.RemoveFromClassList("show");
-        }).ExecuteLater(2500);
+            slotRoulette?.RemoveFromClassList("show");
+            slotMultiplier?.RemoveFromClassList("mega");
+            slotMultiplier?.RemoveFromClassList("legendary");
+        }).ExecuteLater(3500);
 
         root.schedule.Execute(() =>
         {
             slotOverlay?.RemoveFromClassList("active");
-        }).ExecuteLater(3000);
-
-        LogUIController.Msg("<color=#FFD700><b>★★★ JACKPOT!! ★★★</b></color>");
+            slotRainbow?.RemoveFromClassList("active");
+        }).ExecuteLater(4000);
     }
 
     // ========================================
@@ -845,6 +979,13 @@ public class HomeUIController : IViewController
             particleLayer?.Remove(particle);
         }
         _particles.Clear();
+
+        // スロットコインクリア
+        foreach (var coin in _slotCoins)
+        {
+            slotCoinLayer?.Remove(coin);
+        }
+        _slotCoins.Clear();
 
         // ダメージ数字クリア
         _damageNumberPool.Clear();
