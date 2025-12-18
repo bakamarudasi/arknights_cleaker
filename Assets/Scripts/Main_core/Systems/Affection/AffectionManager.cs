@@ -83,7 +83,7 @@ public class AffectionManager : MonoBehaviour
         if (currentCharacter == null) return;
 
         // アイテム消費
-        if (!GameController.Instance.UseItem(itemId, 1))
+        if (!GameController.Instance.Inventory.Use(itemId, 1))
         {
             LogUIController.Msg("アイテムが足りません");
             return;

@@ -95,9 +95,9 @@ public class ShopItemView
         if (data == null) return;
 
         var gc = GameController.Instance;
-        int level = gc.GetUpgradeLevel(data.id);
+        int level = gc.Upgrade.GetLevel(data.id);
         double cost = data.GetCostAtLevel(level);
-        UpgradeState state = gc.GetUpgradeState(data);
+        UpgradeState state = gc.Upgrade.GetState(data);
         bool isMax = data.IsMaxLevel(level);
         bool isUnlimited = data.maxLevel <= 0;
         int maxLevel = isUnlimited ? 0 : data.maxLevel;

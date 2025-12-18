@@ -39,7 +39,7 @@ public class ShopService
     {
         if (upgrade == null) return 0;
 
-        int currentLevel = _gameController.GetUpgradeLevel(upgrade.id);
+        int currentLevel = _gameController.Upgrade.GetLevel(upgrade.id);
         int maxLevel = upgrade.maxLevel;
         bool isUnlimited = maxLevel <= 0;
 
@@ -73,7 +73,7 @@ public class ShopService
     {
         if (upgrade == null || count <= 0) return 0;
 
-        int currentLevel = _gameController.GetUpgradeLevel(upgrade.id);
+        int currentLevel = _gameController.Upgrade.GetLevel(upgrade.id);
         double total = 0;
 
         for (int i = 0; i < count; i++)
@@ -90,7 +90,7 @@ public class ShopService
     public double GetSingleCost(UpgradeData upgrade)
     {
         if (upgrade == null) return 0;
-        int level = _gameController.GetUpgradeLevel(upgrade.id);
+        int level = _gameController.Upgrade.GetLevel(upgrade.id);
         return upgrade.GetCostAtLevel(level);
     }
 
@@ -106,7 +106,7 @@ public class ShopService
     {
         if (upgrade == null) return 0;
 
-        double money = _gameController.GetMoney();
+        double money = _gameController.Wallet.Money;
         int maxBuyable = CalculateMaxBuyCount(upgrade, money);
         int buyCount = System.Math.Min(requestedCount, maxBuyable);
 
@@ -115,7 +115,7 @@ public class ShopService
         int successCount = 0;
         for (int i = 0; i < buyCount; i++)
         {
-            bool success = _gameController.PurchaseUpgrade(upgrade);
+            bool success = _gameController.Upgrade.TryPurchase(upgrade);
             if (success)
             {
                 successCount++;
@@ -142,7 +142,7 @@ public class ShopService
     {
         if (upgrade == null) return 0;
 
-        double money = _gameController.GetMoney();
+        double money = _gameController.Wallet.Money;
         int maxBuyable = CalculateMaxBuyCount(upgrade, money);
 
         if (maxBuyable <= 0) return 0;
@@ -156,33 +156,33 @@ public class ShopService
 
     public int GetUpgradeLevel(string upgradeId)
     {
-        return _gameController.GetUpgradeLevel(upgradeId);
+        return _gameController.Upgrade.GetLevel(upgradeId);
     }
 
     public UpgradeState GetUpgradeState(UpgradeData upgrade)
     {
-        return _gameController.GetUpgradeState(upgrade);
+        return _gameController.Upgrade.GetState(upgrade);
     }
 
     public double GetMoney()
     {
-        return _gameController.GetMoney();
+        return _gameController.Wallet.Money;
     }
 
     public double GetCertificates()
     {
-        return _gameController.GetCertificates();
+        return _gameController.Wallet.Certificates;
     }
 
     public int GetItemCount(string itemId)
     {
-        return _gameController.GetItemCount(itemId);
+        return _gameController.Inventory.GetCount(itemId);
     }
 
     public bool IsMaxLevel(UpgradeData upgrade)
     {
         if (upgrade == null) return true;
-        int level = _gameController.GetUpgradeLevel(upgrade.id);
+        int level = _gameController.Upgrade.GetLevel(upgrade.id);
         return upgrade.IsMaxLevel(level);
     }
 

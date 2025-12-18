@@ -18,11 +18,6 @@ public class MainUIController : MonoBehaviour
     [Header("Menu Data")]
     [SerializeField] private List<MenuItemData> menuItems = new List<MenuItemData>();
 
-    [Header("Database")]
-    [SerializeField] private UpgradeDatabase upgradeDatabase;
-    [SerializeField] private GachaDatabase gachaDatabase;
-    [SerializeField] private StockDatabase stockDatabase;
-
 
     // UI Elements
     public VisualElement ContentArea { get; private set; }
@@ -130,7 +125,7 @@ public class MainUIController : MonoBehaviour
         {
             case MenuType.Shop:
                 var shopController = new ShopUIController();
-                shopController.Initialize(ContentArea, upgradeDatabase);
+                shopController.Initialize(ContentArea);
                 currentViewController = shopController;
                 break;
 
@@ -143,7 +138,7 @@ public class MainUIController : MonoBehaviour
 
             case MenuType.Gacha:
                 var gachaController = new GachaUIController();
-                gachaController.Initialize(ContentArea, gachaDatabase);
+                gachaController.Initialize(ContentArea);
                 currentViewController = gachaController;
                 break;
 
@@ -155,7 +150,7 @@ public class MainUIController : MonoBehaviour
 
             case MenuType.Market:
                 var marketController = new MarketUIController();
-                marketController.Initialize(ContentArea, stockDatabase);
+                marketController.Initialize(ContentArea);
                 currentViewController = marketController;
                 break;
 

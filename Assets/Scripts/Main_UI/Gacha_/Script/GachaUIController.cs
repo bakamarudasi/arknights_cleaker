@@ -86,10 +86,16 @@ public class GachaUIController : IViewController
     // 初期化
     // ========================================
 
-    public void Initialize(VisualElement root, GachaDatabase database)
+    public void Initialize(VisualElement root)
     {
         this.root = root;
-        this.database = database;
+        this.database = GachaManager.Instance?.Database;
+
+        if (database == null)
+        {
+            Debug.LogWarning("[GachaUIController] GachaDatabase not found in GachaManager!");
+            return;
+        }
 
         bannerList = database.GetAllBanners();
 
@@ -363,8 +369,8 @@ public class GachaUIController : IViewController
         var gc = GameController.Instance;
         double balance = banner.currencyType switch
         {
-            CurrencyType.LMD => gc.GetMoney(),
-            CurrencyType.Certificate => gc.GetCertificates(),
+            CurrencyType.LMD => gc.Wallet.Money,
+            CurrencyType.Certificate => gc.Wallet.Certificates,
             _ => 0
         };
 
@@ -520,7 +526,7 @@ public class GachaUIController : IViewController
     private bool CanAffordPull(GachaBannerData banner, int count)
     {
         double cost = banner.GetCost(count);
-        return GameController.Instance.CanAfford(cost, banner.currencyType);
+        return GameController.Instance.Wallet.CanAfford(cost, banner.currencyType);
     }
 
     // ========================================

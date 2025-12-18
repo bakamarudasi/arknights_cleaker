@@ -11,6 +11,16 @@ public class UpgradeManager : MonoBehaviour
     public static UpgradeManager Instance { get; private set; }
 
     // ========================================
+    // データベース
+    // ========================================
+
+    [Header("データベース")]
+    [SerializeField] private UpgradeDatabase _database;
+
+    /// <summary>強化データベース（外部参照用）</summary>
+    public UpgradeDatabase Database => _database;
+
+    // ========================================
     // 依存マネージャー参照
     // ========================================
 
