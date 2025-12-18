@@ -171,9 +171,10 @@ public class MarketUIController : IViewController
         crashOverlay = root.Q<VisualElement>("crash-overlay");
         lossCutOverlay = root.Q<VisualElement>("loss-cut-overlay");
 
-        // チャート描画設定
+        // チャート描画設定（多重登録防止のため一度解除してから登録）
         if (chartLine != null)
         {
+            chartLine.generateVisualContent -= OnGenerateChartVisual;
             chartLine.generateVisualContent += OnGenerateChartVisual;
         }
     }

@@ -192,6 +192,8 @@ public class GachaManager : MonoBehaviour
         }
 
         // フォールバック（最後のエントリを返す）
+        // 防御的チェック：poolが空の場合はnullを返す
+        if (pool.Count == 0) return null;
         return pool[pool.Count - 1];
     }
 
