@@ -214,6 +214,11 @@ public class RhodosStockManager : MonoBehaviour
     /// </summary>
     private void UpdateRank()
     {
+        // ゼロ除算防止
+        if (basePrice <= 0)
+        {
+            basePrice = 1;
+        }
         double ratio = currentPrice / basePrice;
 
         RhodosStockRank newRank;

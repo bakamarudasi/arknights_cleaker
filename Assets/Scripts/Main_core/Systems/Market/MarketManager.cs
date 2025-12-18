@@ -146,6 +146,8 @@ public class MarketManager : MonoBehaviour
 
     private void UpdateAllPrices()
     {
+        if (stockDatabase == null || stockDatabase.stocks == null) return;
+
         foreach (var stock in stockDatabase.stocks)
         {
             if (!stockStates.TryGetValue(stock.stockId, out var state)) continue;
@@ -248,6 +250,7 @@ public class MarketManager : MonoBehaviour
     public void ApplyExternalEvent(string stockId, float impactStrength, bool isPositive)
     {
         if (!stockStates.TryGetValue(stockId, out var state)) return;
+        if (stockDatabase == null) return;
 
         var stock = stockDatabase.GetByStockId(stockId);
         if (stock == null) return;
