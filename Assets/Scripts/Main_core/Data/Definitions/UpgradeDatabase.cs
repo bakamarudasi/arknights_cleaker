@@ -52,8 +52,8 @@ public class UpgradeDatabase : ScriptableObject
     public List<UpgradeData> GetPurchasable(UpgradeData.UpgradeCategory category)
     {
         var list = GetByCategory(category);
-        return list.FindAll(d => 
-            GameController.Instance.CanPurchaseUpgrade(d));
+        return list.FindAll(d =>
+            GameController.Instance.Upgrade.CanPurchase(d));
     }
 
     /// <summary>
@@ -62,8 +62,8 @@ public class UpgradeDatabase : ScriptableObject
     public List<UpgradeData> GetNotMaxed(UpgradeData.UpgradeCategory category)
     {
         var list = GetByCategory(category);
-        return list.FindAll(d => 
-            GameController.Instance.GetUpgradeState(d) != UpgradeState.MaxLevel);
+        return list.FindAll(d =>
+            GameController.Instance.Upgrade.GetState(d) != UpgradeState.MaxLevel);
     }
 
     // ========================================
@@ -92,7 +92,7 @@ public class UpgradeDatabase : ScriptableObject
     /// </summary>
     public int GetTotalPurchasableCount()
     {
-        return allUpgrades.FindAll(d => 
-            GameController.Instance.CanPurchaseUpgrade(d)).Count;
+        return allUpgrades.FindAll(d =>
+            GameController.Instance.Upgrade.CanPurchase(d)).Count;
     }
 }

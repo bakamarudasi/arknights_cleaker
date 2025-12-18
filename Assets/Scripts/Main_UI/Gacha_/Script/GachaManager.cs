@@ -218,7 +218,7 @@ public class GachaManager : MonoBehaviour
     {
         if (item == null) return false;
         // InventoryManager経由で所持チェック
-        return !GameController.Instance.HasItem(item.id);
+        return !GameController.Instance.Inventory.Has(item.id);
     }
 
     // ========================================
@@ -258,7 +258,7 @@ public class GachaManager : MonoBehaviour
         // アイテムで解放
         if (banner.requiredUnlockItem != null)
         {
-            if (GameController.Instance.HasItem(banner.requiredUnlockItem.id))
+            if (GameController.Instance.Inventory.Has(banner.requiredUnlockItem.id))
                 return true;
         }
 
@@ -283,7 +283,7 @@ public class GachaManager : MonoBehaviour
         foreach (var entry in banner.pool)
         {
             if (entry.item == null) continue;
-            if (!GameController.Instance.HasItem(entry.item.id))
+            if (!GameController.Instance.Inventory.Has(entry.item.id))
                 return false;
         }
         return true;
@@ -304,7 +304,7 @@ public class GachaManager : MonoBehaviour
         {
             if (entry.item == null) continue;
             total++;
-            if (GameController.Instance.HasItem(entry.item.id))
+            if (GameController.Instance.Inventory.Has(entry.item.id))
                 owned++;
         }
 
@@ -325,11 +325,11 @@ public class GachaManager : MonoBehaviour
         double cost = banner.GetCost(count);
 
         // 通貨チェック
-        if (!GameController.Instance.CanAfford(cost, banner.currencyType))
+        if (!GameController.Instance.Wallet.CanAfford(cost, banner.currencyType))
             return new List<GachaResultItem>();
 
         // 通貨消費
-        if (!GameController.Instance.SpendCurrency(cost, banner.currencyType))
+        if (!GameController.Instance.Wallet.Spend(cost, banner.currencyType))
             return new List<GachaResultItem>();
 
         // ガチャ実行
@@ -340,7 +340,7 @@ public class GachaManager : MonoBehaviour
         {
             if (!string.IsNullOrEmpty(item.itemId))
             {
-                GameController.Instance.AddItem(item.itemId, 1);
+                GameController.Instance.Inventory.Add(item.itemId, 1);
             }
         }
 

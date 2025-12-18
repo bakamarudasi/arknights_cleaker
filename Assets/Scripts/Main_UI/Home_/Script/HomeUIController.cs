@@ -509,7 +509,7 @@ public class HomeUIController : IViewController
         var gc = GameController.Instance;
         if (gc == null) return;
 
-        double money = gc.GetMoney();
+        double money = gc.Wallet.Money;
         if (moneyLabel != null)
         {
             moneyLabel.text = FormatNumber(money);
