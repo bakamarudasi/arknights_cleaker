@@ -60,6 +60,7 @@ public class HomeUIController : IViewController
     private Label slotMultiplier;
     private Label slotRankUp;
     private Label slotBonusText;
+    private Label slotStockChance;
 
     // スロットコインプール
     private readonly List<VisualElement> _slotCoins = new();
@@ -175,6 +176,7 @@ public class HomeUIController : IViewController
         slotMultiplier = root.Q<Label>("slot-multiplier");
         slotRankUp = root.Q<Label>("slot-rank-up");
         slotBonusText = root.Q<Label>("slot-bonus-text");
+        slotStockChance = root.Q<Label>("slot-stock-chance");
     }
 
     private void InitializeDamageNumberPool()
@@ -885,6 +887,20 @@ public class HomeUIController : IViewController
 
         }).ExecuteLater(stopDelay);
 
+        // 株チャンス表示（ボーナス表示後に出現）
+        root.schedule.Execute(() =>
+        {
+            if (slotStockChance != null)
+            {
+                slotStockChance.AddToClassList("show");
+                // パルスアニメーション
+                root.schedule.Execute(() => slotStockChance.AddToClassList("pulse")).ExecuteLater(400);
+                root.schedule.Execute(() => slotStockChance.RemoveFromClassList("pulse")).ExecuteLater(600);
+                root.schedule.Execute(() => slotStockChance.AddToClassList("pulse")).ExecuteLater(800);
+                root.schedule.Execute(() => slotStockChance.RemoveFromClassList("pulse")).ExecuteLater(1000);
+            }
+        }).ExecuteLater(stopDelay + 800);
+
         // 非表示処理
         root.schedule.Execute(() =>
         {
@@ -896,11 +912,18 @@ public class HomeUIController : IViewController
             ClearRankUpStyles();
         }).ExecuteLater(stopDelay + 2500);
 
+        // 株チャンスを少し長めに表示
+        root.schedule.Execute(() =>
+        {
+            slotStockChance?.RemoveFromClassList("show");
+            slotStockChance?.RemoveFromClassList("pulse");
+        }).ExecuteLater(stopDelay + 3500);
+
         root.schedule.Execute(() =>
         {
             slotOverlay?.RemoveFromClassList("active");
             slotRainbow?.RemoveFromClassList("active");
-        }).ExecuteLater(stopDelay + 3000);
+        }).ExecuteLater(stopDelay + 4000);
     }
 
     private SlotRank GetRankFromMultiplier(int multiplier)

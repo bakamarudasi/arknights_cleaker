@@ -69,6 +69,8 @@
                 <!-- 昇格テキスト -->
                 <ui:Label name="slot-rank-up" text="" class="slot-rank-up" />
                 <ui:Label name="slot-bonus-text" text="" class="slot-bonus-text" />
+                <!-- 株チャンステキスト -->
+                <ui:Label name="slot-stock-chance" text="株 買いチャンス！！" class="slot-stock-chance" />
             </ui:VisualElement>
         </ui:VisualElement>
 
