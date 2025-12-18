@@ -320,17 +320,17 @@ public class GachaManager : MonoBehaviour
     /// </summary>
     public List<GachaResultItem> PullGacha(GachaBannerData banner, int count = 1)
     {
-        if (banner == null) return null;
+        if (banner == null) return new List<GachaResultItem>();
 
         double cost = banner.GetCost(count);
 
         // 通貨チェック
         if (!GameController.Instance.CanAfford(cost, banner.currencyType))
-            return null;
+            return new List<GachaResultItem>();
 
         // 通貨消費
         if (!GameController.Instance.SpendCurrency(cost, banner.currencyType))
-            return null;
+            return new List<GachaResultItem>();
 
         // ガチャ実行
         var results = Pull(banner, count);
