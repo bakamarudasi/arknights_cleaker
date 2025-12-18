@@ -45,6 +45,36 @@
         </ui:VisualElement>
 
         <!-- ========================================
+             スロットオーバーレイ
+             ======================================== -->
+        <ui:VisualElement name="slot-overlay" class="slot-overlay">
+            <!-- 虹色背景 -->
+            <ui:VisualElement name="slot-rainbow" class="slot-rainbow">
+                <ui:VisualElement name="slot-rainbow-inner" class="slot-rainbow-inner" />
+            </ui:VisualElement>
+            <!-- フラッシュ -->
+            <ui:VisualElement name="slot-flash" class="slot-flash" />
+            <!-- コインレイヤー -->
+            <ui:VisualElement name="slot-coin-layer" class="slot-coin-layer">
+                <!-- コインはコードで動的に追加 -->
+            </ui:VisualElement>
+            <!-- メインコンテンツ -->
+            <ui:VisualElement name="slot-content" class="slot-content">
+                <ui:Label name="slot-big-text" text="JACKPOT!!" class="slot-big-text" />
+                <!-- ルーレット -->
+                <ui:VisualElement name="slot-roulette" class="slot-roulette">
+                    <ui:Label text="MULTIPLIER" class="slot-roulette-label" />
+                    <ui:Label name="slot-multiplier" text="x???" class="slot-multiplier" />
+                </ui:VisualElement>
+                <!-- 昇格テキスト -->
+                <ui:Label name="slot-rank-up" text="" class="slot-rank-up" />
+                <ui:Label name="slot-bonus-text" text="" class="slot-bonus-text" />
+                <!-- 株チャンステキスト -->
+                <ui:Label name="slot-stock-chance" text="株 買いチャンス！！" class="slot-stock-chance" />
+            </ui:VisualElement>
+        </ui:VisualElement>
+
+        <!-- ========================================
              UIレイヤー
              ======================================== -->
         <ui:VisualElement name="ui-layer" class="ui-layer">

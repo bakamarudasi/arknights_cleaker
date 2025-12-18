@@ -50,6 +50,25 @@ public class HomeUIController : IViewController
     private VisualElement feverFlash;
     private Label feverBigText;
 
+    // スロットオーバーレイ
+    private VisualElement slotOverlay;
+    private VisualElement slotRainbow;
+    private VisualElement slotFlash;
+    private VisualElement slotCoinLayer;
+    private Label slotBigText;
+    private VisualElement slotRoulette;
+    private Label slotMultiplier;
+    private Label slotRankUp;
+    private Label slotBonusText;
+    private Label slotStockChance;
+
+    // スロットコインプール
+    private readonly List<VisualElement> _slotCoins = new();
+    private const int SlotCoinCount = 20;
+
+    // スロットランク定義
+    private enum SlotRank { Normal, Rare, Super, Mega, Legendary }
+
     // ========================================
     // 状態管理
     // ========================================
@@ -87,6 +106,7 @@ public class HomeUIController : IViewController
     private Action onFeverStartedCallback;
     private Action onFeverEndedCallback;
     private Action<string, int, int> onAffectionChangedCallback;
+    private UnityEngine.Events.UnityAction<int> onSlotTriggeredCallback;
 
     // 更新用
     private IVisualElementScheduledItem _updateSchedule;
@@ -145,6 +165,18 @@ public class HomeUIController : IViewController
         // Feverオーバーレイ
         feverFlash = root.Q<VisualElement>("fever-flash");
         feverBigText = root.Q<Label>("fever-big-text");
+
+        // スロットオーバーレイ
+        slotOverlay = root.Q<VisualElement>("slot-overlay");
+        slotRainbow = root.Q<VisualElement>("slot-rainbow");
+        slotFlash = root.Q<VisualElement>("slot-flash");
+        slotCoinLayer = root.Q<VisualElement>("slot-coin-layer");
+        slotBigText = root.Q<Label>("slot-big-text");
+        slotRoulette = root.Q<VisualElement>("slot-roulette");
+        slotMultiplier = root.Q<Label>("slot-multiplier");
+        slotRankUp = root.Q<Label>("slot-rank-up");
+        slotBonusText = root.Q<Label>("slot-bonus-text");
+        slotStockChance = root.Q<Label>("slot-stock-chance");
     }
 
     private void InitializeDamageNumberPool()
@@ -192,6 +224,13 @@ public class HomeUIController : IViewController
         {
             onAffectionChangedCallback = OnAffectionChanged;
             AffectionManager.Instance.OnAffectionChanged += onAffectionChangedCallback;
+        }
+
+        // スロットイベント
+        if (gc.OnSlotTriggered != null)
+        {
+            onSlotTriggeredCallback = OnSlotTriggered;
+            gc.OnSlotTriggered.AddListener(onSlotTriggeredCallback);
         }
     }
 
@@ -686,6 +725,309 @@ public class HomeUIController : IViewController
     }
 
     // ========================================
+    // スロット処理
+    // ========================================
+
+    private void OnSlotTriggered(int finalMultiplier)
+    {
+        // オーバーレイ表示
+        slotOverlay?.AddToClassList("active");
+
+        // 虹色背景
+        slotRainbow?.AddToClassList("active");
+
+        // フラッシュエフェクト
+        PlaySlotFlash();
+
+        // コイン生成
+        SpawnSlotCoins();
+
+        // ビッグテキストアニメーション
+        slotBigText?.AddToClassList("show");
+
+        // ルーレット表示
+        slotRoulette?.AddToClassList("show");
+        slotMultiplier?.AddToClassList("spinning");
+
+        // ルーレットアニメーション開始
+        StartRouletteAnimation(finalMultiplier);
+
+        LogUIController.Msg("<color=#FFD700><b>★★★ JACKPOT!! ★★★</b></color>");
+    }
+
+    private void PlaySlotFlash()
+    {
+        if (slotFlash == null) return;
+
+        // 3連続フラッシュ
+        for (int i = 0; i < 3; i++)
+        {
+            int delay = i * 150;
+            root.schedule.Execute(() =>
+            {
+                slotFlash.AddToClassList("pulse");
+                root.schedule.Execute(() => slotFlash.RemoveFromClassList("pulse")).ExecuteLater(80);
+            }).ExecuteLater(delay);
+        }
+    }
+
+    private void SpawnSlotCoins()
+    {
+        if (slotCoinLayer == null) return;
+
+        // 既存のコインをクリア
+        foreach (var coin in _slotCoins)
+        {
+            slotCoinLayer.Remove(coin);
+        }
+        _slotCoins.Clear();
+
+        // 新しいコインを生成
+        for (int i = 0; i < SlotCoinCount; i++)
+        {
+            var coin = new VisualElement();
+            coin.AddToClassList("slot-coin");
+
+            var shine = new VisualElement();
+            shine.AddToClassList("slot-coin-shine");
+            coin.Add(shine);
+
+            // ランダムな開始位置（画面端から）
+            bool fromLeft = UnityEngine.Random.value > 0.5f;
+            float startX = fromLeft ? -50 : slotCoinLayer.resolvedStyle.width + 50;
+            float startY = UnityEngine.Random.Range(100f, slotCoinLayer.resolvedStyle.height - 100);
+
+            coin.style.left = startX;
+            coin.style.top = startY;
+
+            slotCoinLayer.Add(coin);
+            _slotCoins.Add(coin);
+
+            // 中央に向かって飛ぶアニメーション
+            int coinDelay = i * 50;
+            float targetX = slotCoinLayer.resolvedStyle.width / 2 + UnityEngine.Random.Range(-100f, 100f);
+            float targetY = slotCoinLayer.resolvedStyle.height / 2 + UnityEngine.Random.Range(-100f, 100f);
+
+            root.schedule.Execute(() =>
+            {
+                coin.style.translate = new Translate(targetX - startX, targetY - startY);
+                coin.style.rotate = new Rotate(UnityEngine.Random.Range(180f, 720f));
+                coin.AddToClassList("animate");
+            }).ExecuteLater(coinDelay + 50);
+        }
+
+        // コインを削除
+        root.schedule.Execute(() =>
+        {
+            foreach (var coin in _slotCoins)
+            {
+                slotCoinLayer.Remove(coin);
+            }
+            _slotCoins.Clear();
+        }).ExecuteLater(2000);
+    }
+
+    private void StartRouletteAnimation(int finalMultiplier)
+    {
+        if (slotMultiplier == null) return;
+
+        // 最終ランクを決定
+        SlotRank finalRank = GetRankFromMultiplier(finalMultiplier);
+
+        // 昇格演出のスケジュール
+        int currentRankIndex = 0;
+        SlotRank[] ranks = { SlotRank.Normal, SlotRank.Rare, SlotRank.Super, SlotRank.Mega, SlotRank.Legendary };
+        int finalRankIndex = (int)finalRank;
+
+        // ルーレット回転開始（各ランク内の数字でスピン）
+        int spinCount = 0;
+        SlotRank displayRank = SlotRank.Normal;
+
+        var rouletteSchedule = root.schedule.Execute(() =>
+        {
+            int randomMult = GetRandomMultiplierForRank(displayRank);
+            slotMultiplier.text = $"x{randomMult}";
+            spinCount++;
+        }).Every(50);
+
+        // 昇格演出をスケジュール
+        int delay = 300;
+        for (int i = 1; i <= finalRankIndex; i++)
+        {
+            int rankIndex = i;
+            root.schedule.Execute(() =>
+            {
+                displayRank = ranks[rankIndex];
+                ShowRankUpEffect(ranks[rankIndex]);
+                UpdateMultiplierStyle(ranks[rankIndex]);
+            }).ExecuteLater(delay);
+            delay += 350; // 各昇格間隔
+        }
+
+        // 回転停止と最終結果
+        int stopDelay = delay + 200;
+        root.schedule.Execute(() =>
+        {
+            rouletteSchedule.Pause();
+
+            // 最終結果を表示
+            slotMultiplier.text = $"x{finalMultiplier}";
+            slotMultiplier.RemoveFromClassList("spinning");
+            UpdateMultiplierStyle(finalRank);
+
+            // ボーナステキスト表示
+            if (slotBonusText != null)
+            {
+                slotBonusText.text = $"+{finalMultiplier}x BONUS!";
+                slotBonusText.AddToClassList("show");
+            }
+
+            // 追加フラッシュ
+            PlaySlotFlash();
+
+        }).ExecuteLater(stopDelay);
+
+        // 株チャンス表示（ボーナス表示後に出現）
+        root.schedule.Execute(() =>
+        {
+            if (slotStockChance != null)
+            {
+                slotStockChance.AddToClassList("show");
+                // パルスアニメーション
+                root.schedule.Execute(() => slotStockChance.AddToClassList("pulse")).ExecuteLater(400);
+                root.schedule.Execute(() => slotStockChance.RemoveFromClassList("pulse")).ExecuteLater(600);
+                root.schedule.Execute(() => slotStockChance.AddToClassList("pulse")).ExecuteLater(800);
+                root.schedule.Execute(() => slotStockChance.RemoveFromClassList("pulse")).ExecuteLater(1000);
+            }
+        }).ExecuteLater(stopDelay + 800);
+
+        // 非表示処理
+        root.schedule.Execute(() =>
+        {
+            slotBigText?.RemoveFromClassList("show");
+            slotBonusText?.RemoveFromClassList("show");
+            slotRoulette?.RemoveFromClassList("show");
+            slotRankUp?.RemoveFromClassList("show");
+            ClearMultiplierStyles();
+            ClearRankUpStyles();
+        }).ExecuteLater(stopDelay + 2500);
+
+        // 株チャンスを少し長めに表示
+        root.schedule.Execute(() =>
+        {
+            slotStockChance?.RemoveFromClassList("show");
+            slotStockChance?.RemoveFromClassList("pulse");
+        }).ExecuteLater(stopDelay + 3500);
+
+        root.schedule.Execute(() =>
+        {
+            slotOverlay?.RemoveFromClassList("active");
+            slotRainbow?.RemoveFromClassList("active");
+        }).ExecuteLater(stopDelay + 4000);
+    }
+
+    private SlotRank GetRankFromMultiplier(int multiplier)
+    {
+        if (multiplier >= 1000) return SlotRank.Legendary;
+        if (multiplier >= 100) return SlotRank.Mega;
+        if (multiplier >= 51) return SlotRank.Super;
+        if (multiplier >= 11) return SlotRank.Rare;
+        return SlotRank.Normal;
+    }
+
+    private int GetRandomMultiplierForRank(SlotRank rank)
+    {
+        return rank switch
+        {
+            SlotRank.Normal => UnityEngine.Random.Range(2, 11),
+            SlotRank.Rare => UnityEngine.Random.Range(11, 51),
+            SlotRank.Super => UnityEngine.Random.Range(51, 101),
+            SlotRank.Mega => UnityEngine.Random.Range(101, 1000),
+            SlotRank.Legendary => UnityEngine.Random.Range(1000, 10000),
+            _ => UnityEngine.Random.Range(2, 11)
+        };
+    }
+
+    private void ShowRankUpEffect(SlotRank rank)
+    {
+        if (slotRankUp == null) return;
+
+        // 前のスタイルをクリア
+        ClearRankUpStyles();
+
+        // 昇格テキストとスタイル設定
+        string text = rank switch
+        {
+            SlotRank.Rare => "昇格！",
+            SlotRank.Super => "SUPER昇格!",
+            SlotRank.Mega => "MEGA昇格!!",
+            SlotRank.Legendary => "LEGENDARY!!!",
+            _ => ""
+        };
+
+        if (string.IsNullOrEmpty(text)) return;
+
+        slotRankUp.text = text;
+        slotRankUp.AddToClassList(rank.ToString().ToLower());
+        slotRankUp.AddToClassList("show");
+
+        // フラッシュ
+        PlaySlotFlash();
+
+        // 昇格テキストを消す
+        root.schedule.Execute(() =>
+        {
+            slotRankUp.RemoveFromClassList("show");
+            slotRankUp.AddToClassList("hide");
+        }).ExecuteLater(300);
+
+        root.schedule.Execute(() =>
+        {
+            slotRankUp.RemoveFromClassList("hide");
+        }).ExecuteLater(600);
+    }
+
+    private void UpdateMultiplierStyle(SlotRank rank)
+    {
+        if (slotMultiplier == null) return;
+
+        ClearMultiplierStyles();
+        slotMultiplier.RemoveFromClassList("spinning");
+
+        string styleClass = rank switch
+        {
+            SlotRank.Rare => "rare",
+            SlotRank.Super => "super",
+            SlotRank.Mega => "mega",
+            SlotRank.Legendary => "legendary",
+            _ => ""
+        };
+
+        if (!string.IsNullOrEmpty(styleClass))
+        {
+            slotMultiplier.AddToClassList(styleClass);
+        }
+    }
+
+    private void ClearMultiplierStyles()
+    {
+        slotMultiplier?.RemoveFromClassList("rare");
+        slotMultiplier?.RemoveFromClassList("super");
+        slotMultiplier?.RemoveFromClassList("mega");
+        slotMultiplier?.RemoveFromClassList("legendary");
+    }
+
+    private void ClearRankUpStyles()
+    {
+        slotRankUp?.RemoveFromClassList("rare");
+        slotRankUp?.RemoveFromClassList("super");
+        slotRankUp?.RemoveFromClassList("mega");
+        slotRankUp?.RemoveFromClassList("legendary");
+        slotRankUp?.RemoveFromClassList("show");
+        slotRankUp?.RemoveFromClassList("hide");
+    }
+
+    // ========================================
     // 好感度イベント
     // ========================================
 
@@ -765,12 +1107,25 @@ public class HomeUIController : IViewController
             AffectionManager.Instance.OnAffectionChanged -= onAffectionChangedCallback;
         }
 
+        // スロットイベント解除
+        if (gc != null && gc.OnSlotTriggered != null && onSlotTriggeredCallback != null)
+        {
+            gc.OnSlotTriggered.RemoveListener(onSlotTriggeredCallback);
+        }
+
         // パーティクルクリア
         foreach (var particle in _particles)
         {
             particleLayer?.Remove(particle);
         }
         _particles.Clear();
+
+        // スロットコインクリア
+        foreach (var coin in _slotCoins)
+        {
+            slotCoinLayer?.Remove(coin);
+        }
+        _slotCoins.Clear();
 
         // ダメージ数字クリア
         _damageNumberPool.Clear();
@@ -782,6 +1137,7 @@ public class HomeUIController : IViewController
         onFeverStartedCallback = null;
         onFeverEndedCallback = null;
         onAffectionChangedCallback = null;
+        onSlotTriggeredCallback = null;
 
         LogUIController.LogSystem("Home View Disposed.");
     }

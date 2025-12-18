@@ -41,7 +41,7 @@ public class GameController : MonoBehaviour
     [Range(0f, 1f)] public float baseCriticalChance = 0.05f;
     public double baseCriticalMultiplier = 2.0;
     [Range(0f, 1f)] public float slotTriggerChance = 0.001f;
-    public UnityEvent OnSlotTriggered;
+    public UnityEvent<int> OnSlotTriggered;  // int = 倍率
 
     // ========================================
     // ボーナス（強化による加算分）
@@ -177,7 +177,15 @@ public class GameController : MonoBehaviour
         var result = ClickManager.Calculate(ctx);
 
         Wallet.AddMoney(result.EarnedAmount);
-        if (result.TriggeredSlot) OnSlotTriggered?.Invoke();
+
+        // スロット発動時はルーレットで倍率を決定してボーナス報酬を追加
+        if (result.TriggeredSlot)
+        {
+            int slotMultiplier = RollSlotMultiplier();
+            double slotBonus = result.EarnedAmount * slotMultiplier;
+            Wallet.AddMoney(slotBonus);
+            OnSlotTriggered?.Invoke(slotMultiplier);
+        }
 
         // 統計
         stats.totalClicks++;
@@ -263,6 +271,31 @@ public class GameController : MonoBehaviour
     {
         globalMultiplier = multiplier;
         RecalculateStats();
+    }
+
+    /// <summary>
+    /// スロットのルーレット倍率を決定
+    /// 確率分布:
+    /// - x2-10:     50%
+    /// - x11-50:    30%
+    /// - x51-100:   15%
+    /// - x101-999:  4%
+    /// - x1000-9999: 1%
+    /// </summary>
+    private int RollSlotMultiplier()
+    {
+        float roll = UnityEngine.Random.value;
+
+        if (roll < 0.50f)
+            return UnityEngine.Random.Range(2, 11);       // x2-10
+        else if (roll < 0.80f)
+            return UnityEngine.Random.Range(11, 51);      // x11-50
+        else if (roll < 0.95f)
+            return UnityEngine.Random.Range(51, 101);     // x51-100
+        else if (roll < 0.99f)
+            return UnityEngine.Random.Range(101, 1000);   // x101-999
+        else
+            return UnityEngine.Random.Range(1000, 10000); // x1000-9999
     }
 
     // ========================================
