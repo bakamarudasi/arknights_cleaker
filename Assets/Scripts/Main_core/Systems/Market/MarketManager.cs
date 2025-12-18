@@ -347,14 +347,14 @@ public class MarketManager : MonoBehaviour
         // コスト計算
         double totalCost = stock.CalculateBuyCost(state.currentPrice, quantity);
 
-        // LMD残高チェック（GameManagerから取得）
-        if (GameManager.Instance != null && GameManager.Instance.LMD < totalCost)
+        // LMD残高チェック（WalletManagerから取得）
+        if (WalletManager.Instance != null && WalletManager.Instance.Money < totalCost)
         {
             return false;
         }
 
         // 支払い
-        GameManager.Instance?.AddLMD(-totalCost);
+        WalletManager.Instance?.SpendMoney(totalCost);
 
         // ポートフォリオに追加
         if (!portfolio.ContainsKey(stockId))
@@ -395,7 +395,7 @@ public class MarketManager : MonoBehaviour
         }
 
         // LMD受け取り
-        GameManager.Instance?.AddLMD(totalReturn);
+        WalletManager.Instance?.AddMoney(totalReturn);
 
         OnPortfolioChanged?.Invoke(stockId, portfolio.GetValueOrDefault(stockId, 0));
 
