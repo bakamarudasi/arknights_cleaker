@@ -203,6 +203,7 @@ public class MarketUIController : IViewController
         MarketEventBus.OnStockSold += OnStockSold;
         MarketEventBus.OnPriceCrash += OnPriceCrash;
         MarketEventBus.OnNewsGenerated += OnNewsGenerated;
+        MarketEventBus.OnDividendPaid += OnDividendPaid;
 
         // Wallet変更
         if (WalletManager.Instance != null)
@@ -224,6 +225,7 @@ public class MarketUIController : IViewController
         MarketEventBus.OnStockSold -= OnStockSold;
         MarketEventBus.OnPriceCrash -= OnPriceCrash;
         MarketEventBus.OnNewsGenerated -= OnNewsGenerated;
+        MarketEventBus.OnDividendPaid -= OnDividendPaid;
 
         if (WalletManager.Instance != null)
         {
@@ -284,6 +286,9 @@ public class MarketUIController : IViewController
 
         // 売買ボタン状態更新
         UpdateTradeButtons();
+
+        // ロドス株パネル更新
+        RefreshRhodosStockPanel();
     }
 
     private void UpdateCooldowns()
@@ -961,6 +966,72 @@ public class MarketUIController : IViewController
     {
         RefreshPortfolioList();
         RefreshAssetPanel();
+    }
+
+    private void OnDividendPaid(DividendPayment payment)
+    {
+        // 配当演出
+        PlayDividendEffect(payment);
+        RefreshAssetPanel();
+    }
+
+    // ========================================
+    // ロドス株パネル
+    // ========================================
+
+    private void RefreshRhodosStockPanel()
+    {
+        var rhodosManager = RhodosStockManager.Instance;
+        if (rhodosManager == null) return;
+
+        // 株価表示
+        if (rhodosPriceLabel != null)
+        {
+            rhodosPriceLabel.text = rhodosManager.GetPriceText();
+        }
+
+        // ランク表示
+        if (rhodosRankLabel != null)
+        {
+            var rank = rhodosManager.CurrentRank;
+            rhodosRankLabel.text = RhodosStockManager.GetRankDisplayName(rank);
+
+            // ランクに応じたスタイル変更
+            rhodosRankLabel.RemoveFromClassList("rank-high");
+            rhodosRankLabel.RemoveFromClassList("rank-super");
+            rhodosRankLabel.RemoveFromClassList("rank-god");
+
+            string rankClass = RhodosStockManager.GetRankClassName(rank);
+            if (!string.IsNullOrEmpty(rankClass))
+            {
+                rhodosRankLabel.AddToClassList(rankClass);
+            }
+        }
+
+        // 配当タイマー表示
+        if (dividendTimerLabel != null)
+        {
+            dividendTimerLabel.text = rhodosManager.GetDividendTimerText();
+        }
+    }
+
+    private void PlayDividendEffect(DividendPayment payment)
+    {
+        // 配当カットイン（簡易版）
+        if (cutInOverlay == null || cutInText == null) return;
+
+        string rankName = RhodosStockManager.GetRankDisplayName(payment.rank);
+        cutInText.text = $"💰 配当 [{rankName}]";
+        cutInText.RemoveFromClassList("buy");
+        cutInText.RemoveFromClassList("sell");
+        cutInText.AddToClassList("buy"); // 緑色
+
+        cutInOverlay.AddToClassList("visible");
+
+        root.schedule.Execute(() =>
+        {
+            cutInOverlay.RemoveFromClassList("visible");
+        }).ExecuteLater(1000);
     }
 
     // ========================================
