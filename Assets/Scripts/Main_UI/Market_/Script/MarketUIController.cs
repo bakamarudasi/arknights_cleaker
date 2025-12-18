@@ -103,10 +103,10 @@ public class MarketUIController : IViewController
         // 更新ループ開始（30fps）
         updateTimer = root.schedule.Execute(OnUpdateTick).Every(33);
 
-        // 初期状態：非表示
+        // メニューから開いた時は表示状態にする
         if (overlayRoot != null)
         {
-            overlayRoot.RemoveFromClassList("visible");
+            overlayRoot.AddToClassList("visible");
         }
 
         // 最初の銘柄を選択

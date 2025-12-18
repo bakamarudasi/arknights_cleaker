@@ -21,6 +21,7 @@ public class MainUIController : MonoBehaviour
     [Header("Database")]
     [SerializeField] private UpgradeDatabase upgradeDatabase;
     [SerializeField] private GachaDatabase gachaDatabase;
+    [SerializeField] private StockDatabase stockDatabase;
 
 
     // UI Elements
@@ -150,6 +151,12 @@ public class MainUIController : MonoBehaviour
                 var homeController = new HomeUIController();
                 homeController.Initialize(ContentArea);
                 currentViewController = homeController;
+                break;
+
+            case MenuType.Market:
+                var marketController = new MarketUIController();
+                marketController.Initialize(ContentArea, stockDatabase);
+                currentViewController = marketController;
                 break;
 
             default:

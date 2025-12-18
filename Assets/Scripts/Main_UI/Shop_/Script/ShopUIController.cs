@@ -66,6 +66,12 @@ public class ShopUIController : IViewController
     private UpgradeData selectedUpgrade;
 
     // ========================================
+    // ビジネスロジック
+    // ========================================
+
+    private ShopService shopService;
+
+    // ========================================
     // 初期化
     // ========================================
 
@@ -74,20 +80,24 @@ public class ShopUIController : IViewController
         this.root = root;
         this.database = database;
 
+        // ビジネスロジック層の初期化
+        var gc = GameController.Instance;
+        shopService = new ShopService(gc);
+        shopService.OnPurchaseSuccess += OnPurchaseSuccess;
+
         QueryElements();
         SetupTabs();
         SetupListView();
         BindEvents();
 
         // 初期表示のために現在の値をセット（アニメなしで即反映）
-        var gc = GameController.Instance;
-        currentDisplayMoney = gc.GetMoney();
+        currentDisplayMoney = shopService.GetMoney();
         targetMoney = currentDisplayMoney;
-        currentDisplayCert = gc.GetCertificates();
+        currentDisplayCert = shopService.GetCertificates();
         targetCert = currentDisplayCert;
-        
+
         UpdateCurrencyLabels(); // ラベル直接更新
-        
+
         SwitchCategory(UpgradeData.UpgradeCategory.Click);
         ClearDetailPanel();
 
@@ -283,12 +293,11 @@ public class ShopUIController : IViewController
     {
         if (selectedUpgrade == null) return;
 
-        var gc = GameController.Instance;
-        int level = gc.GetUpgradeLevel(selectedUpgrade.id);
-        double cost = selectedUpgrade.GetCostAtLevel(level);
-        UpgradeState state = gc.GetUpgradeState(selectedUpgrade);
-        bool isMax = selectedUpgrade.IsMaxLevel(level);
-        double money = gc.GetMoney();
+        int level = shopService.GetUpgradeLevel(selectedUpgrade.id);
+        double cost = shopService.GetSingleCost(selectedUpgrade);
+        UpgradeState state = shopService.GetUpgradeState(selectedUpgrade);
+        bool isMax = shopService.IsMaxLevel(selectedUpgrade);
+        double money = shopService.GetMoney();
         bool canAfford = money >= cost;
 
         // アイコン表示制御
@@ -355,8 +364,7 @@ public class ShopUIController : IViewController
     /// </summary>
     private void UpdateBulkBuyButtons(UpgradeState state, bool isMax, double singleCost)
     {
-        var gc = GameController.Instance;
-        double money = gc.GetMoney();
+        double money = shopService.GetMoney();
         bool canBuyOne = state == UpgradeState.ReadyToUpgrade;
 
         // ×1 ボタン
@@ -369,9 +377,9 @@ public class ShopUIController : IViewController
         // ×10 ボタン: 10回分のコストを計算
         if (buyX10Btn != null)
         {
-            int maxBuyCount = CalculateMaxBuyCount(money);
+            int maxBuyCount = shopService.CalculateMaxBuyCount(selectedUpgrade, money);
             int buyCount = System.Math.Min(10, maxBuyCount);
-            double totalCost = CalculateTotalCost(buyCount);
+            double totalCost = shopService.CalculateTotalCost(selectedUpgrade, buyCount);
             bool canBuy10 = canBuyOne && buyCount > 0;
 
             buyX10Btn.SetEnabled(canBuy10);
@@ -381,7 +389,7 @@ public class ShopUIController : IViewController
         // MAX ボタン
         if (buyMaxBtn != null)
         {
-            int maxCount = CalculateMaxBuyCount(money);
+            int maxCount = shopService.CalculateMaxBuyCount(selectedUpgrade, money);
             bool canBuyMax = canBuyOne && maxCount > 0;
 
             buyMaxBtn.SetEnabled(canBuyMax);
@@ -391,7 +399,7 @@ public class ShopUIController : IViewController
             }
             else if (maxCount > 0)
             {
-                double totalCost = CalculateTotalCost(maxCount);
+                double totalCost = shopService.CalculateTotalCost(selectedUpgrade, maxCount);
                 buyMaxBtn.text = $"MAX(×{maxCount})\n{totalCost:N0}";
             }
             else
@@ -408,122 +416,42 @@ public class ShopUIController : IViewController
     {
         if (selectedUpgrade == null) return;
 
-        var gc = GameController.Instance;
-        int level = gc.GetUpgradeLevel(selectedUpgrade.id);
-        bool isMax = selectedUpgrade.IsMaxLevel(level);
-        double singleCost = selectedUpgrade.GetCostAtLevel(level);
-        UpgradeState state = gc.GetUpgradeState(selectedUpgrade);
+        bool isMax = shopService.IsMaxLevel(selectedUpgrade);
+        double singleCost = shopService.GetSingleCost(selectedUpgrade);
+        UpgradeState state = shopService.GetUpgradeState(selectedUpgrade);
 
         UpdateBulkBuyButtons(state, isMax, singleCost);
     }
 
     /// <summary>
-    /// 所持金で買える最大回数を計算
-    /// </summary>
-    private int CalculateMaxBuyCount(double money)
-    {
-        if (selectedUpgrade == null) return 0;
-
-        var gc = GameController.Instance;
-        int currentLevel = gc.GetUpgradeLevel(selectedUpgrade.id);
-        int maxLevel = selectedUpgrade.maxLevel;
-        bool isUnlimited = maxLevel <= 0;
-
-        int count = 0;
-        double totalCost = 0;
-        int level = currentLevel;
-
-        // 最大100回まで（無限ループ防止）
-        int safetyLimit = isUnlimited ? 100 : (maxLevel - currentLevel);
-
-        while (count < safetyLimit)
-        {
-            double nextCost = selectedUpgrade.GetCostAtLevel(level);
-            if (totalCost + nextCost > money) break;
-
-            totalCost += nextCost;
-            level++;
-            count++;
-
-            // 有限の場合、MAXに達したら終了
-            if (!isUnlimited && level >= maxLevel) break;
-        }
-
-        return count;
-    }
-
-    /// <summary>
-    /// 指定回数購入時の合計コストを計算
-    /// </summary>
-    private double CalculateTotalCost(int count)
-    {
-        if (selectedUpgrade == null || count <= 0) return 0;
-
-        var gc = GameController.Instance;
-        int currentLevel = gc.GetUpgradeLevel(selectedUpgrade.id);
-        double total = 0;
-
-        for (int i = 0; i < count; i++)
-        {
-            total += selectedUpgrade.GetCostAtLevel(currentLevel + i);
-        }
-
-        return total;
-    }
-
-    /// <summary>
-    /// 一括購入（指定回数）
+    /// 一括購入（指定回数）- ShopServiceに委譲
     /// </summary>
     private void OnBulkBuyClicked(int requestedCount)
     {
         if (selectedUpgrade == null) return;
-
-        var gc = GameController.Instance;
-        double money = gc.GetMoney();
-        int maxBuyable = CalculateMaxBuyCount(money);
-        int buyCount = System.Math.Min(requestedCount, maxBuyable);
-
-        if (buyCount <= 0) return;
-
-        int successCount = 0;
-        for (int i = 0; i < buyCount; i++)
-        {
-            bool success = gc.PurchaseUpgrade(selectedUpgrade);
-            if (success)
-            {
-                successCount++;
-            }
-            else
-            {
-                break;
-            }
-        }
-
-        if (successCount > 0)
-        {
-            LogUIController.Msg($"{selectedUpgrade.displayName} を {successCount} 回強化しました！");
-            PlayFlashEffect();
-            PlayIconBounce();
-            PlayEffectFlash();
-            RefreshDetailPanel();
-            upgradeListView?.RefreshItems();
-        }
+        shopService.ExecuteBulkPurchase(selectedUpgrade, requestedCount);
     }
 
     /// <summary>
-    /// MAX購入（買えるだけ買う）
+    /// MAX購入（買えるだけ買う）- ShopServiceに委譲
     /// </summary>
     private void OnBuyMaxClicked()
     {
         if (selectedUpgrade == null) return;
+        shopService.ExecuteMaxPurchase(selectedUpgrade);
+    }
 
-        var gc = GameController.Instance;
-        double money = gc.GetMoney();
-        int maxBuyable = CalculateMaxBuyCount(money);
-
-        if (maxBuyable <= 0) return;
-
-        OnBulkBuyClicked(maxBuyable);
+    /// <summary>
+    /// 購入成功時のUI演出（ShopServiceからのコールバック）
+    /// </summary>
+    private void OnPurchaseSuccess(UpgradeData upgrade, int count)
+    {
+        LogUIController.Msg($"{upgrade.displayName} を {count} 回強化しました！");
+        PlayFlashEffect();
+        PlayIconBounce();
+        PlayEffectFlash();
+        RefreshDetailPanel();
+        upgradeListView?.RefreshItems();
     }
 
     /// <summary>
@@ -822,8 +750,7 @@ public class ShopUIController : IViewController
         {
             if (mat.item == null) continue;
 
-            var gc = GameController.Instance;
-            int owned = gc.GetItemCount(mat.item.id);
+            int owned = shopService.GetItemCount(mat.item.id);
             bool enough = owned >= mat.amount;
 
             var matElement = new VisualElement();
@@ -987,6 +914,12 @@ public class ShopUIController : IViewController
     {
         UnbindEvents();
 
+        // ShopServiceのイベント解除
+        if (shopService != null)
+        {
+            shopService.OnPurchaseSuccess -= OnPurchaseSuccess;
+        }
+
         // タイマー停止
         if (typewriterTimer != null) typewriterTimer.Pause();
         if (currencyTimer != null) currencyTimer.Pause();
@@ -1002,5 +935,6 @@ public class ShopUIController : IViewController
 
         currentList.Clear();
         selectedUpgrade = null;
+        shopService = null;
     }
 }

@@ -31,5 +31,6 @@ public enum MenuType
     Shop,
     Operators,
     Settings,
-    Gacha
+    Gacha,
+    Market
 }
