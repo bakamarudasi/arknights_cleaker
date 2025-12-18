@@ -236,8 +236,8 @@ public class StartUIController : IViewController
         root.schedule.Execute(() =>
         {
             OnStartRequested?.Invoke();
-            // 直接Shop画面に遷移
-            MainUIController.Instance?.SwitchToMenu(MenuType.Shop);
+            // Home画面に遷移
+            MainUIController.Instance?.SwitchToMenu(MenuType.Home);
         }).ExecuteLater(600);
     }
 
