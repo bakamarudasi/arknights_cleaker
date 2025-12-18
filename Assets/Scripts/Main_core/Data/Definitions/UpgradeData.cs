@@ -92,6 +92,20 @@ public class UpgradeData : BaseData
     public int prerequisiteLevel = 1;
 
     // ========================================
+    // 株式連動設定
+    // ========================================
+    [Header("株式連動設定")]
+    [Tooltip("関連する企業の株（保有率でボーナスが適用される）")]
+    public StockData relatedStock;
+
+    [Tooltip("株式保有率による効果倍率（true = 保有率に応じてeffectValueが増加）")]
+    public bool scaleWithHolding = false;
+
+    [Tooltip("保有率による最大倍率（2.0 = 100%保有時に効果2倍）")]
+    [Range(1f, 5f)]
+    public float maxHoldingMultiplier = 2.0f;
+
+    // ========================================
     // 表示設定（UI用）
     // ========================================
     [Header("表示設定")]

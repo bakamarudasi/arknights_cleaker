@@ -169,6 +169,57 @@ enum StockTrait {
 表示設定:
   - chartColor: チャート線の色
   - themeColor: 企業テーマカラー
+
+株式発行・配当:
+  - totalShares: 発行済み株式数（保有率計算用、デフォルト100万）
+  - dividendRate: 配当率（0.02 = 2%）
+  - dividendIntervalSeconds: 配当間隔（秒、0で配当なし）
+```
+
+### 株式保有ボーナス（HoldingBonus）
+各企業の株を一定以上保有するとボーナスが発動します。
+
+```csharp
+enum HoldingBonusType {
+    UpgradeCostReduction,   // 強化費用軽減
+    ClickEfficiency,        // クリック効率アップ
+    AutoIncomeBoost,        // 自動収入アップ
+    GachaRateUp,            // ガチャ確率アップ（この企業のキャラ）
+    DividendBonus,          // 配当金ボーナス
+    ExpBonus,               // 経験値ボーナス
+    CriticalRate,           // クリティカル率アップ
+    SellPriceBonus,         // 売却価格アップ
+    TransactionFeeReduction // 取引手数料軽減
+}
+```
+
+### 保有ボーナス設定例
+```yaml
+holdingBonuses:
+  - requiredHoldingRate: 0.05  # 5%保有で発動
+    bonusType: UpgradeCostReduction
+    effectValue: 0.05          # 5%コスト軽減
+    description: "ライン生命の株主優待：強化費用5%オフ"
+
+  - requiredHoldingRate: 0.10  # 10%保有で発動
+    bonusType: GachaRateUp
+    effectValue: 0.02          # ガチャ確率2%アップ
+    description: "大株主特典：ライン生命オペレーター排出率UP"
+
+  - requiredHoldingRate: 0.30  # 30%保有で発動
+    bonusType: DividendBonus
+    effectValue: 0.50          # 配当50%ボーナス
+    description: "筆頭株主特権：配当金1.5倍"
+```
+
+### アップグレードとの連携
+アップグレードに`relatedStock`を設定すると、その株の保有率に応じて効果が増加します。
+
+```yaml
+株式連動設定:
+  - relatedStock: ライン生命（StockData参照）
+  - scaleWithHolding: true     # 保有率で効果スケール
+  - maxHoldingMultiplier: 2.0  # 100%保有時に効果2倍
 ```
 
 ---
