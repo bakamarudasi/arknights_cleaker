@@ -146,6 +146,11 @@ public class MainUIController : MonoBehaviour
                 currentViewController = gachaController;
                 break;
 
+            case MenuType.Home:
+                var homeController = new HomeUIController();
+                homeController.Initialize(ContentArea);
+                currentViewController = homeController;
+                break;
 
             default:
                 LogUIController.LogSystem($"{menuType} Logic Not Implemented.");
