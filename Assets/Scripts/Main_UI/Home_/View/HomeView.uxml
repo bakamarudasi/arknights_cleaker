@@ -1,0 +1,45 @@
+<ui:UXML xmlns:ui="UnityEngine.UIElements" xmlns:uie="UnityEditor.UIElements" editor-extension-mode="False">
+    <Style src="HomeStyles.uss" />
+
+    <ui:VisualElement name="home-container" class="home-container">
+
+        <!-- 背景レイヤー -->
+        <ui:VisualElement name="background-layer" class="background-layer">
+            <ui:VisualElement name="background-image" class="background-image" />
+        </ui:VisualElement>
+
+        <!-- キャラクターレイヤー（クリック対象） -->
+        <ui:VisualElement name="character-layer" class="character-layer">
+            <ui:VisualElement name="click-target" class="click-target">
+                <!-- 仮置き：クリックエリア -->
+            </ui:VisualElement>
+        </ui:VisualElement>
+
+        <!-- UIオーバーレイレイヤー -->
+        <ui:VisualElement name="ui-layer" class="ui-layer">
+
+            <!-- 上部：ステータス表示 -->
+            <ui:VisualElement name="top-bar" class="top-bar">
+                <ui:VisualElement class="currency-display">
+                    <ui:Label name="money-label" text="LMD: 0" class="money-label" />
+                </ui:VisualElement>
+            </ui:VisualElement>
+
+            <!-- 中央：クリックエフェクト表示エリア -->
+            <ui:VisualElement name="effect-area" class="effect-area" />
+
+            <!-- 下部：SPゲージ -->
+            <ui:VisualElement name="bottom-bar" class="bottom-bar">
+                <ui:VisualElement name="sp-container" class="sp-container">
+                    <ui:Label name="sp-label" text="SP" class="sp-label" />
+                    <ui:VisualElement name="sp-gauge-bg" class="sp-gauge-bg">
+                        <ui:VisualElement name="sp-gauge-fill" class="sp-gauge-fill" />
+                    </ui:VisualElement>
+                    <ui:Label name="fever-label" text="" class="fever-label" />
+                </ui:VisualElement>
+            </ui:VisualElement>
+
+        </ui:VisualElement>
+
+    </ui:VisualElement>
+</ui:UXML>

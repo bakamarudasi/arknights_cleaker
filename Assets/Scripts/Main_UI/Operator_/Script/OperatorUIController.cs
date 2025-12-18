@@ -59,6 +59,8 @@ public class OperatorUIController : IViewController
 
         if (presenter != null)
         {
+            // 表示エリアをcontent-area（root）に設定
+            presenter.SetDisplayArea(root);
             presenter.EnsureCreated();
             presenter.Show();
         }

@@ -2,7 +2,7 @@ using UnityEngine;
 using UnityEngine.Events;
 using TMPro;
 using System;
-using System.Collections.Generic; // ← これを追加しました
+using System.Collections.Generic;
 /// <summary>
 /// ゲーム全体の司令塔（超スリム版）
 /// 各Managerの統括・イベント中継のみを担当
@@ -70,6 +70,25 @@ public class GameController : MonoBehaviour
     private double _finalCritMultiplier;
 
     // ========================================
+    // イベントコールバック参照（解除用）
+    // ========================================
+
+    private Action<double> _onMoneyChangedCallback;
+    private Action<double> _onCertificateChangedCallback;
+    private Action<double> _onIncomeGeneratedCallback;
+    private Action<UpgradeData, int> _onUpgradePurchasedCallback;
+    private Action<float> _onSPChangedCallback;
+    private Action _onFeverStartedCallback;
+    private Action _onFeverEndedCallback;
+
+    // ========================================
+    // バフシステム用イベント
+    // ========================================
+
+    /// <summary>ステータス再計算が必要な時に発火</summary>
+    public event Action OnStatsRecalculated;
+
+    // ========================================
     // 初期化
     // ========================================
 
@@ -113,18 +132,27 @@ public class GameController : MonoBehaviour
 
     private void BindEvents()
     {
+        // コールバックをフィールドに保存（解除用）
+        _onMoneyChangedCallback = _ => UpdateMoneyUI();
+        _onCertificateChangedCallback = _ => UpdateCertUI();
+        _onIncomeGeneratedCallback = amt => Wallet.AddMoney(amt);
+        _onUpgradePurchasedCallback = OnUpgradePurchased;
+        _onSPChangedCallback = _ => UpdateSPUI();
+        _onFeverStartedCallback = UpdateSPUI;
+        _onFeverEndedCallback = UpdateSPUI;
 
-        Wallet.OnMoneyChanged += _ => UpdateMoneyUI();
-        Wallet.OnCertificateChanged += _ => UpdateCertUI();
-        Wallet.OnMoneyEarned = amt => stats.totalMoneyEarned += amt;
-        Wallet.OnMoneySpent = amt => stats.totalMoneySpent += amt;
-        Inventory.OnMaterialsUsed = amt => stats.totalMaterialsUsed += amt;
-        Income.OnIncomeGenerated += amt => Wallet.AddMoney(amt);
-        Upgrade.OnUpgradePurchased += OnUpgradePurchased;
-        Upgrade.OnUpgradeCountIncremented = () => stats.totalUpgradesPurchased++;
-        SP.OnSPChanged += _ => UpdateSPUI();
-        SP.OnFeverStarted += UpdateSPUI;
-        SP.OnFeverEnded += UpdateSPUI;
+        // イベント登録
+        Wallet.OnMoneyChanged += _onMoneyChangedCallback;
+        Wallet.OnCertificateChanged += _onCertificateChangedCallback;
+        Wallet.OnMoneyEarned += amt => stats.totalMoneyEarned += amt;
+        Wallet.OnMoneySpent += amt => stats.totalMoneySpent += amt;
+        Inventory.OnMaterialsUsed += amt => stats.totalMaterialsUsed += amt;
+        Income.OnIncomeGenerated += _onIncomeGeneratedCallback;
+        Upgrade.OnUpgradePurchased += _onUpgradePurchasedCallback;
+        Upgrade.OnUpgradeCountIncremented += () => stats.totalUpgradesPurchased++;
+        SP.OnSPChanged += _onSPChangedCallback;
+        SP.OnFeverStarted += _onFeverStartedCallback;
+        SP.OnFeverEnded += _onFeverEndedCallback;
     }
 
     // ========================================
@@ -200,11 +228,41 @@ public class GameController : MonoBehaviour
     // 計算
     // ========================================
 
-    private void RecalculateStats()
+    /// <summary>
+    /// ステータスを再計算（バフ変更時などに外部から呼び出し可能）
+    /// </summary>
+    public void RecalculateStats()
     {
         _finalClickValue = (clickBase + clickFlatBonus) * (1 + clickPercentBonus) * globalMultiplier;
         _finalCritChance = Mathf.Clamp01(baseCriticalChance + (float)criticalChanceBonus);
         _finalCritMultiplier = baseCriticalMultiplier + criticalPowerBonus;
+
+        // 再計算完了を通知（バフシステム等で利用可能）
+        OnStatsRecalculated?.Invoke();
+    }
+
+    /// <summary>
+    /// 一時バフを適用してステータスを再計算
+    /// </summary>
+    /// <param name="clickMultiplier">クリック倍率（1.0 = 100%）</param>
+    /// <param name="critChanceBonus">クリティカル確率ボーナス</param>
+    /// <param name="critPowerBonus">クリティカル倍率ボーナス</param>
+    public void ApplyTemporaryBuff(double clickMultiplier = 1.0, double critChanceBonus = 0, double critPowerBonus = 0)
+    {
+        // globalMultiplierに一時バフを反映
+        globalMultiplier *= clickMultiplier;
+        criticalChanceBonus += critChanceBonus;
+        criticalPowerBonus += critPowerBonus;
+        RecalculateStats();
+    }
+
+    /// <summary>
+    /// グローバル倍率を直接設定（株機能等で使用）
+    /// </summary>
+    public void SetGlobalMultiplier(double multiplier)
+    {
+        globalMultiplier = multiplier;
+        RecalculateStats();
     }
 
     // ========================================
@@ -279,7 +337,7 @@ public class GameController : MonoBehaviour
     // ========================================
 
     public double GetMoney() => Wallet.Money;
-    public int GetCertificates() => (int)Wallet.Certificates;
+    public double GetCertificates() => Wallet.Certificates;
     public bool CanAfford(double amount, CurrencyType type = CurrencyType.LMD)
         => Wallet.CanAfford(amount, type);
 
@@ -325,5 +383,48 @@ public class GameController : MonoBehaviour
     public bool UseAllMaterials(List<ItemCost> costs)
     {
         return Inventory.UseAllMaterials(costs);
+    }
+
+    // ========================================
+    // クリーンアップ
+    // ========================================
+
+    private void OnDestroy()
+    {
+        // InvokeRepeating停止
+        CancelInvoke(nameof(TrackPlayTime));
+
+        // イベント解除
+        if (Wallet != null)
+        {
+            Wallet.OnMoneyChanged -= _onMoneyChangedCallback;
+            Wallet.OnCertificateChanged -= _onCertificateChangedCallback;
+        }
+
+        if (Income != null)
+        {
+            Income.OnIncomeGenerated -= _onIncomeGeneratedCallback;
+        }
+
+        if (Upgrade != null)
+        {
+            Upgrade.OnUpgradePurchased -= _onUpgradePurchasedCallback;
+        }
+
+        if (SP != null)
+        {
+            SP.OnSPChanged -= _onSPChangedCallback;
+            SP.OnFeverStarted -= _onFeverStartedCallback;
+            SP.OnFeverEnded -= _onFeverEndedCallback;
+        }
+
+        // コールバック参照クリア
+        _onMoneyChangedCallback = null;
+        _onCertificateChangedCallback = null;
+        _onIncomeGeneratedCallback = null;
+        _onUpgradePurchasedCallback = null;
+        _onSPChangedCallback = null;
+        _onFeverStartedCallback = null;
+        _onFeverEndedCallback = null;
     }
 }

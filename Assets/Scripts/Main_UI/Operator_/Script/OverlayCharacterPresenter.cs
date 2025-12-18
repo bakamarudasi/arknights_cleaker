@@ -1,5 +1,6 @@
 using UnityEngine;
 using UnityEngine.UI;
+using UnityEngine.UIElements;
 using System.Collections;
 
 /// <summary>
@@ -17,19 +18,23 @@ public class OverlayCharacterPresenter : MonoBehaviour
     [SerializeField] private Vector2Int renderTextureSize = new Vector2Int(1024, 1024);
 
     [Header("配置設定")]
-    [SerializeField] private float characterScale = 0.5f; // キャラを小さく
-    [SerializeField] private Vector2 screenOffset = new Vector2(-100f, 0f); // 左に少しオフセット（右パネル分）
+    [SerializeField] private float characterScale = 0.5f;
+    [SerializeField] private Vector2 padding = new Vector2(20f, 20f); // 表示エリア内のパディング
 
     [Header("Canvas設定")]
-    [SerializeField] private int sortingOrder = 32767;
+    [SerializeField] private int sortingOrder = 100; // UI Toolkitより上、でも最大値ではない
     [SerializeField] private Vector2 referenceResolution = new Vector2(1920, 1080);
-    [SerializeField] private Vector2 displaySize = new Vector2(500, 700); // メインレイアウト内に収まるサイズ
+
+    // 表示エリア（UI ToolkitのVisualElementから取得）
+    private Rect _displayAreaScreen = Rect.zero;
+    private CanvasScaler _canvasScaler;
 
     // 生成したオブジェクト
     private Camera characterCamera;
     private RenderTexture renderTexture;
     private Canvas overlayCanvas;
     private RawImage displayImage;
+    private RectTransform displayRectTransform;
     private GameObject currentCharacter;
     private Transform characterRoot;
 
@@ -54,6 +59,81 @@ public class OverlayCharacterPresenter : MonoBehaviour
         CreateCharacterCamera();
         CreateOverlayCanvas();
         CreateDisplayImage();
+    }
+
+    /// <summary>
+    /// 表示エリアを設定（UI ToolkitのVisualElementから）
+    /// </summary>
+    /// <param name="element">表示エリアとなるVisualElement</param>
+    public void SetDisplayArea(VisualElement element)
+    {
+        if (element == null) return;
+
+        // UI Toolkitのスクリーン座標を取得
+        // worldBound: Y軸は上から下（上が0）
+        Rect uitkBound = element.worldBound;
+
+        // uGUIスクリーン座標に変換
+        // uGUI: Y軸は下から上（下が0）
+        _displayAreaScreen = new Rect(
+            uitkBound.x,
+            Screen.height - uitkBound.y - uitkBound.height,
+            uitkBound.width,
+            uitkBound.height
+        );
+
+        Debug.Log($"[Presenter] DisplayArea set: UITK={uitkBound}, Screen={_displayAreaScreen}");
+
+        // 既に表示中なら位置を更新
+        if (displayRectTransform != null)
+        {
+            UpdateDisplayPosition();
+        }
+    }
+
+    /// <summary>
+    /// RawImageの位置とサイズを表示エリアに合わせる
+    /// </summary>
+    private void UpdateDisplayPosition()
+    {
+        if (displayRectTransform == null || _displayAreaScreen == Rect.zero) return;
+
+        // CanvasScalerのスケール係数を取得
+        float scaleFactor = 1f;
+        if (_canvasScaler != null)
+        {
+            // ScaleWithScreenSizeの場合のスケール計算
+            float widthScale = Screen.width / referenceResolution.x;
+            float heightScale = Screen.height / referenceResolution.y;
+            scaleFactor = Mathf.Lerp(widthScale, heightScale, _canvasScaler.matchWidthOrHeight);
+        }
+
+        // パディングを適用した表示エリア
+        Rect paddedArea = new Rect(
+            _displayAreaScreen.x + padding.x,
+            _displayAreaScreen.y + padding.y,
+            _displayAreaScreen.width - padding.x * 2,
+            _displayAreaScreen.height - padding.y * 2
+        );
+
+        // Canvas座標に変換（スケールファクターで割る）
+        Vector2 canvasPos = new Vector2(
+            paddedArea.x / scaleFactor,
+            paddedArea.y / scaleFactor
+        );
+        Vector2 canvasSize = new Vector2(
+            paddedArea.width / scaleFactor,
+            paddedArea.height / scaleFactor
+        );
+
+        // RectTransformを設定（左下基準）
+        displayRectTransform.anchorMin = Vector2.zero;
+        displayRectTransform.anchorMax = Vector2.zero;
+        displayRectTransform.pivot = Vector2.zero;
+        displayRectTransform.anchoredPosition = canvasPos;
+        displayRectTransform.sizeDelta = canvasSize;
+
+        Debug.Log($"[Presenter] RawImage positioned: pos={canvasPos}, size={canvasSize}, scale={scaleFactor}");
     }
 
     /// <summary>
@@ -185,11 +265,11 @@ public class OverlayCharacterPresenter : MonoBehaviour
         overlayCanvas.renderMode = RenderMode.ScreenSpaceOverlay;
         overlayCanvas.sortingOrder = sortingOrder;
 
-        var scaler = canvasObj.AddComponent<CanvasScaler>();
-        scaler.uiScaleMode = CanvasScaler.ScaleMode.ScaleWithScreenSize;
-        scaler.referenceResolution = referenceResolution;
-        scaler.screenMatchMode = CanvasScaler.ScreenMatchMode.MatchWidthOrHeight;
-        scaler.matchWidthOrHeight = 0.5f;
+        _canvasScaler = canvasObj.AddComponent<CanvasScaler>();
+        _canvasScaler.uiScaleMode = CanvasScaler.ScaleMode.ScaleWithScreenSize;
+        _canvasScaler.referenceResolution = referenceResolution;
+        _canvasScaler.screenMatchMode = CanvasScaler.ScreenMatchMode.MatchWidthOrHeight;
+        _canvasScaler.matchWidthOrHeight = 0.5f;
 
         canvasObj.AddComponent<GraphicRaycaster>();
 
@@ -204,18 +284,28 @@ public class OverlayCharacterPresenter : MonoBehaviour
         var imageObj = new GameObject("CharacterDisplay");
         imageObj.transform.SetParent(overlayCanvas.transform, false);
 
-        var rectTransform = imageObj.AddComponent<RectTransform>();
-        rectTransform.anchorMin = new Vector2(0.5f, 0.5f);
-        rectTransform.anchorMax = new Vector2(0.5f, 0.5f);
-        rectTransform.pivot = new Vector2(0.5f, 0.5f);
-        rectTransform.anchoredPosition = screenOffset;
-        rectTransform.sizeDelta = displaySize;
+        displayRectTransform = imageObj.AddComponent<RectTransform>();
 
         displayImage = imageObj.AddComponent<RawImage>();
         displayImage.texture = renderTexture;
         displayImage.raycastTarget = false;
 
-        Debug.Log($"[Presenter] DisplayImage created with size: {displaySize}");
+        // 表示エリアが設定されていればそれに合わせる
+        if (_displayAreaScreen != Rect.zero)
+        {
+            UpdateDisplayPosition();
+        }
+        else
+        {
+            // フォールバック：画面中央に配置
+            displayRectTransform.anchorMin = new Vector2(0.5f, 0.5f);
+            displayRectTransform.anchorMax = new Vector2(0.5f, 0.5f);
+            displayRectTransform.pivot = new Vector2(0.5f, 0.5f);
+            displayRectTransform.anchoredPosition = Vector2.zero;
+            displayRectTransform.sizeDelta = new Vector2(500, 700);
+        }
+
+        Debug.Log($"[Presenter] DisplayImage created");
     }
 
     /// <summary>
@@ -256,8 +346,13 @@ public class OverlayCharacterPresenter : MonoBehaviour
             currentCharacter.transform.position.z
         );
 
-        // displaySizeのアスペクト比でカメラサイズを調整
-        float displayAspect = displaySize.x / displaySize.y;
+        // 表示エリアのアスペクト比でカメラサイズを調整
+        float displayAspect = 1f;
+        if (_displayAreaScreen.width > 0 && _displayAreaScreen.height > 0)
+        {
+            displayAspect = _displayAreaScreen.width / _displayAreaScreen.height;
+        }
+
         float boundsHalfHeight = bounds.extents.y;
         float boundsHalfWidth = bounds.extents.x;
 
@@ -267,7 +362,7 @@ public class OverlayCharacterPresenter : MonoBehaviour
 
         characterCamera.orthographicSize = Mathf.Max(sizeForHeight, sizeForWidth);
 
-        Debug.Log($"[Presenter] Fit: Bounds={bounds.size}, OrthoSize={characterCamera.orthographicSize}");
+        Debug.Log($"[Presenter] Fit: Bounds={bounds.size}, Aspect={displayAspect:F2}, OrthoSize={characterCamera.orthographicSize}");
     }
 
     private void OnDestroy()
