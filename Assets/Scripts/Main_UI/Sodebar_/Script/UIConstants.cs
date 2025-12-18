@@ -27,6 +27,7 @@ public static class UIConstants
 // MenuTypeの定義などはそのままでOK
 public enum MenuType
 {
+    Start,      // スタート画面（タイトル）
     Home,
     Shop,
     Operators,
