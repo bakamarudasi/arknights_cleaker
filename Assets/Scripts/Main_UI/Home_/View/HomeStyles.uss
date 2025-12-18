@@ -952,3 +952,70 @@
     height: 100%;
     overflow: hidden;
 }
+
+/* ========================================
+   昇格演出
+   ======================================== */
+
+.slot-rank-up {
+    position: absolute;
+    font-size: 64px;
+    color: rgb(255, 255, 255);
+    -unity-font-style: bold;
+    letter-spacing: 4px;
+    text-shadow: 0 0 30px rgba(255, 255, 255, 1), 0 0 60px rgba(255, 200, 0, 0.8);
+    opacity: 0;
+    scale: 0.5;
+    transition-property: opacity, scale, translate;
+    transition-duration: 0.3s;
+    transition-timing-function: ease-out;
+}
+
+.slot-rank-up.show {
+    opacity: 1;
+    scale: 1;
+}
+
+.slot-rank-up.hide {
+    opacity: 0;
+    scale: 1.5;
+    translate: 0 -50px;
+}
+
+/* 昇格ランク別スタイル */
+.slot-rank-up.rare {
+    color: rgb(100, 200, 255);
+    text-shadow: 0 0 30px rgba(100, 200, 255, 1), 0 0 60px rgba(50, 150, 255, 0.8);
+}
+
+.slot-rank-up.super {
+    font-size: 72px;
+    color: rgb(255, 215, 0);
+    text-shadow: 0 0 40px rgba(255, 215, 0, 1), 0 0 80px rgba(255, 180, 0, 0.8);
+}
+
+.slot-rank-up.mega {
+    font-size: 80px;
+    color: rgb(255, 100, 100);
+    text-shadow: 0 0 50px rgba(255, 50, 50, 1), 0 0 100px rgba(255, 0, 0, 0.8);
+}
+
+.slot-rank-up.legendary {
+    font-size: 88px;
+    color: rgb(255, 50, 255);
+    text-shadow: 0 0 60px rgba(255, 50, 255, 1), 0 0 120px rgba(200, 0, 255, 0.8);
+}
+
+/* 倍率表示の中間ランク */
+.slot-multiplier.rare {
+    color: rgb(100, 200, 255);
+    text-shadow: 0 0 20px rgba(100, 200, 255, 0.8), 0 0 40px rgba(50, 150, 255, 0.6);
+    border-color: rgb(100, 200, 255);
+}
+
+.slot-multiplier.super {
+    font-size: 76px;
+    color: rgb(255, 215, 0);
+    text-shadow: 0 0 25px rgba(255, 215, 0, 1), 0 0 50px rgba(255, 180, 0, 0.8);
+    border-color: rgb(255, 215, 0);
+}

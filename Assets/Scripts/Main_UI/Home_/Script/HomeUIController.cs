@@ -58,11 +58,15 @@ public class HomeUIController : IViewController
     private Label slotBigText;
     private VisualElement slotRoulette;
     private Label slotMultiplier;
+    private Label slotRankUp;
     private Label slotBonusText;
 
     // スロットコインプール
     private readonly List<VisualElement> _slotCoins = new();
     private const int SlotCoinCount = 20;
+
+    // スロットランク定義
+    private enum SlotRank { Normal, Rare, Super, Mega, Legendary }
 
     // ========================================
     // 状態管理
@@ -169,6 +173,7 @@ public class HomeUIController : IViewController
         slotBigText = root.Q<Label>("slot-big-text");
         slotRoulette = root.Q<VisualElement>("slot-roulette");
         slotMultiplier = root.Q<Label>("slot-multiplier");
+        slotRankUp = root.Q<Label>("slot-rank-up");
         slotBonusText = root.Q<Label>("slot-bonus-text");
     }
 
@@ -824,22 +829,41 @@ public class HomeUIController : IViewController
     {
         if (slotMultiplier == null) return;
 
-        int spinCount = 0;
-        const int totalSpins = 20; // 約1秒間（50ms × 20）
+        // 最終ランクを決定
+        SlotRank finalRank = GetRankFromMultiplier(finalMultiplier);
 
-        // ルーレット回転
+        // 昇格演出のスケジュール
+        int currentRankIndex = 0;
+        SlotRank[] ranks = { SlotRank.Normal, SlotRank.Rare, SlotRank.Super, SlotRank.Mega, SlotRank.Legendary };
+        int finalRankIndex = (int)finalRank;
+
+        // ルーレット回転開始（各ランク内の数字でスピン）
+        int spinCount = 0;
+        SlotRank displayRank = SlotRank.Normal;
+
         var rouletteSchedule = root.schedule.Execute(() =>
         {
-            if (spinCount < totalSpins)
-            {
-                // ランダムな数字を表示
-                int randomMult = UnityEngine.Random.Range(2, 10000);
-                slotMultiplier.text = $"x{randomMult}";
-                spinCount++;
-            }
+            int randomMult = GetRandomMultiplierForRank(displayRank);
+            slotMultiplier.text = $"x{randomMult}";
+            spinCount++;
         }).Every(50);
 
-        // 回転停止
+        // 昇格演出をスケジュール
+        int delay = 300;
+        for (int i = 1; i <= finalRankIndex; i++)
+        {
+            int rankIndex = i;
+            root.schedule.Execute(() =>
+            {
+                displayRank = ranks[rankIndex];
+                ShowRankUpEffect(ranks[rankIndex]);
+                UpdateMultiplierStyle(ranks[rankIndex]);
+            }).ExecuteLater(delay);
+            delay += 350; // 各昇格間隔
+        }
+
+        // 回転停止と最終結果
+        int stopDelay = delay + 200;
         root.schedule.Execute(() =>
         {
             rouletteSchedule.Pause();
@@ -847,16 +871,7 @@ public class HomeUIController : IViewController
             // 最終結果を表示
             slotMultiplier.text = $"x{finalMultiplier}";
             slotMultiplier.RemoveFromClassList("spinning");
-
-            // 倍率に応じたスタイル
-            if (finalMultiplier >= 1000)
-            {
-                slotMultiplier.AddToClassList("legendary");
-            }
-            else if (finalMultiplier >= 100)
-            {
-                slotMultiplier.AddToClassList("mega");
-            }
+            UpdateMultiplierStyle(finalRank);
 
             // ボーナステキスト表示
             if (slotBonusText != null)
@@ -868,7 +883,7 @@ public class HomeUIController : IViewController
             // 追加フラッシュ
             PlaySlotFlash();
 
-        }).ExecuteLater(1100);
+        }).ExecuteLater(stopDelay);
 
         // 非表示処理
         root.schedule.Execute(() =>
@@ -876,15 +891,117 @@ public class HomeUIController : IViewController
             slotBigText?.RemoveFromClassList("show");
             slotBonusText?.RemoveFromClassList("show");
             slotRoulette?.RemoveFromClassList("show");
-            slotMultiplier?.RemoveFromClassList("mega");
-            slotMultiplier?.RemoveFromClassList("legendary");
-        }).ExecuteLater(3500);
+            slotRankUp?.RemoveFromClassList("show");
+            ClearMultiplierStyles();
+            ClearRankUpStyles();
+        }).ExecuteLater(stopDelay + 2500);
 
         root.schedule.Execute(() =>
         {
             slotOverlay?.RemoveFromClassList("active");
             slotRainbow?.RemoveFromClassList("active");
-        }).ExecuteLater(4000);
+        }).ExecuteLater(stopDelay + 3000);
+    }
+
+    private SlotRank GetRankFromMultiplier(int multiplier)
+    {
+        if (multiplier >= 1000) return SlotRank.Legendary;
+        if (multiplier >= 100) return SlotRank.Mega;
+        if (multiplier >= 51) return SlotRank.Super;
+        if (multiplier >= 11) return SlotRank.Rare;
+        return SlotRank.Normal;
+    }
+
+    private int GetRandomMultiplierForRank(SlotRank rank)
+    {
+        return rank switch
+        {
+            SlotRank.Normal => UnityEngine.Random.Range(2, 11),
+            SlotRank.Rare => UnityEngine.Random.Range(11, 51),
+            SlotRank.Super => UnityEngine.Random.Range(51, 101),
+            SlotRank.Mega => UnityEngine.Random.Range(101, 1000),
+            SlotRank.Legendary => UnityEngine.Random.Range(1000, 10000),
+            _ => UnityEngine.Random.Range(2, 11)
+        };
+    }
+
+    private void ShowRankUpEffect(SlotRank rank)
+    {
+        if (slotRankUp == null) return;
+
+        // 前のスタイルをクリア
+        ClearRankUpStyles();
+
+        // 昇格テキストとスタイル設定
+        string text = rank switch
+        {
+            SlotRank.Rare => "昇格！",
+            SlotRank.Super => "SUPER昇格!",
+            SlotRank.Mega => "MEGA昇格!!",
+            SlotRank.Legendary => "LEGENDARY!!!",
+            _ => ""
+        };
+
+        if (string.IsNullOrEmpty(text)) return;
+
+        slotRankUp.text = text;
+        slotRankUp.AddToClassList(rank.ToString().ToLower());
+        slotRankUp.AddToClassList("show");
+
+        // フラッシュ
+        PlaySlotFlash();
+
+        // 昇格テキストを消す
+        root.schedule.Execute(() =>
+        {
+            slotRankUp.RemoveFromClassList("show");
+            slotRankUp.AddToClassList("hide");
+        }).ExecuteLater(300);
+
+        root.schedule.Execute(() =>
+        {
+            slotRankUp.RemoveFromClassList("hide");
+        }).ExecuteLater(600);
+    }
+
+    private void UpdateMultiplierStyle(SlotRank rank)
+    {
+        if (slotMultiplier == null) return;
+
+        ClearMultiplierStyles();
+        slotMultiplier.RemoveFromClassList("spinning");
+
+        string styleClass = rank switch
+        {
+            SlotRank.Rare => "rare",
+            SlotRank.Super => "super",
+            SlotRank.Mega => "mega",
+            SlotRank.Legendary => "legendary",
+            _ => ""
+        };
+
+        if (!string.IsNullOrEmpty(styleClass))
+        {
+            slotMultiplier.AddToClassList(styleClass);
+        }
+    }
+
+    private void ClearMultiplierStyles()
+    {
+        slotMultiplier?.RemoveFromClassList("rare");
+        slotMultiplier?.RemoveFromClassList("super");
+        slotMultiplier?.RemoveFromClassList("mega");
+        slotMultiplier?.RemoveFromClassList("legendary");
+    }
+
+    private void ClearRankUpStyles()
+    {
+        slotRankUp?.RemoveFromClassList("rare");
+        slotRankUp?.RemoveFromClassList("super");
+        slotRankUp?.RemoveFromClassList("mega");
+        slotRankUp?.RemoveFromClassList("legendary");
+        slotRankUp?.RemoveFromClassList("show");
+        slotRankUp?.RemoveFromClassList("hide");
     }
 
     // ========================================

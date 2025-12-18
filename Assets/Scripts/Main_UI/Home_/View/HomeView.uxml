@@ -66,6 +66,8 @@
                     <ui:Label text="MULTIPLIER" class="slot-roulette-label" />
                     <ui:Label name="slot-multiplier" text="x???" class="slot-multiplier" />
                 </ui:VisualElement>
+                <!-- 昇格テキスト -->
+                <ui:Label name="slot-rank-up" text="" class="slot-rank-up" />
                 <ui:Label name="slot-bonus-text" text="" class="slot-bonus-text" />
             </ui:VisualElement>
         </ui:VisualElement>
