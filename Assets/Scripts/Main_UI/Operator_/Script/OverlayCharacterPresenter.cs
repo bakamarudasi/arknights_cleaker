@@ -124,9 +124,16 @@ public class OverlayCharacterPresenter : MonoBehaviour
     {
         if (prefab != null)
         {
-            // 現在のインスタンスを破棄
+            // 現在のインスタンスを破棄（イベント購読解除含む）
             if (_currentInstance != null)
             {
+                // イベント購読解除
+                if (_currentController != null)
+                {
+                    _currentController.OnReady -= OnCharacterReady;
+                    _currentController.OnScaleChanged -= OnCharacterScaleChanged;
+                }
+
                 Destroy(_currentInstance);
                 _currentInstance = null;
                 _currentController = null;

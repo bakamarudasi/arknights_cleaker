@@ -21,7 +21,11 @@ public class FloatingTextManager : MonoBehaviour
     /// </summary>
     public void Spawn(double amount, Vector3 screenPosition, bool isCritical)
     {
-        if (textPrefab == null) return;
+        if (textPrefab == null)
+        {
+            Debug.LogWarning("[FloatingTextManager] textPrefab is not assigned!");
+            return;
+        }
 
         // 生成！
         // UIなので、親(container)を指定して生成するのが大事

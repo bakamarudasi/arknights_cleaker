@@ -111,6 +111,9 @@ public class SPManager : MonoBehaviour
 
     private void EndFever()
     {
+        // 既に終了済みなら何もしない（二重呼び出し防止）
+        if (!_isFeverActive) return;
+
         _isFeverActive = false;
         _currentSP = 0;
         OnSPChanged?.Invoke(_currentSP);

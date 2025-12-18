@@ -439,7 +439,7 @@ public class GachaUIController : IViewController
 
     private void ChangeBanner(int direction)
     {
-        if (bannerList.Count <= 1) return;
+        if (bannerList == null || bannerList.Count <= 1) return;
 
         currentBannerIndex += direction;
         if (currentBannerIndex < 0) currentBannerIndex = bannerList.Count - 1;
@@ -451,7 +451,9 @@ public class GachaUIController : IViewController
     private GachaBannerData GetCurrentBanner()
     {
         if (bannerList == null || bannerList.Count == 0) return null;
-        return bannerList[Mathf.Clamp(currentBannerIndex, 0, bannerList.Count - 1)];
+        // インデックスを安全な範囲に制限（Count > 0 は上でチェック済み）
+        currentBannerIndex = Mathf.Clamp(currentBannerIndex, 0, bannerList.Count - 1);
+        return bannerList[currentBannerIndex];
     }
 
     // ========================================
@@ -926,6 +928,14 @@ public class GachaUIController : IViewController
         // タイマー停止
         resultAnimTimer?.Pause();
         resultAnimTimer = null;
+
+        // ジッパーイベントの購読解除
+        if (zipper != null)
+        {
+            zipper.OnProgressChanged -= UpdateGachaVisuals;
+            zipper.OnUnzipCompleted -= OnZipperOpened;
+            zipper = null;
+        }
 
         pendingResults = null;
         bannerList.Clear();
