@@ -76,6 +76,20 @@ public class AffectionManager : MonoBehaviour
     }
 
     /// <summary>
+    /// 頭なで時の好感度処理（クールダウンなし）
+    /// </summary>
+    public void OnHeadPetted(int bonus = 1)
+    {
+        if (currentCharacter == null) return;
+
+        // クールダウンなしで好感度追加
+        AddAffection(currentCharacter.characterId, bonus);
+
+        // 頭なで専用のセリフは実装予定
+        // 現状はクリック時と同じセリフを使用
+    }
+
+    /// <summary>
     /// プレゼントを渡す
     /// </summary>
     public void GiveGift(string itemId)

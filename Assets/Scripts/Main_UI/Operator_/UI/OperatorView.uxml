@@ -14,6 +14,7 @@
             <ui:VisualElement name="character-area" class="character-area">
 
                 <!-- キャラクター画像 (2レイヤー方式) -->
+                <!-- インタラクションゾーン（頭なで等）はキャラクタープレハブ内のCharacterInteractionZoneで定義 -->
                 <ui:VisualElement name="character-display" class="character-display">
                     <ui:VisualElement name="layer-base" class="character-layer" />
                     <ui:VisualElement name="layer-clothes" class="character-layer" />
@@ -46,13 +47,30 @@
                     </ui:VisualElement>
                 </ui:VisualElement>
 
-                <!-- 衣装パーツ切り替え（レンズ機能的なやつ） -->
+                <!-- レンズアイテムセクション -->
                 <ui:VisualElement class="lens-section">
-                    <ui:Label text="LENS MODE" class="section-title" />
+                    <ui:Label text="LENS ITEMS" class="section-title" />
 
+                    <!-- 所持レンズアイテム一覧 -->
+                    <ui:ScrollView class="lens-items-scroll" horizontal-scroller-visibility="Hidden">
+                        <ui:VisualElement name="lens-items-container" class="lens-items-container">
+                            <!-- アイテムはコードで動的に追加 -->
+                        </ui:VisualElement>
+                    </ui:ScrollView>
+
+                    <!-- バッテリー表示 -->
+                    <ui:VisualElement class="battery-section">
+                        <ui:Label name="lens-battery-label" text="BATTERY: --" class="battery-label" />
+                        <ui:VisualElement class="battery-bar-bg">
+                            <ui:VisualElement name="lens-battery-fill" class="battery-bar-fill" />
+                        </ui:VisualElement>
+                    </ui:VisualElement>
+
+                    <!-- レンズモード切り替え -->
+                    <ui:Label text="VIEW MODE" class="section-title-small" />
                     <ui:VisualElement class="lens-buttons">
                         <ui:Button name="btn-lens-normal" text="NORMAL" class="btn-lens active" />
-                        <ui:Button name="btn-lens-clothes" text="CLOTHES" class="btn-lens" />
+                        <ui:Button name="btn-lens-clothes" text="X-RAY" class="btn-lens" />
                     </ui:VisualElement>
                 </ui:VisualElement>
 
