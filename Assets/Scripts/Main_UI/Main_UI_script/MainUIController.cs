@@ -15,6 +15,9 @@ public class MainUIController : MonoBehaviour
     [Tooltip("サイドバーの枠組み (SidebarView.uxml)")]
     [SerializeField] private VisualTreeAsset sidebarViewTemplate;
 
+    [Tooltip("スタート画面のテンプレート (StartView.uxml)")]
+    [SerializeField] private VisualTreeAsset startViewTemplate;
+
     [Header("Menu Data")]
     [SerializeField] private List<MenuItemData> menuItems = new List<MenuItemData>();
 
@@ -58,8 +61,8 @@ public class MainUIController : MonoBehaviour
 
         LogUIController.LogSystem("UI System Online.");
 
-        // 初期画面へ
-        SwitchToMenu(MenuType.Shop);
+        // 初期画面へ（スタート画面から開始）
+        SwitchToMenu(MenuType.Start);
     }
 
     private void OnSidebarMenuChanged(int index)
@@ -80,11 +83,37 @@ public class MainUIController : MonoBehaviour
         // ★注意: ここで currentViewController = null; をしてはいけません！
         // AttachLogicController の中で Dispose してから null にします。
 
-        // 2. データ検索
+        // 2. Start画面の特別処理（サイドバー非表示、MenuItemData不要）
+        if (menuType == MenuType.Start)
+        {
+            // サイドバーを非表示
+            if (sidebarContainer != null)
+            {
+                sidebarContainer.style.display = DisplayStyle.None;
+            }
+
+            // Start画面のテンプレートをロード
+            if (startViewTemplate != null)
+            {
+                startViewTemplate.CloneTree(ContentArea);
+            }
+
+            // Start画面のロジックをアタッチ
+            AttachLogicController(menuType);
+            return;
+        }
+
+        // 3. 通常画面：サイドバーを表示
+        if (sidebarContainer != null)
+        {
+            sidebarContainer.style.display = DisplayStyle.Flex;
+        }
+
+        // 4. データ検索
         var data = menuItems.Find(m => m.menuType == menuType);
         if (data == null) return;
 
-        // 3. テンプレートがあれば表示
+        // 5. テンプレートがあれば表示
         if (data.viewTemplate != null)
         {
             data.viewTemplate.CloneTree(ContentArea);
@@ -99,10 +128,10 @@ public class MainUIController : MonoBehaviour
             ContentArea.Add(label);
         }
 
-        // 4. ロジックのアタッチ (Dispose処理含む)
+        // 6. ロジックのアタッチ (Dispose処理含む)
         AttachLogicController(menuType);
 
-        // 5. ログ出力
+        // 7. ログ出力
         if (!string.IsNullOrEmpty(data.logMessage))
         {
             LogUIController.Msg(data.logMessage);
@@ -123,6 +152,12 @@ public class MainUIController : MonoBehaviour
 
         switch (menuType)
         {
+            case MenuType.Start:
+                var startController = new StartUIController();
+                startController.Initialize(ContentArea);
+                currentViewController = startController;
+                break;
+
             case MenuType.Shop:
                 var shopController = new ShopUIController();
                 shopController.Initialize(ContentArea);
