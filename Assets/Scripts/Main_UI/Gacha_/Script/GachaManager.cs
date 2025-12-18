@@ -10,6 +10,16 @@ public class GachaManager : MonoBehaviour
     public static GachaManager Instance { get; private set; }
 
     // ========================================
+    // データベース
+    // ========================================
+
+    [Header("データベース")]
+    [SerializeField] private GachaDatabase _database;
+
+    /// <summary>ガチャデータベース（外部参照用）</summary>
+    public GachaDatabase Database => _database;
+
+    // ========================================
     // 天井カウント（バナーID → カウント）
     // ========================================
 

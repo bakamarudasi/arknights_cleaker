@@ -75,9 +75,16 @@ public class ShopUIController : IViewController
     // 初期化
     // ========================================
 
-    public void Initialize(VisualElement root, UpgradeDatabase database)
+    public void Initialize(VisualElement root)
     {
         this.root = root;
+        var database = GameController.Instance?.Upgrade?.Database;
+
+        if (database == null)
+        {
+            Debug.LogWarning("[ShopUIController] UpgradeDatabase not found in UpgradeManager!");
+            return;
+        }
         this.database = database;
 
         // ビジネスロジック層の初期化

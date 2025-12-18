@@ -88,9 +88,10 @@ public class MarketUIController : IViewController
     // 初期化
     // ========================================
 
-    public void Initialize(VisualElement root, StockDatabase database)
+    public void Initialize(VisualElement root)
     {
         this.root = root;
+        // StockDatabaseはMarketManager.Instance.stockDatabaseから取得可能
 
         QueryElements();
         BindUIEvents();

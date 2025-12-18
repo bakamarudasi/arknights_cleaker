@@ -86,10 +86,16 @@ public class GachaUIController : IViewController
     // 初期化
     // ========================================
 
-    public void Initialize(VisualElement root, GachaDatabase database)
+    public void Initialize(VisualElement root)
     {
         this.root = root;
-        this.database = database;
+        this.database = GachaManager.Instance?.Database;
+
+        if (database == null)
+        {
+            Debug.LogWarning("[GachaUIController] GachaDatabase not found in GachaManager!");
+            return;
+        }
 
         bannerList = database.GetAllBanners();
 
