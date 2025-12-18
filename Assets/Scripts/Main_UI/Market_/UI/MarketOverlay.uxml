@@ -1,0 +1,169 @@
+<ui:UXML xmlns:ui="UnityEngine.UIElements" xmlns:uie="UnityEditor.UIElements" editor-extension-mode="False">
+    <!-- スタイルシート -->
+    <Style src="MarketOverlay.uss" />
+
+    <!-- ルートオーバーレイ -->
+    <ui:VisualElement name="market-overlay-root" class="market-overlay-root">
+
+        <!-- ヘッダー -->
+        <ui:VisualElement class="market-header">
+            <ui:Label text="M A R K E T" class="market-title" />
+            <ui:Label name="market-time" text="12:34:56" class="market-time" />
+            <ui:Button name="close-btn" text="×" class="close-btn" />
+        </ui:VisualElement>
+
+        <!-- メインレイアウト -->
+        <ui:VisualElement class="market-main-layout">
+
+            <!-- 左パネル：資産情報 -->
+            <ui:VisualElement class="left-panel">
+
+                <!-- 所持金パネル -->
+                <ui:VisualElement class="asset-panel">
+                    <ui:Label text="ASSETS" class="panel-title" />
+                    <ui:VisualElement class="asset-row">
+                        <ui:Label text="LMD" class="asset-label" />
+                        <ui:Label name="lmd-value" text="1,234,567" class="asset-value" />
+                    </ui:VisualElement>
+                    <ui:VisualElement class="asset-row">
+                        <ui:Label text="総評価額" class="asset-label" />
+                        <ui:Label name="total-value" text="2,345,678" class="asset-value" />
+                    </ui:VisualElement>
+                    <ui:VisualElement class="asset-row">
+                        <ui:Label text="含み損益" class="asset-label" />
+                        <ui:Label name="total-pnl" text="+123,456" class="asset-value positive" />
+                    </ui:VisualElement>
+                </ui:VisualElement>
+
+                <!-- ロドス株パネル -->
+                <ui:VisualElement class="asset-panel rhodos-panel">
+                    <ui:Label text="RHODES ISLAND" class="panel-title" />
+                    <ui:Label name="rhodos-price" text="₿ 12,345" class="rhodos-stock-price" />
+                    <ui:Label name="rhodos-rank" text="NORMAL" class="rhodos-rank" />
+                    <ui:Label name="dividend-timer" text="次回配当: 15:30" class="dividend-timer" />
+                </ui:VisualElement>
+
+                <!-- ポートフォリオパネル -->
+                <ui:VisualElement class="asset-panel portfolio-panel">
+                    <ui:Label text="PORTFOLIO" class="panel-title" />
+                    <ui:ScrollView class="portfolio-list" name="portfolio-list">
+                        <!-- 動的に追加される -->
+                    </ui:ScrollView>
+                    <ui:VisualElement name="empty-portfolio" class="empty-portfolio">
+                        <ui:Label text="保有株なし" class="empty-portfolio-text" />
+                    </ui:VisualElement>
+                </ui:VisualElement>
+
+            </ui:VisualElement>
+
+            <!-- 中央パネル：メインチャート -->
+            <ui:VisualElement class="center-panel">
+
+                <!-- チャートコンテナ -->
+                <ui:VisualElement class="chart-container">
+
+                    <!-- チャートヘッダー -->
+                    <ui:VisualElement class="chart-header">
+                        <ui:VisualElement class="chart-stock-info">
+                            <ui:Label name="chart-stock-code" text="RL" class="chart-stock-code" />
+                            <ui:Label name="chart-stock-name" text="ライン生命" class="chart-stock-name" />
+                        </ui:VisualElement>
+                        <ui:VisualElement class="chart-price-info">
+                            <ui:Label name="chart-current-price" text="1,234.56" class="chart-current-price" />
+                            <ui:Label name="chart-change" text="+5.67%" class="chart-change" />
+                        </ui:VisualElement>
+                    </ui:VisualElement>
+
+                    <!-- チャート描画エリア -->
+                    <ui:VisualElement name="chart-canvas" class="chart-canvas">
+                        <!-- グリッドライン -->
+                        <ui:VisualElement class="chart-grid">
+                            <ui:VisualElement class="grid-line-h" style="top: 20%;" />
+                            <ui:VisualElement class="grid-line-h" style="top: 40%;" />
+                            <ui:VisualElement class="grid-line-h" style="top: 60%;" />
+                            <ui:VisualElement class="grid-line-h" style="top: 80%;" />
+                            <ui:VisualElement class="grid-line-v" style="left: 25%;" />
+                            <ui:VisualElement class="grid-line-v" style="left: 50%;" />
+                            <ui:VisualElement class="grid-line-v" style="left: 75%;" />
+                        </ui:VisualElement>
+                        <!-- 株価ライン（C#側で描画） -->
+                        <ui:VisualElement name="chart-line" class="chart-line" />
+                    </ui:VisualElement>
+
+                    <!-- チャートフッター -->
+                    <ui:VisualElement class="chart-footer">
+                        <ui:VisualElement class="chart-stat">
+                            <ui:Label text="OPEN" class="chart-stat-label" />
+                            <ui:Label name="stat-open" text="1,200.00" class="chart-stat-value" />
+                        </ui:VisualElement>
+                        <ui:VisualElement class="chart-stat">
+                            <ui:Label text="HIGH" class="chart-stat-label" />
+                            <ui:Label name="stat-high" text="1,250.00" class="chart-stat-value" />
+                        </ui:VisualElement>
+                        <ui:VisualElement class="chart-stat">
+                            <ui:Label text="LOW" class="chart-stat-label" />
+                            <ui:Label name="stat-low" text="1,180.00" class="chart-stat-value" />
+                        </ui:VisualElement>
+                        <ui:VisualElement class="chart-stat">
+                            <ui:Label text="VOL" class="chart-stat-label" />
+                            <ui:Label name="stat-volatility" text="0.15" class="chart-stat-value" />
+                        </ui:VisualElement>
+                    </ui:VisualElement>
+
+                </ui:VisualElement>
+
+                <!-- 売買パネル -->
+                <ui:VisualElement class="trade-panel">
+                    <ui:VisualElement class="trade-input-area">
+                        <ui:Label text="数量" class="trade-label" />
+                        <ui:TextField name="trade-quantity" value="1" class="trade-quantity-input" />
+                        <ui:Button name="qty-10" text="10" class="quick-quantity-btn" />
+                        <ui:Button name="qty-100" text="100" class="quick-quantity-btn" />
+                        <ui:Button name="qty-max" text="MAX" class="quick-quantity-btn" />
+                    </ui:VisualElement>
+                    <ui:VisualElement class="trade-buttons">
+                        <ui:Button name="buy-btn" text="BUY" class="buy-btn" />
+                        <ui:Button name="sell-btn" text="SELL" class="sell-btn" />
+                    </ui:VisualElement>
+                </ui:VisualElement>
+
+            </ui:VisualElement>
+
+            <!-- 右パネル：銘柄リスト -->
+            <ui:VisualElement class="right-panel">
+
+                <!-- 銘柄リストパネル -->
+                <ui:VisualElement class="stock-list-panel">
+                    <ui:VisualElement class="stock-list-header">
+                        <ui:Label text="STOCKS" class="stock-list-title" />
+                    </ui:VisualElement>
+                    <ui:ScrollView name="stock-list" class="stock-list">
+                        <!-- 動的に追加される -->
+                    </ui:ScrollView>
+                </ui:VisualElement>
+
+                <!-- スキルパネル -->
+                <ui:VisualElement class="skill-panel">
+                    <ui:Label text="SKILLS" class="panel-title" />
+                    <ui:Button name="skill-buy-support" text="🖱️ 物理買い支え" class="skill-btn" />
+                    <ui:Button name="skill-insider" text="👁️ インサイダー" class="skill-btn" />
+                    <ui:Label name="skill-cooldown" text="" class="skill-cooldown" />
+                </ui:VisualElement>
+
+            </ui:VisualElement>
+
+        </ui:VisualElement>
+
+        <!-- カットイン演出 -->
+        <ui:VisualElement name="cut-in-overlay" class="cut-in-overlay">
+            <ui:Label name="cut-in-text" text="BUY!" class="cut-in-text buy" />
+        </ui:VisualElement>
+
+        <!-- 暴落演出 -->
+        <ui:VisualElement name="crash-overlay" class="crash-overlay" />
+
+        <!-- 損切り演出 -->
+        <ui:VisualElement name="loss-cut-overlay" class="loss-cut-overlay" />
+
+    </ui:VisualElement>
+</ui:UXML>
