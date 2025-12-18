@@ -902,7 +902,18 @@ public class ShopUIController : IViewController
     private void RefreshList()
     {
         currentList.Clear();
-        currentList.AddRange(database.GetSorted(currentCategory));
+
+        // ロック解除済みのアイテムのみ取得（ロック中は非表示）
+        var gc = GameController.Instance;
+        var allItems = database.GetSorted(currentCategory);
+        foreach (var item in allItems)
+        {
+            // ロック状態でないものだけ追加
+            if (gc.Upgrade.GetState(item) != UpgradeState.Locked)
+            {
+                currentList.Add(item);
+            }
+        }
 
         // リスト件数を更新
         if (listCountLabel != null)
