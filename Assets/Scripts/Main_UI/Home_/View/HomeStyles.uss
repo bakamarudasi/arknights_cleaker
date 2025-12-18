@@ -264,21 +264,25 @@
     flex-direction: row;
     justify-content: space-between;
     align-items: flex-start;
+    picking-mode: Ignore;
 }
 
 .top-left {
     flex-direction: column;
     align-items: flex-start;
+    picking-mode: Ignore;
 }
 
 .top-center {
     flex-direction: column;
     align-items: center;
+    picking-mode: Ignore;
 }
 
 .top-right {
     flex-direction: column;
     align-items: flex-end;
+    picking-mode: Ignore;
 }
 
 /* ========================================
@@ -430,6 +434,7 @@
     justify-content: center;
     align-items: flex-end;
     padding-right: 40px;
+    picking-mode: Ignore;
 }
 
 .power-display {
@@ -443,6 +448,7 @@
     opacity: 0.8;
     transition-property: opacity, scale;
     transition-duration: 0.2s;
+    picking-mode: Ignore;
 }
 
 .power-display:hover {
@@ -490,6 +496,7 @@
     flex-direction: row;
     justify-content: center;
     align-items: center;
+    picking-mode: Ignore;
 }
 
 /* ========================================
@@ -658,6 +665,7 @@
 .skill-buttons {
     flex-direction: row;
     margin-left: 20px;
+    picking-mode: Ignore;
 }
 
 .skill-button {
