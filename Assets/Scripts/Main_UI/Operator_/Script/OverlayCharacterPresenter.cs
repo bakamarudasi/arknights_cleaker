@@ -26,6 +26,9 @@ public class OverlayCharacterPresenter : MonoBehaviour
     // 表示エリア
     private VisualElement _displayElement;
 
+    // Updateコールバック（バッテリー消費など）
+    private System.Action<float> _onUpdateCallback;
+
     // ========================================
     // 初期化
     // ========================================
@@ -148,7 +151,7 @@ public class OverlayCharacterPresenter : MonoBehaviour
     /// <summary>
     /// 破棄
     /// </summary>
-    public void Destroy()
+    public void DestroyCharacter()
     {
         if (_currentInstance != null)
         {
@@ -208,6 +211,15 @@ public class OverlayCharacterPresenter : MonoBehaviour
     public GameObject CurrentInstance => _currentInstance;
 
     /// <summary>
+    /// 現在のキャラクターのインタラクションゾーンを取得
+    /// </summary>
+    public CharacterInteractionZone[] GetInteractionZones()
+    {
+        if (_currentInstance == null) return System.Array.Empty<CharacterInteractionZone>();
+        return _currentInstance.GetComponentsInChildren<CharacterInteractionZone>();
+    }
+
+    /// <summary>
     /// 表示中かどうか
     /// </summary>
     public bool IsShowing => _currentInstance != null && _currentInstance.activeSelf;
@@ -227,5 +239,30 @@ public class OverlayCharacterPresenter : MonoBehaviour
     public void RefreshLayout()
     {
         _currentController?.UpdateLayout();
+    }
+
+    /// <summary>
+    /// 毎フレーム更新コールバックを設定（バッテリー消費など）
+    /// </summary>
+    public void SetUpdateCallback(System.Action<float> callback)
+    {
+        _onUpdateCallback = callback;
+    }
+
+    /// <summary>
+    /// 毎フレーム更新コールバックを解除
+    /// </summary>
+    public void ClearUpdateCallback()
+    {
+        _onUpdateCallback = null;
+    }
+
+    private void Update()
+    {
+        // 表示中かつコールバックが設定されている場合のみ実行
+        if (IsShowing && _onUpdateCallback != null)
+        {
+            _onUpdateCallback.Invoke(Time.deltaTime);
+        }
     }
 }

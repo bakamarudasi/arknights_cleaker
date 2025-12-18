@@ -41,6 +41,9 @@ public class OperatorUIController : IViewController
     // インタラクションエリア（UIベース、プレハブ側のCharacterInteractionZoneと併用）
     private VisualElement characterDisplay;
 
+    // アイテムデータキャッシュ（Resources.LoadAll最適化）
+    private static ItemData[] _cachedAllItems;
+
     // コールバック参照（解除用に保持）
     private EventCallback<ClickEvent> callbackOutfit0;
     private EventCallback<ClickEvent> callbackOutfit1;
@@ -49,6 +52,9 @@ public class OperatorUIController : IViewController
     private EventCallback<ClickEvent> callbackLensClothes;
     private EventCallback<ClickEvent> callbackBack;
     private EventCallback<ClickEvent> callbackCharacterClick;
+
+    // インタラクションゾーン購読管理
+    private CharacterInteractionZone[] _subscribedZones;
 
     // 現在の状態
     private int currentOutfit = 0;
@@ -137,6 +143,12 @@ public class OperatorUIController : IViewController
             presenter.SetDisplayArea(root);
             presenter.EnsureCreated();
             presenter.Show();
+
+            // バッテリー更新用コールバックを設定
+            presenter.SetUpdateCallback(UpdateBattery);
+
+            // インタラクションゾーンを購読
+            SubscribeToInteractionZones(presenter);
         }
         else
         {
@@ -150,8 +162,81 @@ public class OperatorUIController : IViewController
     /// </summary>
     private void HideCharacterOverlay()
     {
+        // インタラクションゾーンの購読解除
+        UnsubscribeFromInteractionZones();
+
         var presenter = OverlayCharacterPresenter.Instance;
-        presenter?.Hide();
+        if (presenter != null)
+        {
+            presenter.ClearUpdateCallback();
+            presenter.Hide();
+        }
+    }
+
+    /// <summary>
+    /// インタラクションゾーンを購読
+    /// </summary>
+    private void SubscribeToInteractionZones(OverlayCharacterPresenter presenter)
+    {
+        UnsubscribeFromInteractionZones(); // 既存の購読を解除
+
+        _subscribedZones = presenter.GetInteractionZones();
+        foreach (var zone in _subscribedZones)
+        {
+            zone.OnZoneTouched += OnInteractionZoneTouched;
+        }
+
+        Debug.Log($"[OperatorUI] Subscribed to {_subscribedZones.Length} interaction zones");
+    }
+
+    /// <summary>
+    /// インタラクションゾーンの購読解除
+    /// </summary>
+    private void UnsubscribeFromInteractionZones()
+    {
+        if (_subscribedZones == null) return;
+
+        foreach (var zone in _subscribedZones)
+        {
+            if (zone != null)
+            {
+                zone.OnZoneTouched -= OnInteractionZoneTouched;
+            }
+        }
+        _subscribedZones = null;
+    }
+
+    /// <summary>
+    /// インタラクションゾーンがタッチされた時
+    /// </summary>
+    private void OnInteractionZoneTouched(CharacterInteractionZone.ZoneType zoneType, int comboCount)
+    {
+        // 好感度UIを更新
+        UpdateAffectionUI();
+
+        // タッチタイプに応じた追加処理
+        switch (zoneType)
+        {
+            case CharacterInteractionZone.ZoneType.Head:
+                // 頭なでなで
+                if (comboCount >= 5)
+                {
+                    LogUIController.Msg("<color=#FF69B4>♪♪♪</color>");
+                }
+                break;
+
+            case CharacterInteractionZone.ZoneType.Body:
+                // ボディタッチ
+                break;
+
+            case CharacterInteractionZone.ZoneType.Hand:
+                // 手を握る
+                break;
+
+            case CharacterInteractionZone.ZoneType.Special:
+                // 特殊ゾーン
+                break;
+        }
     }
 
     private void SetupReferences()
@@ -354,6 +439,18 @@ public class OperatorUIController : IViewController
     }
 
     /// <summary>
+    /// 全アイテムデータを取得（キャッシュ済み）
+    /// </summary>
+    private static ItemData[] GetAllItems()
+    {
+        if (_cachedAllItems == null)
+        {
+            _cachedAllItems = Resources.LoadAll<ItemData>("Data/Items");
+        }
+        return _cachedAllItems;
+    }
+
+    /// <summary>
     /// 所持しているレンズアイテムを取得
     /// </summary>
     private List<ItemData> GetOwnedLensItems()
@@ -362,8 +459,8 @@ public class OperatorUIController : IViewController
         var inventory = InventoryManager.Instance;
         if (inventory == null) return result;
 
-        // 全アイテムデータベースからレンズアイテムを検索
-        var allItems = Resources.LoadAll<ItemData>("Data/Items");
+        // キャッシュ済みアイテムデータからレンズアイテムを検索
+        var allItems = GetAllItems();
         foreach (var item in allItems)
         {
             if (item.lensSpecs.isLens && inventory.Has(item.id))
@@ -547,8 +644,8 @@ public class OperatorUIController : IViewController
         var inventory = InventoryManager.Instance;
         if (inventory == null) return result;
 
-        // 全アイテムデータベースからプレゼント可能アイテムを検索
-        var allItems = Resources.LoadAll<ItemData>("Data/Items");
+        // キャッシュ済みアイテムデータからプレゼント可能アイテムを検索
+        var allItems = GetAllItems();
         foreach (var item in allItems)
         {
             // 消耗品タイプまたは素材で、レンズでないもの
@@ -702,6 +799,9 @@ public class OperatorUIController : IViewController
     {
         // イベント購読解除
         UnsubscribeFromEvents();
+
+        // インタラクションゾーンの購読解除
+        UnsubscribeFromInteractionZones();
 
         // Overlay非表示
         HideCharacterOverlay();
