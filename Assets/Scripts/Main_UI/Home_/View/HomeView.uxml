@@ -20,13 +20,11 @@
         </ui:VisualElement>
 
         <!-- ========================================
-             キャラクターレイヤー（クリック対象）
+             キャラクターレイヤー（視覚エフェクト用）
              ======================================== -->
         <ui:VisualElement name="character-layer" class="character-layer">
-            <ui:Button name="click-target" class="click-target">
-                <ui:VisualElement name="click-ripple" class="click-ripple" />
-                <ui:VisualElement name="character-glow" class="character-glow" />
-            </ui:Button>
+            <ui:VisualElement name="click-ripple" class="click-ripple" />
+            <ui:VisualElement name="character-glow" class="character-glow" />
         </ui:VisualElement>
 
         <!-- ========================================
@@ -167,6 +165,13 @@
 
             </ui:VisualElement>
 
+        </ui:VisualElement>
+
+        <!-- ========================================
+             クリックレイヤー（最前面）
+             ======================================== -->
+        <ui:VisualElement name="click-layer" class="click-layer">
+            <ui:VisualElement name="click-target" class="click-target" />
         </ui:VisualElement>
 
     </ui:VisualElement>

@@ -57,7 +57,7 @@ public class ClickAreaHandler : IDisposable
     // コールバック
     // ========================================
 
-    private EventCallback<ClickEvent> _onClickCallback;
+    private EventCallback<PointerDownEvent> _onPointerDownCallback;
 
     /// <summary>クリック時に発火するイベント</summary>
     public event Action OnClicked;
@@ -119,23 +119,25 @@ public class ClickAreaHandler : IDisposable
             return;
         }
 
-        _onClickCallback = OnClickTarget;
-        _clickTarget.RegisterCallback(_onClickCallback);
+        _onPointerDownCallback = OnPointerDown;
+        _clickTarget.RegisterCallback(_onPointerDownCallback);
 
         _clickTarget.RegisterCallback<GeometryChangedEvent>(evt =>
         {
             Debug.Log($"[ClickAreaHandler] clickTarget geometry: {evt.newRect.width}x{evt.newRect.height}");
         });
 
-        Debug.Log("[ClickAreaHandler] Click callback registered.");
+        Debug.Log("[ClickAreaHandler] PointerDown callback registered.");
     }
 
     // ========================================
     // クリック処理
     // ========================================
 
-    private void OnClickTarget(ClickEvent evt)
+    private void OnPointerDown(PointerDownEvent evt)
     {
+        Debug.Log($"[ClickAreaHandler] PointerDown detected at {evt.localPosition}");
+
         var gc = GameController.Instance;
         if (gc == null)
         {
@@ -390,10 +392,10 @@ public class ClickAreaHandler : IDisposable
 
     public void Dispose()
     {
-        if (_onClickCallback != null)
+        if (_onPointerDownCallback != null)
         {
-            _clickTarget?.UnregisterCallback(_onClickCallback);
-            _onClickCallback = null;
+            _clickTarget?.UnregisterCallback(_onPointerDownCallback);
+            _onPointerDownCallback = null;
         }
 
         _damageNumberPool.Clear();
