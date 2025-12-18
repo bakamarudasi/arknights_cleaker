@@ -42,16 +42,6 @@ public class MarketManager : MonoBehaviour
     private bool isMarketOpen = true;
 
     // ========================================
-    // ポートフォリオ（保有株）
-    // ========================================
-    private Dictionary<string, int> portfolio = new();
-
-    // ========================================
-    // イベント
-    // ========================================
-    public event Action<string, int> OnPortfolioChanged;
-
-    // ========================================
     // プロパティ
     // ========================================
     public bool IsMarketOpen => isMarketOpen;
@@ -330,94 +320,8 @@ public class MarketManager : MonoBehaviour
     }
 
     // ========================================
-    // ポートフォリオ管理
+    // ユーティリティ
     // ========================================
-
-    /// <summary>
-    /// 株を購入
-    /// </summary>
-    public bool BuyStock(string stockId, int quantity)
-    {
-        if (quantity <= 0) return false;
-        if (!stockStates.TryGetValue(stockId, out var state)) return false;
-
-        var stock = _stockDatabase?.GetByStockId(stockId);
-        if (stock == null) return false;
-
-        // コスト計算
-        double totalCost = stock.CalculateBuyCost(state.currentPrice, quantity);
-
-        // LMD残高チェック（WalletManagerから取得）
-        if (WalletManager.Instance != null && WalletManager.Instance.Money < totalCost)
-        {
-            return false;
-        }
-
-        // 支払い
-        WalletManager.Instance?.SpendMoney(totalCost);
-
-        // ポートフォリオに追加
-        if (!portfolio.ContainsKey(stockId))
-        {
-            portfolio[stockId] = 0;
-        }
-        portfolio[stockId] += quantity;
-
-        OnPortfolioChanged?.Invoke(stockId, portfolio[stockId]);
-
-        Debug.Log($"[MarketManager] Bought {quantity} shares of {stockId} for {totalCost:N0} LMD");
-        return true;
-    }
-
-    /// <summary>
-    /// 株を売却
-    /// </summary>
-    public bool SellStock(string stockId, int quantity)
-    {
-        if (quantity <= 0) return false;
-        if (!portfolio.TryGetValue(stockId, out int holdings) || holdings < quantity)
-        {
-            return false;
-        }
-        if (!stockStates.TryGetValue(stockId, out var state)) return false;
-
-        var stock = _stockDatabase?.GetByStockId(stockId);
-        if (stock == null) return false;
-
-        // 売却額計算
-        double totalReturn = stock.CalculateSellReturn(state.currentPrice, quantity);
-
-        // 売却
-        portfolio[stockId] -= quantity;
-        if (portfolio[stockId] <= 0)
-        {
-            portfolio.Remove(stockId);
-        }
-
-        // LMD受け取り
-        WalletManager.Instance?.AddMoney(totalReturn);
-
-        OnPortfolioChanged?.Invoke(stockId, portfolio.GetValueOrDefault(stockId, 0));
-
-        Debug.Log($"[MarketManager] Sold {quantity} shares of {stockId} for {totalReturn:N0} LMD");
-        return true;
-    }
-
-    /// <summary>
-    /// 保有株数を取得
-    /// </summary>
-    public int GetHoldings(string stockId)
-    {
-        return portfolio.GetValueOrDefault(stockId, 0);
-    }
-
-    /// <summary>
-    /// 全保有株を取得
-    /// </summary>
-    public IReadOnlyDictionary<string, int> GetAllHoldings()
-    {
-        return portfolio;
-    }
 
     /// <summary>
     /// StockDataを取得
@@ -425,22 +329,6 @@ public class MarketManager : MonoBehaviour
     public StockData GetStockData(string stockId)
     {
         return _stockDatabase?.GetByStockId(stockId);
-    }
-
-    /// <summary>
-    /// ポートフォリオの総価値を計算
-    /// </summary>
-    public double GetPortfolioValue()
-    {
-        double total = 0;
-        foreach (var kvp in portfolio)
-        {
-            if (stockStates.TryGetValue(kvp.Key, out var state))
-            {
-                total += state.currentPrice * kvp.Value;
-            }
-        }
-        return total;
     }
 }
 

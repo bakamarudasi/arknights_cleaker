@@ -44,10 +44,10 @@ public class StockHoldingBonusManager : MonoBehaviour
 
     private void Start()
     {
-        // MarketManagerのイベントを購読
-        if (MarketManager.Instance != null)
+        // PortfolioManagerのイベントを購読
+        if (PortfolioManager.Instance != null)
         {
-            MarketManager.Instance.OnPortfolioChanged += OnPortfolioChanged;
+            PortfolioManager.Instance.OnHoldingChanged += OnHoldingChanged;
         }
 
         // 初期計算
@@ -56,9 +56,9 @@ public class StockHoldingBonusManager : MonoBehaviour
 
     private void OnDestroy()
     {
-        if (MarketManager.Instance != null)
+        if (PortfolioManager.Instance != null)
         {
-            MarketManager.Instance.OnPortfolioChanged -= OnPortfolioChanged;
+            PortfolioManager.Instance.OnHoldingChanged -= OnHoldingChanged;
         }
 
         if (Instance == this)
@@ -71,7 +71,7 @@ public class StockHoldingBonusManager : MonoBehaviour
     // ポートフォリオ変更時
     // ========================================
 
-    private void OnPortfolioChanged(string stockId, int quantity)
+    private void OnHoldingChanged(string stockId)
     {
         RecalculateBonusesForStock(stockId);
         AggregateAllBonuses();
@@ -100,11 +100,7 @@ public class StockHoldingBonusManager : MonoBehaviour
     {
         if (stockData == null || stockData.totalShares <= 0) return 0f;
 
-        int holdings = 0;
-        if (MarketManager.Instance != null)
-        {
-            holdings = MarketManager.Instance.GetHoldings(stockId);
-        }
+        int holdings = PortfolioManager.Instance?.GetHoldingQuantity(stockId) ?? 0;
 
         return (float)holdings / stockData.totalShares;
     }
