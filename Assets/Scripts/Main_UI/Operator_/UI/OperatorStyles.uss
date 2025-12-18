@@ -334,3 +334,162 @@
     background-color: rgba(255, 255, 255, 0.1);
     color: #ffffff;
 }
+
+/* ========================================= */
+/* Lens Items Section                       */
+/* ========================================= */
+
+.lens-items-scroll {
+    max-height: 80px;
+    background-color: rgba(255, 255, 255, 0.02);
+    border-width: 1px;
+    border-color: rgba(255, 255, 255, 0.05);
+    border-radius: 4px;
+    margin-bottom: 12px;
+}
+
+.lens-items-container {
+    flex-direction: row;
+    flex-wrap: wrap;
+    padding: 6px;
+}
+
+.lens-item {
+    width: 80px;
+    height: 65px;
+    margin: 4px;
+    padding: 6px;
+    background-color: rgba(100, 200, 255, 0.08);
+    border-width: 1px;
+    border-color: rgba(100, 200, 255, 0.2);
+    border-radius: 6px;
+    align-items: center;
+    justify-content: flex-start;
+    transition-duration: 0.2s;
+}
+
+.lens-item:hover {
+    background-color: rgba(100, 200, 255, 0.2);
+    border-color: rgba(100, 200, 255, 0.5);
+}
+
+.lens-item.selected {
+    background-color: rgba(100, 200, 255, 0.25);
+    border-color: #64c8ff;
+    border-width: 2px;
+}
+
+.lens-item-icon {
+    width: 32px;
+    height: 32px;
+    background-color: rgba(255, 255, 255, 0.1);
+    border-radius: 4px;
+    margin-bottom: 4px;
+    -unity-background-scale-mode: scale-to-fit;
+}
+
+.lens-item-name {
+    font-size: 9px;
+    color: #cccccc;
+    -unity-text-align: middle-center;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.lens-item-spec {
+    font-size: 8px;
+    color: #64c8ff;
+    -unity-text-align: middle-center;
+}
+
+.lens-empty-text {
+    font-size: 10px;
+    color: #555555;
+    -unity-font-style: italic;
+    padding: 12px;
+    -unity-text-align: middle-center;
+}
+
+/* ========================================= */
+/* Battery Section                          */
+/* ========================================= */
+
+.battery-section {
+    margin-bottom: 12px;
+    padding: 8px;
+    background-color: rgba(255, 255, 255, 0.02);
+    border-width: 1px;
+    border-color: rgba(255, 255, 255, 0.05);
+    border-radius: 4px;
+}
+
+.battery-label {
+    font-size: 10px;
+    color: #888888;
+    letter-spacing: 1px;
+    margin-bottom: 6px;
+}
+
+.battery-bar-bg {
+    height: 6px;
+    background-color: rgba(255, 255, 255, 0.1);
+    border-radius: 3px;
+    overflow: hidden;
+}
+
+.battery-bar-fill {
+    height: 100%;
+    width: 100%;
+    background-color: #4ade80;
+    border-radius: 3px;
+    transition-duration: 0.2s;
+    transition-property: width, background-color;
+}
+
+.section-title-small {
+    font-size: 10px;
+    color: #555555;
+    letter-spacing: 1px;
+    margin-bottom: 8px;
+    margin-top: 4px;
+}
+
+/* ========================================= */
+/* Head Pet Area (Interaction)              */
+/* ========================================= */
+
+.head-pet-area {
+    position: absolute;
+    top: 5%;
+    left: 30%;
+    width: 40%;
+    height: 20%;
+    background-color: transparent;
+    border-radius: 50%;
+    transition-duration: 0.15s;
+}
+
+.head-pet-area:hover {
+    background-color: rgba(255, 180, 200, 0.1);
+    border-width: 2px;
+    border-color: rgba(255, 180, 200, 0.3);
+}
+
+.head-pet-area:active {
+    background-color: rgba(255, 180, 200, 0.25);
+}
+
+.head-pet-hint {
+    position: absolute;
+    bottom: -25px;
+    width: 100%;
+    font-size: 12px;
+    color: rgba(255, 180, 200, 0.8);
+    -unity-text-align: middle-center;
+    opacity: 0;
+    transition-duration: 0.2s;
+}
+
+.head-pet-area:hover .head-pet-hint {
+    opacity: 1;
+}
