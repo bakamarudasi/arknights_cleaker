@@ -201,28 +201,116 @@
 }
 
 /* ========================================= */
-/* Stats Section                            */
+/* Affection Section                        */
 /* ========================================= */
 
-.stats-section {
-    flex-grow: 1;
+.affection-section {
     margin-bottom: 24px;
 }
 
-.stats-placeholder {
+.affection-display {
+    background-color: rgba(255, 255, 255, 0.02);
+    border-width: 1px;
+    border-color: rgba(255, 255, 255, 0.05);
+    border-radius: 4px;
+    padding: 12px;
+}
+
+.affection-level {
+    font-size: 14px;
+    color: #ff9999;
+    -unity-font-style: bold;
+    margin-bottom: 8px;
+}
+
+.affection-bar-bg {
+    height: 8px;
+    background-color: rgba(255, 255, 255, 0.1);
+    border-radius: 4px;
+    overflow: hidden;
+    margin-bottom: 6px;
+}
+
+.affection-bar-fill {
+    height: 100%;
+    width: 0%;
+    background-color: #ff6b8a;
+    border-radius: 4px;
+    transition-duration: 0.3s;
+    transition-property: width;
+}
+
+.affection-value {
+    font-size: 11px;
+    color: #888888;
+    -unity-text-align: middle-right;
+}
+
+/* ========================================= */
+/* Gift Section                             */
+/* ========================================= */
+
+.gift-section {
+    flex-grow: 1;
+    margin-bottom: 24px;
+    min-height: 120px;
+}
+
+.gift-scroll {
     flex-grow: 1;
     background-color: rgba(255, 255, 255, 0.02);
     border-width: 1px;
     border-color: rgba(255, 255, 255, 0.05);
     border-radius: 4px;
-    align-items: center;
-    justify-content: center;
-    min-height: 100px;
 }
 
-.placeholder-text {
-    font-size: 12px;
-    color: #444444;
+.gift-container {
+    flex-direction: row;
+    flex-wrap: wrap;
+    padding: 8px;
+}
+
+.gift-item {
+    width: 60px;
+    height: 70px;
+    margin: 4px;
+    background-color: rgba(255, 255, 255, 0.05);
+    border-width: 1px;
+    border-color: rgba(255, 255, 255, 0.1);
+    border-radius: 4px;
+    align-items: center;
+    justify-content: center;
+    transition-duration: 0.2s;
+}
+
+.gift-item:hover {
+    background-color: rgba(255, 200, 150, 0.15);
+    border-color: rgba(255, 200, 150, 0.5);
+}
+
+.gift-item-icon {
+    width: 40px;
+    height: 40px;
+    background-color: rgba(255, 255, 255, 0.1);
+    border-radius: 4px;
+    margin-bottom: 4px;
+}
+
+.gift-item-count {
+    font-size: 10px;
+    color: #aaaaaa;
+}
+
+.gift-empty {
+    flex-grow: 1;
+    align-items: center;
+    justify-content: center;
+    padding: 20px;
+}
+
+.gift-empty-text {
+    font-size: 11px;
+    color: #555555;
     -unity-font-style: italic;
 }
 

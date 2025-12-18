@@ -56,12 +56,28 @@
                     </ui:VisualElement>
                 </ui:VisualElement>
 
-                <!-- ステータス情報 (将来用) -->
-                <ui:VisualElement class="stats-section">
-                    <ui:Label text="STATS" class="section-title" />
-                    <ui:VisualElement class="stats-placeholder">
-                        <ui:Label text="Coming Soon..." class="placeholder-text" />
+                <!-- 好感度セクション -->
+                <ui:VisualElement class="affection-section">
+                    <ui:Label text="AFFECTION" class="section-title" />
+
+                    <ui:VisualElement class="affection-display">
+                        <ui:Label name="affection-level" text="Lv.1 知り合い" class="affection-level" />
+                        <ui:VisualElement class="affection-bar-bg">
+                            <ui:VisualElement name="affection-bar-fill" class="affection-bar-fill" />
+                        </ui:VisualElement>
+                        <ui:Label name="affection-value" text="0 / 50" class="affection-value" />
                     </ui:VisualElement>
+                </ui:VisualElement>
+
+                <!-- プレゼントセクション -->
+                <ui:VisualElement class="gift-section">
+                    <ui:Label text="GIFT" class="section-title" />
+
+                    <ui:ScrollView class="gift-scroll" horizontal-scroller-visibility="Hidden">
+                        <ui:VisualElement name="gift-container" class="gift-container">
+                            <!-- アイテムはコードで動的に追加 -->
+                        </ui:VisualElement>
+                    </ui:ScrollView>
                 </ui:VisualElement>
 
                 <!-- 戻るボタン -->
