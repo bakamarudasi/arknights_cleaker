@@ -130,6 +130,7 @@
     background-color: rgba(255, 215, 0, 0);
     transition-property: background-color;
     transition-duration: 0.3s;
+    picking-mode: Ignore;
 }
 
 .click-ripple.active {
@@ -144,6 +145,7 @@
     border-radius: 50%;
     transition-property: background-color;
     transition-duration: 0.5s;
+    picking-mode: Ignore;
 }
 
 .character-glow.active {
