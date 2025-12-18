@@ -50,6 +50,12 @@ public class HomeUIController : IViewController
     private VisualElement feverFlash;
     private Label feverBigText;
 
+    // スロットオーバーレイ
+    private VisualElement slotOverlay;
+    private VisualElement slotFlash;
+    private Label slotBigText;
+    private Label slotBonusText;
+
     // ========================================
     // 状態管理
     // ========================================
@@ -87,6 +93,7 @@ public class HomeUIController : IViewController
     private Action onFeverStartedCallback;
     private Action onFeverEndedCallback;
     private Action<string, int, int> onAffectionChangedCallback;
+    private UnityEngine.Events.UnityAction onSlotTriggeredCallback;
 
     // 更新用
     private IVisualElementScheduledItem _updateSchedule;
@@ -145,6 +152,12 @@ public class HomeUIController : IViewController
         // Feverオーバーレイ
         feverFlash = root.Q<VisualElement>("fever-flash");
         feverBigText = root.Q<Label>("fever-big-text");
+
+        // スロットオーバーレイ
+        slotOverlay = root.Q<VisualElement>("slot-overlay");
+        slotFlash = root.Q<VisualElement>("slot-flash");
+        slotBigText = root.Q<Label>("slot-big-text");
+        slotBonusText = root.Q<Label>("slot-bonus-text");
     }
 
     private void InitializeDamageNumberPool()
@@ -192,6 +205,13 @@ public class HomeUIController : IViewController
         {
             onAffectionChangedCallback = OnAffectionChanged;
             AffectionManager.Instance.OnAffectionChanged += onAffectionChangedCallback;
+        }
+
+        // スロットイベント
+        if (gc.OnSlotTriggered != null)
+        {
+            onSlotTriggeredCallback = OnSlotTriggered;
+            gc.OnSlotTriggered.AddListener(onSlotTriggeredCallback);
         }
     }
 
@@ -686,6 +706,54 @@ public class HomeUIController : IViewController
     }
 
     // ========================================
+    // スロット処理
+    // ========================================
+
+    private void OnSlotTriggered()
+    {
+        // オーバーレイ表示
+        slotOverlay?.AddToClassList("active");
+
+        // フラッシュエフェクト
+        if (slotFlash != null)
+        {
+            slotFlash.AddToClassList("pulse");
+            root.schedule.Execute(() => slotFlash.RemoveFromClassList("pulse")).ExecuteLater(100);
+            root.schedule.Execute(() =>
+            {
+                slotFlash.AddToClassList("pulse");
+                root.schedule.Execute(() => slotFlash.RemoveFromClassList("pulse")).ExecuteLater(100);
+            }).ExecuteLater(200);
+        }
+
+        // ビッグテキストアニメーション
+        if (slotBigText != null)
+        {
+            slotBigText.AddToClassList("show");
+        }
+
+        // ボーナステキストアニメーション
+        if (slotBonusText != null)
+        {
+            slotBonusText.AddToClassList("show");
+        }
+
+        // 3秒後に非表示
+        root.schedule.Execute(() =>
+        {
+            slotBigText?.RemoveFromClassList("show");
+            slotBonusText?.RemoveFromClassList("show");
+        }).ExecuteLater(2500);
+
+        root.schedule.Execute(() =>
+        {
+            slotOverlay?.RemoveFromClassList("active");
+        }).ExecuteLater(3000);
+
+        LogUIController.Msg("<color=#FFD700><b>★★★ JACKPOT!! ★★★</b></color>");
+    }
+
+    // ========================================
     // 好感度イベント
     // ========================================
 
@@ -765,6 +833,12 @@ public class HomeUIController : IViewController
             AffectionManager.Instance.OnAffectionChanged -= onAffectionChangedCallback;
         }
 
+        // スロットイベント解除
+        if (gc != null && gc.OnSlotTriggered != null && onSlotTriggeredCallback != null)
+        {
+            gc.OnSlotTriggered.RemoveListener(onSlotTriggeredCallback);
+        }
+
         // パーティクルクリア
         foreach (var particle in _particles)
         {
@@ -782,6 +856,7 @@ public class HomeUIController : IViewController
         onFeverStartedCallback = null;
         onFeverEndedCallback = null;
         onAffectionChangedCallback = null;
+        onSlotTriggeredCallback = null;
 
         LogUIController.LogSystem("Home View Disposed.");
     }

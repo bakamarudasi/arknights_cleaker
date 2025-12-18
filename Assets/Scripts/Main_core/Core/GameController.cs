@@ -41,6 +41,7 @@ public class GameController : MonoBehaviour
     [Range(0f, 1f)] public float baseCriticalChance = 0.05f;
     public double baseCriticalMultiplier = 2.0;
     [Range(0f, 1f)] public float slotTriggerChance = 0.001f;
+    public double slotBonusMultiplier = 10.0;
     public UnityEvent OnSlotTriggered;
 
     // ========================================
@@ -177,7 +178,14 @@ public class GameController : MonoBehaviour
         var result = ClickManager.Calculate(ctx);
 
         Wallet.AddMoney(result.EarnedAmount);
-        if (result.TriggeredSlot) OnSlotTriggered?.Invoke();
+
+        // スロット発動時はボーナス報酬を追加
+        if (result.TriggeredSlot)
+        {
+            double slotBonus = result.EarnedAmount * slotBonusMultiplier;
+            Wallet.AddMoney(slotBonus);
+            OnSlotTriggered?.Invoke();
+        }
 
         // 統計
         stats.totalClicks++;

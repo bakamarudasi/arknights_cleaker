@@ -45,6 +45,17 @@
         </ui:VisualElement>
 
         <!-- ========================================
+             スロットオーバーレイ
+             ======================================== -->
+        <ui:VisualElement name="slot-overlay" class="slot-overlay">
+            <ui:VisualElement name="slot-flash" class="slot-flash" />
+            <ui:VisualElement name="slot-content" class="slot-content">
+                <ui:Label name="slot-big-text" text="JACKPOT!!" class="slot-big-text" />
+                <ui:Label name="slot-bonus-text" text="x10 BONUS!" class="slot-bonus-text" />
+            </ui:VisualElement>
+        </ui:VisualElement>
+
+        <!-- ========================================
              UIレイヤー
              ======================================== -->
         <ui:VisualElement name="ui-layer" class="ui-layer">
