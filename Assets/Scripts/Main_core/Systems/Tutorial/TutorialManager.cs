@@ -188,16 +188,48 @@ public class TutorialManager : MonoBehaviour
                 new TutorialStep
                 {
                     id = "home_1",
-                    title = "🏠 ホーム画面",
-                    message = "ここがメイン画面です。\nサイドバーから各機能にアクセスできます。",
+                    title = "🏠 ようこそ、ドクター！",
+                    message = "ロドス・アイランドへようこそ！\nここがメイン画面です。\n各種機能にアクセスできます。",
                     position = TutorialPosition.Center
                 },
                 new TutorialStep
                 {
                     id = "home_2",
                     title = "📱 サイドバー",
-                    message = "左のアイコンから：\n・ホーム\n・オペレーター\n・マーケット\n・ショップ\nなどにアクセス！",
+                    message = "左のアイコンから：\n・🏠 ホーム - この画面\n・👤 オペレーター - キャラ交流\n・📈 マーケット - 株式売買\n・🛒 ショップ - アイテム購入",
+                    highlightElement = "sidebar",
                     position = TutorialPosition.Right
+                },
+                new TutorialStep
+                {
+                    id = "home_3",
+                    title = "💰 ステータス表示",
+                    message = "画面上部に所持金（LMD）や\n理性（SP）が表示されています。\n\nSPはクリックで回復します！",
+                    highlightElement = "status-bar",
+                    position = TutorialPosition.Bottom
+                },
+                new TutorialStep
+                {
+                    id = "home_4",
+                    title = "👤 オペレーター表示",
+                    message = "中央にオペレーターが表示されます。\nクリックすると反応してくれます！\n\n好感度を上げると特別なイベントも...",
+                    highlightElement = "operator-display",
+                    position = TutorialPosition.Center
+                },
+                new TutorialStep
+                {
+                    id = "home_5",
+                    title = "⚙️ 設定メニュー",
+                    message = "右上の歯車アイコンから\n各種設定ができます。\n\n・音量調整\n・表示設定\n・データ管理",
+                    highlightElement = "settings-btn",
+                    position = TutorialPosition.Left
+                },
+                new TutorialStep
+                {
+                    id = "home_6",
+                    title = "🎯 次のステップ",
+                    message = "まずはオペレーターと交流して\n好感度を上げてみましょう！\n\nマーケットで資金を増やすのも◎",
+                    position = TutorialPosition.Center
                 }
             }
         };
@@ -212,22 +244,63 @@ public class TutorialManager : MonoBehaviour
                 new TutorialStep
                 {
                     id = "operator_1",
-                    title = "👋 オペレーター",
-                    message = "ここでキャラクターと交流できます。\nクリックして話しかけてみよう！",
+                    title = "👋 オペレーターとの出会い",
+                    message = "ここでキャラクターと交流できます。\nオペレーターは様々な反応をしてくれます。\n\nまずはクリックしてみましょう！",
                     position = TutorialPosition.Center
                 },
                 new TutorialStep
                 {
                     id = "operator_2",
-                    title = "💕 好感度",
-                    message = "クリックや撫でると好感度UP！\n好感度が上がると：\n・新しいセリフ解放\n・新しい衣装解放\n・特別なイベント発生",
-                    position = TutorialPosition.Center
+                    title = "💕 好感度システム",
+                    message = "クリックや撫でると好感度UP！\n\n好感度が上がると：\n・新しいセリフ解放\n・新しい衣装解放\n・特別なイベント発生",
+                    highlightElement = "affection-gauge",
+                    position = TutorialPosition.Top
                 },
                 new TutorialStep
                 {
                     id = "operator_3",
                     title = "🎁 プレゼント",
-                    message = "アイテムをプレゼントすると\n好感度が大きく上がります！\nキャラの好みを覚えよう。",
+                    message = "アイテムをプレゼントすると\n好感度が大きく上がります！\n\nキャラごとに好みがあるので\n反応を見ながら覚えよう。",
+                    highlightElement = "gift-btn",
+                    position = TutorialPosition.Right
+                },
+                new TutorialStep
+                {
+                    id = "operator_4",
+                    title = "👗 スキン変更",
+                    message = "衣装ボタンから\nオペレーターの見た目を変更できます。\n\n好感度を上げると\n新しいスキンが解放されます！",
+                    highlightElement = "skin-btn",
+                    position = TutorialPosition.Right
+                },
+                new TutorialStep
+                {
+                    id = "operator_5",
+                    title = "🔊 ボイス再生",
+                    message = "オペレーターのボイスを聴けます。\n\n・タップボイス\n・挨拶ボイス\n・特殊ボイス\n\n好感度で解放されるものも！",
+                    highlightElement = "voice-btn",
+                    position = TutorialPosition.Left
+                },
+                new TutorialStep
+                {
+                    id = "operator_6",
+                    title = "📋 プロフィール",
+                    message = "オペレーターの詳細情報を確認できます。\n\n・基本情報\n・経歴\n・能力値\n\n推しの情報をチェック！",
+                    highlightElement = "profile-btn",
+                    position = TutorialPosition.Left
+                },
+                new TutorialStep
+                {
+                    id = "operator_7",
+                    title = "🔄 オペレーター切替",
+                    message = "他のオペレーターに切り替えられます。\n\n解放済みのオペレーターから\n好きなキャラを選んで交流しよう！",
+                    highlightElement = "operator-select",
+                    position = TutorialPosition.Bottom
+                },
+                new TutorialStep
+                {
+                    id = "operator_8",
+                    title = "✨ 楽しみ方",
+                    message = "・毎日話しかけてボーナス獲得\n・プレゼントで好感度を効率UP\n・イベントで特別なシーンを解放\n\nお気に入りのオペレーターと\n仲良くなろう！💕",
                     position = TutorialPosition.Center
                 }
             }
@@ -348,23 +421,28 @@ public class TutorialManager : MonoBehaviour
         buttonContainer.style.flexDirection = FlexDirection.Row;
         buttonContainer.style.justifyContent = Justify.SpaceBetween;
 
-        // スキップボタン
+        // スキップボタン（より目立つデザインに）
         skipButton = new Button(() => SkipTutorial());
-        skipButton.text = "スキップ";
-        skipButton.style.backgroundColor = Color.clear;
+        skipButton.text = ">> スキップ";
+        skipButton.style.backgroundColor = new Color(0.15f, 0.15f, 0.2f, 0.9f);
         skipButton.style.borderTopWidth = 1;
         skipButton.style.borderBottomWidth = 1;
         skipButton.style.borderLeftWidth = 1;
         skipButton.style.borderRightWidth = 1;
-        skipButton.style.borderTopColor = new Color(0.3f, 0.3f, 0.3f, 1f);
-        skipButton.style.borderBottomColor = new Color(0.3f, 0.3f, 0.3f, 1f);
-        skipButton.style.borderLeftColor = new Color(0.3f, 0.3f, 0.3f, 1f);
-        skipButton.style.borderRightColor = new Color(0.3f, 0.3f, 0.3f, 1f);
-        skipButton.style.color = new Color(0.5f, 0.5f, 0.5f, 1f);
-        skipButton.style.paddingTop = 8;
-        skipButton.style.paddingBottom = 8;
+        skipButton.style.borderTopColor = new Color(0.4f, 0.4f, 0.5f, 1f);
+        skipButton.style.borderBottomColor = new Color(0.4f, 0.4f, 0.5f, 1f);
+        skipButton.style.borderLeftColor = new Color(0.4f, 0.4f, 0.5f, 1f);
+        skipButton.style.borderRightColor = new Color(0.4f, 0.4f, 0.5f, 1f);
+        skipButton.style.borderTopLeftRadius = 4;
+        skipButton.style.borderTopRightRadius = 4;
+        skipButton.style.borderBottomLeftRadius = 4;
+        skipButton.style.borderBottomRightRadius = 4;
+        skipButton.style.color = new Color(0.7f, 0.7f, 0.75f, 1f);
+        skipButton.style.paddingTop = 10;
+        skipButton.style.paddingBottom = 10;
         skipButton.style.paddingLeft = 20;
         skipButton.style.paddingRight = 20;
+        skipButton.style.fontSize = 14;
 
         // 次へボタン
         nextButton = new Button(() => NextStep());

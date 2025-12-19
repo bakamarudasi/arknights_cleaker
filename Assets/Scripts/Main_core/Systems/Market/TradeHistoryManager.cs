@@ -280,6 +280,190 @@ public class TradeHistoryManager : MonoBehaviour
     }
 
     // ========================================
+    // 追加フォーマッタ（UI表示用）
+    // ========================================
+
+    /// <summary>
+    /// 日付別にグループ化した履歴を取得
+    /// </summary>
+    public Dictionary<DateTime, List<TradeRecord>> GetHistoryGroupedByDate()
+    {
+        return history
+            .GroupBy(r => r.timestamp.Date)
+            .OrderByDescending(g => g.Key)
+            .ToDictionary(g => g.Key, g => g.ToList());
+    }
+
+    /// <summary>
+    /// 日付別履歴をフォーマット
+    /// </summary>
+    public string FormatDailyHistory(DateTime date)
+    {
+        var records = history.FindAll(r => r.timestamp.Date == date);
+        if (records.Count == 0) return "取引なし";
+
+        var lines = new List<string> { $"【{date:yyyy/MM/dd}】" };
+
+        double dailyPnL = 0;
+        foreach (var record in records.OrderBy(r => r.timestamp))
+        {
+            lines.Add(FormatRecord(record));
+            if (record.type == TradeType.Sell)
+            {
+                dailyPnL += record.profitLoss;
+            }
+        }
+
+        string pnlColor = dailyPnL >= 0 ? "#4ade80" : "#ef4444";
+        string pnlSign = dailyPnL >= 0 ? "+" : "";
+        lines.Add($"<color={pnlColor}>日計: {pnlSign}{dailyPnL:N0} LMD</color>");
+
+        return string.Join("\n", lines);
+    }
+
+    /// <summary>
+    /// 銘柄別サマリーを取得
+    /// </summary>
+    public List<StockTradeSummary> GetStockSummaries()
+    {
+        var summaries = new List<StockTradeSummary>();
+
+        var grouped = history.GroupBy(r => r.stockId);
+        foreach (var group in grouped)
+        {
+            var stockRecords = group.ToList();
+            var sells = stockRecords.FindAll(r => r.type == TradeType.Sell);
+
+            var summary = new StockTradeSummary
+            {
+                stockId = group.Key,
+                stockName = stockRecords.First().stockName,
+                buyCount = stockRecords.Count(r => r.type == TradeType.Buy),
+                sellCount = sells.Count,
+                totalBuyAmount = stockRecords.Where(r => r.type == TradeType.Buy).Sum(r => r.totalAmount),
+                totalSellAmount = sells.Sum(r => r.totalAmount),
+                totalProfitLoss = sells.Sum(r => r.profitLoss),
+                winCount = sells.Count(r => r.profitLoss > 0),
+                lossCount = sells.Count(r => r.profitLoss < 0)
+            };
+            summary.winRate = sells.Count > 0 ? (double)summary.winCount / sells.Count : 0;
+
+            summaries.Add(summary);
+        }
+
+        return summaries.OrderByDescending(s => Math.Abs(s.totalProfitLoss)).ToList();
+    }
+
+    /// <summary>
+    /// 銘柄別サマリーをフォーマット
+    /// </summary>
+    public string FormatStockSummary(StockTradeSummary summary)
+    {
+        string pnlColor = summary.totalProfitLoss >= 0 ? "#4ade80" : "#ef4444";
+        string pnlSign = summary.totalProfitLoss >= 0 ? "+" : "";
+
+        return $"{summary.stockName}\n" +
+               $"  取引: {summary.buyCount + summary.sellCount}回 (買{summary.buyCount}/売{summary.sellCount})\n" +
+               $"  勝率: {summary.winRate:P0} ({summary.winCount}勝{summary.lossCount}敗)\n" +
+               $"  <color={pnlColor}>損益: {pnlSign}{summary.totalProfitLoss:N0}</color>";
+    }
+
+    /// <summary>
+    /// 期間フィルターで履歴を取得
+    /// </summary>
+    public List<TradeRecord> GetHistoryByPeriod(TradePeriod period)
+    {
+        DateTime startDate = period switch
+        {
+            TradePeriod.Today => DateTime.Today,
+            TradePeriod.Week => DateTime.Today.AddDays(-7),
+            TradePeriod.Month => DateTime.Today.AddMonths(-1),
+            TradePeriod.All => DateTime.MinValue,
+            _ => DateTime.MinValue
+        };
+
+        return history.FindAll(r => r.timestamp >= startDate);
+    }
+
+    /// <summary>
+    /// 期間別統計をフォーマット
+    /// </summary>
+    public string FormatPeriodStats(TradePeriod period)
+    {
+        var periodRecords = GetHistoryByPeriod(period);
+        var sells = periodRecords.FindAll(r => r.type == TradeType.Sell);
+
+        string periodName = period switch
+        {
+            TradePeriod.Today => "本日",
+            TradePeriod.Week => "今週",
+            TradePeriod.Month => "今月",
+            TradePeriod.All => "全期間",
+            _ => ""
+        };
+
+        double pnl = sells.Sum(r => r.profitLoss);
+        int wins = sells.Count(r => r.profitLoss > 0);
+        int losses = sells.Count(r => r.profitLoss < 0);
+        double winRate = sells.Count > 0 ? (double)wins / sells.Count : 0;
+
+        string pnlColor = pnl >= 0 ? "#4ade80" : "#ef4444";
+        string pnlSign = pnl >= 0 ? "+" : "";
+
+        return $"【{periodName}の成績】\n" +
+               $"取引: {periodRecords.Count}回\n" +
+               $"勝率: {winRate:P0} ({wins}勝{losses}敗)\n" +
+               $"<color={pnlColor}>損益: {pnlSign}{pnl:N0} LMD</color>";
+    }
+
+    /// <summary>
+    /// コンパクト表示用フォーマット（リスト項目用）
+    /// </summary>
+    public string FormatRecordCompact(TradeRecord record)
+    {
+        string icon = record.type == TradeType.Buy ? "▲" : "▼";
+        string typeColor = record.type == TradeType.Buy ? "#60a5fa" : "#f472b6";
+        string time = record.timestamp.ToString("HH:mm");
+
+        string result = $"<color={typeColor}>{icon}</color> {time} {record.stockName} ×{record.quantity}";
+
+        if (record.type == TradeType.Sell)
+        {
+            string pnlColor = record.profitLoss >= 0 ? "#4ade80" : "#ef4444";
+            string pnlSign = record.profitLoss >= 0 ? "+" : "";
+            result += $" <color={pnlColor}>{pnlSign}{record.profitLoss:N0}</color>";
+        }
+
+        return result;
+    }
+
+    /// <summary>
+    /// 詳細表示用フォーマット（モーダル用）
+    /// </summary>
+    public string FormatRecordDetail(TradeRecord record)
+    {
+        var lines = new List<string>
+        {
+            $"取引ID: {record.id[..8]}...",
+            $"銘柄: {record.stockName} ({record.stockId})",
+            $"種別: {(record.type == TradeType.Buy ? "購入" : "売却")}",
+            $"数量: {record.quantity}株",
+            $"単価: {record.pricePerShare:N2} LMD",
+            $"総額: {record.totalAmount:N0} LMD",
+            $"日時: {record.timestamp:yyyy/MM/dd HH:mm:ss}"
+        };
+
+        if (record.type == TradeType.Sell)
+        {
+            string pnlColor = record.profitLoss >= 0 ? "#4ade80" : "#ef4444";
+            string pnlSign = record.profitLoss >= 0 ? "+" : "";
+            lines.Add($"<color={pnlColor}>損益: {pnlSign}{record.profitLoss:N0} LMD</color>");
+        }
+
+        return string.Join("\n", lines);
+    }
+
+    // ========================================
     // ヘルパー
     // ========================================
 
@@ -337,4 +521,33 @@ public struct TradeStatistics
     public double averageLoss;
 
     public double profitFactor;
+}
+
+/// <summary>
+/// 銘柄別取引サマリー
+/// </summary>
+[Serializable]
+public struct StockTradeSummary
+{
+    public string stockId;
+    public string stockName;
+    public int buyCount;
+    public int sellCount;
+    public double totalBuyAmount;
+    public double totalSellAmount;
+    public double totalProfitLoss;
+    public int winCount;
+    public int lossCount;
+    public double winRate;
+}
+
+/// <summary>
+/// 期間フィルター
+/// </summary>
+public enum TradePeriod
+{
+    Today,
+    Week,
+    Month,
+    All
 }

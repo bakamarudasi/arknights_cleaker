@@ -42,9 +42,39 @@ public class StockPriceAlertManager : MonoBehaviour
     }
 
     // ========================================
+    // Prefab設定（シーン配置用）
+    // ========================================
+
+    [Header("通知UI設定")]
+    [Tooltip("アラート通知用のポップアップUIプレハブ")]
+    [SerializeField] private GameObject alertPopupPrefab;
+
+    [Tooltip("通知を表示するキャンバス（未設定時は自動検索）")]
+    [SerializeField] private Canvas notificationCanvas;
+
+    [Header("サウンド設定")]
+    [Tooltip("上昇アラート時のSE")]
+    [SerializeField] private AudioClip alertUpSound;
+
+    [Tooltip("下落アラート時のSE")]
+    [SerializeField] private AudioClip alertDownSound;
+
+    [Tooltip("SE音量")]
+    [Range(0f, 1f)]
+    [SerializeField] private float soundVolume = 0.8f;
+
+    [Header("通知設定")]
+    [Tooltip("ポップアップ表示時間（秒）")]
+    [SerializeField] private float popupDuration = 3f;
+
+    [Tooltip("同時に表示する最大通知数")]
+    [SerializeField] private int maxVisibleNotifications = 3;
+
+    // ========================================
     // 状態
     // ========================================
 
+    [Header("アラートデータ (Runtime)")]
     [SerializeField] private List<PriceAlert> alerts = new();
 
     // イベント
