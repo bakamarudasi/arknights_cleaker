@@ -1,0 +1,39 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 65ddf594aa741f742a71c5cd5dd864e0, type: 3}
+  m_Name: click_upgrade_03
+  m_EditorClassIdentifier:
+  id: click_upgrade_03
+  displayName: "\u6226\u8853\u30BF\u30C3\u30D7\u5F37\u5316"
+  description: "\u5B9F\u6226\u7D1A\u306E\u30AF\u30EA\u30C3\u30AF\u529B\u3092\u767A\u63EE\u3059\u308B\u3002\n\u203B\u89E3\u653E\u306B\u300C\u6226\u8853\u30BF\u30C3\u30D7\u30E2\u30B8\u30E5\u30FC\u30EB\u300D\u304C\u5FC5\u8981"
+  icon: {fileID: 0}
+  affiliatedCompany: {fileID: 0}
+  upgradeType: 0
+  category: 0
+  effectValue: 10
+  maxLevel: 100
+  currencyType: 0
+  baseCost: 200
+  costMultiplier: 1.15
+  requiredMaterials: []
+  materialScaling: 1
+  requiredUnlockItem: {fileID: 0}
+  prerequisiteUpgrade: {fileID: 0}
+  prerequisiteLevel: 1
+  relatedStock: {fileID: 0}
+  scaleWithHolding: 0
+  maxHoldingMultiplier: 2
+  sortOrder: 102
+  effectFormat: "\u30AF\u30EA\u30C3\u30AF +{0}"
+  isPercentDisplay: 0
+  categoryIcon: "\u2694\uFE0F"
+  isSpecial: 0
