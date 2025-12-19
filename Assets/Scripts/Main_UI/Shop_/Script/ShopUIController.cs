@@ -74,6 +74,12 @@ public class ShopUIController : IViewController
 
         // 初期表示
         tabController.SwitchCategory(UpgradeData.UpgradeCategory.Click);
+
+        // 初期カテゴリのリストを読み込む
+        // ※ SwitchCategoryは同一カテゴリへの切り替えを無視するため、
+        //    初期値がClickの場合はOnCategoryChangedが発火しない。
+        //    そのため明示的にRefreshListを呼び出す必要がある。
+        RefreshList();
     }
 
     private void QueryElements()
