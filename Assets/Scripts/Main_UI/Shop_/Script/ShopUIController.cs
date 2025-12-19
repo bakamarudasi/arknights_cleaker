@@ -1,10 +1,10 @@
 using UnityEngine;
 using UnityEngine.UIElements;
 using System.Collections.Generic;
-using System.Collections; // コルーチン用に追加したが、今回はScheduleを使用
 
 /// <summary>
-/// ショップ/強化画面のロジック
+/// ショップ/強化画面のUIファサード
+/// 単一責任: 各サブコントローラーの統合と画面全体のライフサイクル管理
 /// </summary>
 public class ShopUIController : IViewController
 {
@@ -15,46 +15,22 @@ public class ShopUIController : IViewController
     private VisualElement root;
     private Label moneyLabel;
     private Label certLabel;
-    private VisualElement tabContainer;
     private ListView upgradeListView;
-    private ScrollView detailScrollView;
-    private VisualElement detailIcon;
-    private Label detailName;
-    private Label detailLevel;
-    private Label detailCategory;
-    private Label detailDesc;
-    private Label detailCost;
-    private VisualElement detailMaterials;
-
-    // 一括購入ボタン
-    private Button buyX1Btn;
-    private Button buyX10Btn;
-    private Button buyMaxBtn;
-
-    // パネル全体（フラッシュ演出用）
-    private VisualElement detailPanel;
-
-    // 次レベルプレビュー用
-    private VisualElement effectPreviewContainer;
-
-    // リスト件数表示
     private Label listCountLabel;
 
     // ========================================
-    // 演出用変数
+    // サブコントローラー（分離された責任）
     // ========================================
-    
-    // 文字送り
-    private IVisualElementScheduledItem typewriterTimer;
-    private string targetDescriptionText;
-    private int currentCharIndex;
 
-    // 通貨ドラムロール
-    private IVisualElementScheduledItem currencyTimer;
-    private double currentDisplayMoney = -1;
-    private double targetMoney = 0;
-    private double currentDisplayCert = -1;
-    private double targetCert = 0;
+    private ShopTabController tabController;
+    private ShopDetailPanelController detailPanelController;
+    private ShopAnimationHelper animationHelper;
+
+    // ========================================
+    // ビジネスロジック
+    // ========================================
+
+    private ShopService shopService;
 
     // ========================================
     // データ
@@ -62,14 +38,6 @@ public class ShopUIController : IViewController
 
     private UpgradeDatabase database;
     private List<UpgradeData> currentList = new();
-    private UpgradeData.UpgradeCategory currentCategory = UpgradeData.UpgradeCategory.Click;
-    private UpgradeData selectedUpgrade;
-
-    // ========================================
-    // ビジネスロジック
-    // ========================================
-
-    private ShopService shopService;
 
     // ========================================
     // 初期化
@@ -92,151 +60,50 @@ public class ShopUIController : IViewController
         shopService = new ShopService(gc);
         shopService.OnPurchaseSuccess += OnPurchaseSuccess;
 
+        // UI要素取得
         QueryElements();
-        SetupTabs();
+
+        // サブコントローラーの初期化
+        InitializeSubControllers();
+
+        // ListView設定
         SetupListView();
+
+        // イベント登録
         BindEvents();
 
-        // 初期表示のために現在の値をセット（アニメなしで即反映）
-        currentDisplayMoney = shopService.GetMoney();
-        targetMoney = currentDisplayMoney;
-        currentDisplayCert = shopService.GetCertificates();
-        targetCert = currentDisplayCert;
-
-        UpdateCurrencyLabels(); // ラベル直接更新
-
-        SwitchCategory(UpgradeData.UpgradeCategory.Click);
-        ClearDetailPanel();
-
-        // 通貨アニメーションループ開始
-        currencyTimer = root.schedule.Execute(OnCurrencyTick).Every(ShopUIConstants.CURRENCY_ANIMATION_INTERVAL_MS);
+        // 初期表示
+        tabController.SwitchCategory(UpgradeData.UpgradeCategory.Click);
     }
 
     private void QueryElements()
     {
         moneyLabel = root.Q<Label>("money-label");
         certLabel = root.Q<Label>("cert-label");
-        tabContainer = root.Q<VisualElement>("tab-container");
         upgradeListView = root.Q<ListView>("upgrade-list");
-        
-        // 詳細パネルの親要素を取得（フラッシュ用）
-        detailPanel = root.Q<VisualElement>("detail-panel");
-
-        detailScrollView = root.Q<ScrollView>("detail-scroll-view");
-        detailIcon = root.Q<VisualElement>("detail-icon");
-        detailName = root.Q<Label>("detail-name");
-        detailLevel = root.Q<Label>("detail-level");
-        detailCategory = root.Q<Label>("detail-category");
-        detailDesc = root.Q<Label>("detail-desc");
-        detailCost = root.Q<Label>("detail-cost");
-        detailMaterials = root.Q<VisualElement>("detail-materials");
-        effectPreviewContainer = root.Q<VisualElement>("effect-preview-container");
         listCountLabel = root.Q<Label>("list-count");
-
-        // 一括購入ボタン
-        buyX1Btn = root.Q<Button>("buy-x1-btn");
-        buyX10Btn = root.Q<Button>("buy-x10-btn");
-        buyMaxBtn = root.Q<Button>("buy-max-btn");
-
-        SetupBulkBuyButtons();
     }
 
-    private void SetupBulkBuyButtons()
+    private void InitializeSubControllers()
     {
-        if (buyX1Btn != null)
-        {
-            buyX1Btn.AddToClassList("buy-x1");
-            buyX1Btn.clicked += () => OnBulkBuyClicked(1);
-            buyX1Btn.AddManipulator(new HoldButtonManipulator(
-                () => OnBulkBuyClicked(1),
-                ShopUIConstants.HOLD_BUTTON_INITIAL_DELAY_MS,
-                ShopUIConstants.HOLD_BUTTON_X1_INTERVAL_MS));
-        }
+        // アニメーションヘルパー
+        animationHelper = new ShopAnimationHelper();
+        var detailDesc = root.Q<Label>("detail-desc");
+        animationHelper.Initialize(root, moneyLabel, certLabel, detailDesc);
+        animationHelper.SetInitialCurrencyValues(shopService.GetMoney(), shopService.GetCertificates());
+        animationHelper.StartCurrencyAnimation();
 
-        if (buyX10Btn != null)
-        {
-            buyX10Btn.AddToClassList("buy-x10");
-            buyX10Btn.clicked += () => OnBulkBuyClicked(10);
-            buyX10Btn.AddManipulator(new HoldButtonManipulator(
-                () => OnBulkBuyClicked(10),
-                ShopUIConstants.HOLD_BUTTON_INITIAL_DELAY_MS,
-                ShopUIConstants.HOLD_BUTTON_X10_INTERVAL_MS));
-        }
+        // タブコントローラー
+        tabController = new ShopTabController();
+        var tabContainer = root.Q<VisualElement>("tab-container");
+        tabController.Initialize(tabContainer);
+        tabController.OnCategoryChanged += OnCategoryChanged;
 
-        if (buyMaxBtn != null)
-        {
-            buyMaxBtn.clicked += OnBuyMaxClicked;
-        }
-    }
-
-    // ========================================
-    // タブ
-    // ========================================
-
-    private void SetupTabs()
-    {
-        if (tabContainer == null) return;
-
-        tabContainer.Clear();
-
-        // カテゴリ、ラベル、アイコンの定義
-        var categories = new[]
-        {
-            (UpgradeData.UpgradeCategory.Click, "クリック", "⚔"),
-            (UpgradeData.UpgradeCategory.Income, "収入", "💰"),
-            (UpgradeData.UpgradeCategory.Critical, "クリティカル", "⚡"),
-            (UpgradeData.UpgradeCategory.Skill, "スキル", "🎯"),
-            (UpgradeData.UpgradeCategory.Special, "特殊", "⭐")
-        };
-
-        foreach (var (category, label, icon) in categories)
-        {
-            var tab = new Button();
-            tab.AddToClassList("shop-tab");
-
-            // アイコン
-            var iconLabel = new Label { text = icon };
-            iconLabel.AddToClassList("tab-icon");
-
-            // テキスト
-            var textLabel = new Label { text = label };
-            textLabel.AddToClassList("tab-text");
-
-            // グロー効果用の要素
-            var glow = new VisualElement();
-            glow.AddToClassList("tab-glow");
-            glow.pickingMode = PickingMode.Ignore;
-
-            tab.Add(iconLabel);
-            tab.Add(textLabel);
-            tab.Add(glow);
-
-            tab.clicked += () => SwitchCategory(category);
-            tabContainer.Add(tab);
-        }
-    }
-
-    private void SwitchCategory(UpgradeData.UpgradeCategory category)
-    {
-        currentCategory = category;
-        UpdateTabStyles();
-        RefreshList();
-        ClearDetailPanel();
-    }
-
-    private void UpdateTabStyles()
-    {
-        if (tabContainer == null) return;
-
-        int index = (int)currentCategory;
-        for (int i = 0; i < tabContainer.childCount; i++)
-        {
-            var tab = tabContainer[i];
-            if (i == index)
-                tab.AddToClassList("tab-active");
-            else
-                tab.RemoveFromClassList("tab-active");
-        }
+        // 詳細パネルコントローラー
+        detailPanelController = new ShopDetailPanelController();
+        detailPanelController.Initialize(root, shopService, animationHelper);
+        detailPanelController.OnBuyClicked += OnBulkBuyClicked;
+        detailPanelController.OnBuyMaxClicked += OnBuyMaxClicked;
     }
 
     // ========================================
@@ -272,564 +139,54 @@ public class ShopUIController : IViewController
     }
 
     // ========================================
-    // 選択 → 詳細パネル表示
+    // イベントハンドラー
     // ========================================
+
+    private void OnCategoryChanged(UpgradeData.UpgradeCategory category)
+    {
+        RefreshList();
+        detailPanelController.ClearDetailPanel();
+    }
 
     private void OnSelectionChanged(IEnumerable<object> selection)
     {
-        selectedUpgrade = null;
+        UpgradeData selected = null;
 
         foreach (var item in selection)
         {
             if (item is UpgradeData data)
             {
-                selectedUpgrade = data;
+                selected = data;
                 break;
             }
         }
 
-        if (selectedUpgrade != null)
-        {
-            RefreshDetailPanel();
-            if (detailScrollView != null)
-            {
-                detailScrollView.scrollOffset = Vector2.zero;
-            }
-        }
-        else
-        {
-            ClearDetailPanel();
-        }
+        detailPanelController.SelectItem(selected);
     }
 
-    private void RefreshDetailPanel()
+    private void OnBulkBuyClicked(UpgradeData upgrade, int count)
     {
-        if (selectedUpgrade == null) return;
-
-        int level = shopService.GetUpgradeLevel(selectedUpgrade.id);
-        double cost = shopService.GetSingleCost(selectedUpgrade);
-        UpgradeState state = shopService.GetUpgradeState(selectedUpgrade);
-        bool isMax = shopService.IsMaxLevel(selectedUpgrade);
-        double money = shopService.GetMoney();
-        bool canAfford = money >= cost;
-
-        // アイコン表示制御
-        if (detailIcon != null)
-        {
-            if (selectedUpgrade.icon != null)
-            {
-                detailIcon.style.display = DisplayStyle.Flex;
-                detailIcon.style.backgroundImage = new StyleBackground(selectedUpgrade.icon);
-                detailIcon.RemoveFromClassList("highlight");
-                if (!isMax) detailIcon.AddToClassList("highlight");
-            }
-            else
-            {
-                detailIcon.style.backgroundImage = null;
-                detailIcon.style.display = DisplayStyle.None;
-            }
-        }
-
-        if (detailName != null) detailName.text = selectedUpgrade.displayName;
-
-        // レベル表示（無限アップグレードの場合は∞表示）
-        if (detailLevel != null)
-        {
-            bool isUnlimited = selectedUpgrade.maxLevel <= 0;
-            if (isMax)
-            {
-                detailLevel.text = $"Lv.{level} (MAX)";
-            }
-            else if (isUnlimited)
-            {
-                detailLevel.text = $"Lv.{level} → Lv.{level + 1} (∞)";
-            }
-            else
-            {
-                int maxLv = selectedUpgrade.maxLevel;
-                detailLevel.text = $"Lv.{level} → Lv.{level + 1} /{maxLv}";
-            }
-        }
-
-        if (detailCategory != null) detailCategory.text = selectedUpgrade.GetCategoryDisplayName().ToUpper();
-
-        StartTypewriterEffect(selectedUpgrade.description ?? "");
-
-        // 効果プレビュー（現在 → 次レベル）を更新
-        RefreshEffectPreview(level, isMax);
-
-        // コスト表示
-        if (detailCost != null)
-        {
-            detailCost.text = isMax ? "---" : $"{cost:N0}";
-            detailCost.RemoveFromClassList("not-enough");
-            if (!isMax && !canAfford) detailCost.AddToClassList("not-enough");
-        }
-
-        RefreshMaterialsDisplay();
-
-        // 一括購入ボタンの状態更新
-        UpdateBulkBuyButtons(state, isMax, cost);
+        if (upgrade == null) return;
+        shopService.ExecuteBulkPurchase(upgrade, count);
     }
 
-    /// <summary>
-    /// 一括購入ボタンの有効/無効を更新
-    /// </summary>
-    private void UpdateBulkBuyButtons(UpgradeState state, bool isMax, double singleCost)
+    private void OnBuyMaxClicked(UpgradeData upgrade)
     {
-        double money = shopService.GetMoney();
-        bool canBuyOne = state == UpgradeState.ReadyToUpgrade;
-
-        // ×1 ボタン
-        if (buyX1Btn != null)
-        {
-            buyX1Btn.SetEnabled(canBuyOne);
-            buyX1Btn.text = isMax ? "-" : $"×1\n{singleCost:N0}";
-        }
-
-        // ×10 ボタン: 10回分のコストを計算
-        if (buyX10Btn != null)
-        {
-            int maxBuyCount = shopService.CalculateMaxBuyCount(selectedUpgrade, money);
-            int buyCount = System.Math.Min(10, maxBuyCount);
-            double totalCost = shopService.CalculateTotalCost(selectedUpgrade, buyCount);
-            bool canBuy10 = canBuyOne && buyCount > 0;
-
-            buyX10Btn.SetEnabled(canBuy10);
-            buyX10Btn.text = isMax ? "-" : $"×{buyCount}\n{totalCost:N0}";
-        }
-
-        // MAX ボタン
-        if (buyMaxBtn != null)
-        {
-            int maxCount = shopService.CalculateMaxBuyCount(selectedUpgrade, money);
-            bool canBuyMax = canBuyOne && maxCount > 0;
-
-            buyMaxBtn.SetEnabled(canBuyMax);
-            if (isMax)
-            {
-                buyMaxBtn.text = "MAX";
-            }
-            else if (maxCount > 0)
-            {
-                double totalCost = shopService.CalculateTotalCost(selectedUpgrade, maxCount);
-                buyMaxBtn.text = $"MAX(×{maxCount})\n{totalCost:N0}";
-            }
-            else
-            {
-                buyMaxBtn.text = "MAX\n---";
-            }
-        }
+        if (upgrade == null) return;
+        shopService.ExecuteMaxPurchase(upgrade);
     }
 
-    /// <summary>
-    /// 通貨変動時にボタン状態を再計算（選択中のアイテムがある場合のみ）
-    /// </summary>
-    private void RefreshBulkBuyButtons()
-    {
-        if (selectedUpgrade == null) return;
-
-        bool isMax = shopService.IsMaxLevel(selectedUpgrade);
-        double singleCost = shopService.GetSingleCost(selectedUpgrade);
-        UpgradeState state = shopService.GetUpgradeState(selectedUpgrade);
-
-        UpdateBulkBuyButtons(state, isMax, singleCost);
-    }
-
-    /// <summary>
-    /// 一括購入（指定回数）- ShopServiceに委譲
-    /// </summary>
-    private void OnBulkBuyClicked(int requestedCount)
-    {
-        if (selectedUpgrade == null) return;
-        shopService.ExecuteBulkPurchase(selectedUpgrade, requestedCount);
-    }
-
-    /// <summary>
-    /// MAX購入（買えるだけ買う）- ShopServiceに委譲
-    /// </summary>
-    private void OnBuyMaxClicked()
-    {
-        if (selectedUpgrade == null) return;
-        shopService.ExecuteMaxPurchase(selectedUpgrade);
-    }
-
-    /// <summary>
-    /// 購入成功時のUI演出（ShopServiceからのコールバック）
-    /// </summary>
     private void OnPurchaseSuccess(UpgradeData upgrade, int count)
     {
         LogUIController.Msg($"{upgrade.displayName} を {count} 回強化しました！");
-        PlayFlashEffect();
-        PlayIconBounce();
-        PlayEffectFlash();
-        RefreshDetailPanel();
+        detailPanelController.PlayPurchaseEffects();
+        detailPanelController.RefreshDetailPanel();
         upgradeListView?.RefreshItems();
     }
 
-    /// <summary>
-    /// アイコンバウンスアニメーション
-    /// </summary>
-    private void PlayIconBounce()
-    {
-        if (detailIcon == null) return;
-
-        // バウンスクラスを追加
-        detailIcon.AddToClassList("icon-bounce");
-
-        // アニメーション終了後にクラスを削除
-        detailIcon.schedule.Execute(() =>
-        {
-            detailIcon.RemoveFromClassList("icon-bounce");
-        }).ExecuteLater(ShopUIConstants.ICON_BOUNCE_DURATION_MS);
-    }
-
-    /// <summary>
-    /// 効果プレビューの緑フラッシュ
-    /// </summary>
-    private void PlayEffectFlash()
-    {
-        if (effectPreviewContainer == null) return;
-
-        effectPreviewContainer.AddToClassList("effect-flash");
-
-        effectPreviewContainer.schedule.Execute(() =>
-        {
-            effectPreviewContainer.RemoveFromClassList("effect-flash");
-        }).ExecuteLater(ShopUIConstants.EFFECT_FLASH_DURATION_MS);
-    }
-
-    /// <summary>
-    /// 効果プレビュー（現在値 → 次レベル値）の表示を更新
-    /// </summary>
-    private void RefreshEffectPreview(int currentLevel, bool isMax)
-    {
-        if (effectPreviewContainer == null) return;
-        effectPreviewContainer.Clear();
-
-        if (selectedUpgrade == null) return;
-
-        // 現在の効果値
-        double currentEffect = selectedUpgrade.GetTotalEffectAtLevel(currentLevel);
-        // 次レベルの効果値
-        double nextEffect = selectedUpgrade.GetTotalEffectAtLevel(currentLevel + 1);
-
-        // メイン効果行を作成
-        var effectRow = new VisualElement();
-        effectRow.AddToClassList("effect-row");
-        // MAXでない場合は下にもう1行あるのでボーダーを追加
-        if (!isMax) effectRow.AddToClassList("effect-row-border");
-
-        // 効果ラベル
-        var effectLabel = new Label();
-        effectLabel.AddToClassList("effect-label");
-        effectLabel.text = GetEffectTypeName(selectedUpgrade.upgradeType);
-
-        // 現在値
-        var currentLabel = new Label();
-        currentLabel.AddToClassList("effect-current");
-        currentLabel.text = FormatEffectValue(currentEffect, selectedUpgrade.isPercentDisplay);
-
-        // 矢印
-        var arrowLabel = new Label();
-        arrowLabel.AddToClassList("effect-arrow");
-        arrowLabel.text = isMax ? "" : "▶";
-
-        // 次レベル値
-        var nextLabel = new Label();
-        nextLabel.AddToClassList("effect-next");
-        if (isMax)
-        {
-            nextLabel.text = "MAX";
-            nextLabel.AddToClassList("effect-max");
-        }
-        else
-        {
-            nextLabel.text = FormatEffectValue(nextEffect, selectedUpgrade.isPercentDisplay);
-        }
-
-        effectRow.Add(effectLabel);
-        effectRow.Add(currentLabel);
-        effectRow.Add(arrowLabel);
-        effectRow.Add(nextLabel);
-        effectPreviewContainer.Add(effectRow);
-
-        // 増加量の表示（MAXでない場合）
-        if (!isMax)
-        {
-            var diffRow = new VisualElement();
-            diffRow.AddToClassList("effect-row");
-
-            var diffLabel = new Label();
-            diffLabel.AddToClassList("effect-label");
-            diffLabel.text = "増加量";
-
-            var diffValue = new Label();
-            diffValue.AddToClassList("effect-next");
-            double diff = nextEffect - currentEffect;
-            diffValue.text = $"+{FormatEffectValue(diff, selectedUpgrade.isPercentDisplay)}";
-
-            diffRow.Add(diffLabel);
-            diffRow.Add(new VisualElement { style = { flexGrow = 1 } }); // スペーサー
-            diffRow.Add(diffValue);
-            effectPreviewContainer.Add(diffRow);
-        }
-    }
-
-    /// <summary>
-    /// 効果タイプの表示名を取得
-    /// </summary>
-    private string GetEffectTypeName(UpgradeData.UpgradeType type)
-    {
-        return type switch
-        {
-            UpgradeData.UpgradeType.Click_FlatAdd => "クリック威力",
-            UpgradeData.UpgradeType.Click_PercentAdd => "クリック倍率",
-            UpgradeData.UpgradeType.Income_FlatAdd => "自動収入",
-            UpgradeData.UpgradeType.Income_PercentAdd => "収入倍率",
-            UpgradeData.UpgradeType.Critical_ChanceAdd => "クリティカル率",
-            UpgradeData.UpgradeType.Critical_PowerAdd => "クリティカル倍率",
-            UpgradeData.UpgradeType.SP_ChargeAdd => "SPチャージ",
-            UpgradeData.UpgradeType.Fever_PowerAdd => "フィーバー倍率",
-            _ => "効果"
-        };
-    }
-
-    /// <summary>
-    /// 効果値をフォーマット
-    /// </summary>
-    private string FormatEffectValue(double value, bool isPercent)
-    {
-        if (isPercent)
-        {
-            return $"{value * 100:F1}%";
-        }
-        return value >= 1000 ? $"{value:N0}" : $"{value:F1}";
-    }
-
     // ========================================
-    // 文字送りエフェクト
+    // 通貨イベント
     // ========================================
-
-    private void StartTypewriterEffect(string text)
-    {
-        if (detailDesc == null) return;
-        if (text == targetDescriptionText) return;
-
-        if (typewriterTimer != null)
-        {
-            typewriterTimer.Pause();
-            typewriterTimer = null;
-        }
-
-        targetDescriptionText = text;
-        currentCharIndex = 0;
-        detailDesc.text = ""; 
-
-        typewriterTimer = root.schedule.Execute(OnTypewriterTick).Every(ShopUIConstants.TYPEWRITER_INTERVAL_MS);
-    }
-
-    private void OnTypewriterTick()
-    {
-        if (detailDesc == null) return;
-
-        if (currentCharIndex >= targetDescriptionText.Length)
-        {
-            detailDesc.text = targetDescriptionText; 
-            if (typewriterTimer != null)
-            {
-                typewriterTimer.Pause(); 
-                typewriterTimer = null;
-            }
-            return;
-        }
-
-        currentCharIndex++;
-        detailDesc.text = targetDescriptionText.Substring(0, currentCharIndex);
-    }
-
-    // ========================================
-    // 通貨ドラムロールアニメーション
-    // ========================================
-
-    private void OnCurrencyTick()
-    {
-        bool moneyChanged = AnimateCurrencyValue(ref currentDisplayMoney, targetMoney);
-        bool certChanged = AnimateCurrencyValue(ref currentDisplayCert, targetCert);
-
-        if (moneyChanged || certChanged)
-        {
-            UpdateCurrencyLabels();
-        }
-    }
-
-    /// <summary>
-    /// 通貨値のアニメーション処理（汎用メソッド）
-    /// </summary>
-    /// <param name="currentValue">現在の表示値（参照）</param>
-    /// <param name="targetValue">目標値</param>
-    /// <returns>値が変化したかどうか</returns>
-    private bool AnimateCurrencyValue(ref double currentValue, double targetValue)
-    {
-        if (System.Math.Abs(currentValue - targetValue) > ShopUIConstants.CURRENCY_ANIMATION_THRESHOLD)
-        {
-            double diff = targetValue - currentValue;
-            double step = diff * ShopUIConstants.CURRENCY_ANIMATION_SMOOTHING;
-
-            // 最小変化量を設定して、最後がダラダラしないようにする
-            if (System.Math.Abs(step) < ShopUIConstants.CURRENCY_ANIMATION_MIN_STEP)
-            {
-                step = diff > 0 ? ShopUIConstants.CURRENCY_ANIMATION_MIN_STEP : -ShopUIConstants.CURRENCY_ANIMATION_MIN_STEP;
-            }
-
-            currentValue += step;
-
-            // 行き過ぎ補正
-            if ((step > 0 && currentValue > targetValue) || (step < 0 && currentValue < targetValue))
-            {
-                currentValue = targetValue;
-            }
-            return true;
-        }
-        else
-        {
-            currentValue = targetValue;
-            return false;
-        }
-    }
-
-    private void UpdateCurrencyLabels()
-    {
-        if (moneyLabel != null) moneyLabel.text = $"LMD: {currentDisplayMoney:N0}";
-        if (certLabel != null) certLabel.text = $"資格証: {currentDisplayCert:N0}";
-    }
-
-    // ========================================
-    // フラッシュ演出
-    // ========================================
-    
-    private void PlayFlashEffect()
-    {
-        if (detailPanel == null) return;
-
-        // フラッシュ用の白い膜を動的に生成
-        var flashOverlay = new VisualElement();
-        flashOverlay.style.position = Position.Absolute;
-        flashOverlay.style.top = 0;
-        flashOverlay.style.bottom = 0;
-        flashOverlay.style.left = 0;
-        flashOverlay.style.right = 0;
-        flashOverlay.style.backgroundColor = new Color(1f, 1f, 1f, ShopUIConstants.FLASH_OVERLAY_OPACITY);
-        flashOverlay.pickingMode = PickingMode.Ignore; // クリック透過
-        
-        detailPanel.Add(flashOverlay);
-
-        // フェードアウトアニメーション
-        detailPanel.schedule.Execute(() => {
-            flashOverlay.style.transitionProperty = new List<StylePropertyName> { new StylePropertyName("opacity") };
-            flashOverlay.style.transitionDuration = new List<TimeValue> { new TimeValue(ShopUIConstants.FLASH_FADE_DURATION_MS, TimeUnit.Millisecond) };
-            flashOverlay.style.opacity = 0f;
-        }).ExecuteLater(ShopUIConstants.FLASH_FADE_START_DELAY_MS);
-
-        // アニメーションが終わった頃に要素を削除
-        detailPanel.schedule.Execute(() => {
-            if (detailPanel.Contains(flashOverlay))
-            {
-                detailPanel.Remove(flashOverlay);
-            }
-        }).ExecuteLater(ShopUIConstants.FLASH_REMOVE_DELAY_MS);
-    }
-
-    // ========================================
-    // その他
-    // ========================================
-
-    private void RefreshMaterialsDisplay()
-    {
-        if (detailMaterials == null) return;
-        detailMaterials.Clear();
-
-        if (selectedUpgrade?.requiredMaterials == null) return;
-
-        foreach (var mat in selectedUpgrade.requiredMaterials)
-        {
-            if (mat.item == null) continue;
-
-            int owned = shopService.GetItemCount(mat.item.id);
-            bool enough = owned >= mat.amount;
-
-            var matElement = new VisualElement();
-            matElement.AddToClassList("material-item");
-
-            var matIcon = new VisualElement();
-            matIcon.AddToClassList("material-icon");
-            if (mat.item.icon != null)
-            {
-                matIcon.style.backgroundImage = new StyleBackground(mat.item.icon);
-            }
-
-            var matCount = new Label();
-            matCount.AddToClassList("material-count");
-            matCount.text = $"{owned}/{mat.amount}";
-            matCount.style.color = enough ? new Color(0.6f, 0.9f, 0.6f) : new Color(1f, 0.4f, 0.4f);
-
-            matElement.Add(matIcon);
-            matElement.Add(matCount);
-            detailMaterials.Add(matElement);
-        }
-    }
-
-    private void ClearDetailPanel()
-    {
-        selectedUpgrade = null;
-
-        if (typewriterTimer != null)
-        {
-            typewriterTimer.Pause();
-            typewriterTimer = null;
-        }
-        targetDescriptionText = "";
-
-        if (detailIcon != null)
-        {
-            detailIcon.style.backgroundImage = null;
-            detailIcon.style.display = DisplayStyle.None;
-            detailIcon.RemoveFromClassList("highlight");
-        }
-
-        if (detailName != null) detailName.text = "SELECT MODULE";
-        if (detailLevel != null) detailLevel.text = "--";
-        if (detailCategory != null) detailCategory.text = "";
-        if (detailDesc != null) detailDesc.text = "Awaiting selection... // 待機中";
-
-        // 効果プレビューをクリア
-        effectPreviewContainer?.Clear();
-
-        if (detailCost != null)
-        {
-            detailCost.text = "";
-            detailCost.RemoveFromClassList("not-enough");
-        }
-
-        detailMaterials?.Clear();
-
-        // 一括購入ボタンを無効化
-        if (buyX1Btn != null)
-        {
-            buyX1Btn.SetEnabled(false);
-            buyX1Btn.text = "×1";
-        }
-        if (buyX10Btn != null)
-        {
-            buyX10Btn.SetEnabled(false);
-            buyX10Btn.text = "×10";
-        }
-        if (buyMaxBtn != null)
-        {
-            buyMaxBtn.SetEnabled(false);
-            buyMaxBtn.text = "MAX";
-        }
-    }
 
     private void BindEvents()
     {
@@ -865,22 +222,20 @@ public class ShopUIController : IViewController
         }
     }
 
-    // ここはターゲット値を更新するだけにする（表示更新はTickで行う）
     private void OnMoneyChanged(double amount)
     {
-        targetMoney = amount;
-        // 詳細パネルのボタン状態も更新（お金が貯まった時に購入可能になるように）
-        RefreshBulkBuyButtons();
+        animationHelper.SetTargetMoney(amount);
+        detailPanelController.RefreshBulkBuyButtons();
     }
 
     private void OnCertChanged(double amount)
     {
-        targetCert = amount;
+        animationHelper.SetTargetCert(amount);
     }
 
     private void OnUpgradePurchased(UpgradeData data, int level)
     {
-        if (selectedUpgrade != data)
+        if (detailPanelController.SelectedUpgrade != data)
         {
             RefreshList();
         }
@@ -890,30 +245,26 @@ public class ShopUIController : IViewController
         }
     }
 
-    // 削除（アニメーションループで更新するため）
-    private void RefreshCurrencyDisplay()
-    {
-        // OnCurrencyTickで処理するのでここは空でOK、もしくは初期化時のみ使用
-        // 初期化以外では呼ばないようにする
-    }
+    // ========================================
+    // リスト更新
+    // ========================================
 
     private void RefreshList()
     {
         currentList.Clear();
 
-        // ロック解除済みのアイテムのみ取得（ロック中は非表示）
         var gc = GameController.Instance;
+        var currentCategory = tabController.CurrentCategory;
         var allItems = database.GetSorted(currentCategory);
+
         foreach (var item in allItems)
         {
-            // ロック状態でないものだけ追加
             if (gc.Upgrade.GetState(item) != UpgradeState.Locked)
             {
                 currentList.Add(item);
             }
         }
 
-        // リスト件数を更新
         if (listCountLabel != null)
         {
             listCountLabel.text = $"{currentList.Count} items";
@@ -926,6 +277,10 @@ public class ShopUIController : IViewController
         }
     }
 
+    // ========================================
+    // クリーンアップ
+    // ========================================
+
     public void Dispose()
     {
         UnbindEvents();
@@ -936,21 +291,28 @@ public class ShopUIController : IViewController
             shopService.OnPurchaseSuccess -= OnPurchaseSuccess;
         }
 
-        // タイマー停止
-        if (typewriterTimer != null) typewriterTimer.Pause();
-        if (currencyTimer != null) currencyTimer.Pause();
+        // サブコントローラーの解放
+        if (tabController != null)
+        {
+            tabController.OnCategoryChanged -= OnCategoryChanged;
+            tabController.Dispose();
+        }
+
+        if (detailPanelController != null)
+        {
+            detailPanelController.OnBuyClicked -= OnBulkBuyClicked;
+            detailPanelController.OnBuyMaxClicked -= OnBuyMaxClicked;
+            detailPanelController.Dispose();
+        }
+
+        animationHelper?.Dispose();
 
         if (upgradeListView != null)
         {
             upgradeListView.selectionChanged -= OnSelectionChanged;
         }
 
-        // 一括購入ボタンのイベント解除（ボタン自体がrootと一緒に破棄されるので省略可）
-        // ラムダ式で登録したclickedは同じインスタンスで解除できないため、
-        // rootごと破棄される前提で明示的な解除は行わない
-
         currentList.Clear();
-        selectedUpgrade = null;
         shopService = null;
     }
 }
