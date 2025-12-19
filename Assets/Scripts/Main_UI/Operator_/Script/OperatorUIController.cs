@@ -129,25 +129,24 @@ public class OperatorUIController : IViewController
     }
 
     /// <summary>
-    /// Overlay Canvasにキャラを表示
+    /// RenderTexture方式でキャラを表示
     /// </summary>
     private void ShowCharacterOverlay()
     {
-        Debug.Log("[OperatorUI] ShowCharacterOverlay called");
+        Debug.Log("[OperatorUI] ShowCharacterOverlay called (RenderTexture mode)");
         var presenter = OverlayCharacterPresenter.Instance;
         Debug.Log($"[OperatorUI] Presenter Instance: {(presenter != null ? presenter.name : "NULL")}");
 
         if (presenter != null)
         {
-            // 表示エリアをcontent-area（root）に設定
-            presenter.SetDisplayArea(root);
-            presenter.EnsureCreated();
+            // 表示エリアをcharacter-displayに設定（RenderTextureがここに表示される）
+            presenter.SetDisplayArea(characterDisplay);
             presenter.Show();
 
             // バッテリー更新用コールバックを設定
             presenter.SetUpdateCallback(UpdateBattery);
 
-            // インタラクションゾーンを購読
+            // インタラクションゾーンを購読（Show後に実行）
             SubscribeToInteractionZones(presenter);
         }
         else
@@ -280,7 +279,7 @@ public class OperatorUIController : IViewController
         callbackLensNormal = evt => SetLensMode(0);
         callbackLensClothes = evt => SetLensMode(1);
         callbackBack = evt => OnBackRequested?.Invoke();
-        callbackCharacterClick = evt => OnCharacterClicked();
+        callbackCharacterClick = evt => OnCharacterClicked(evt);
 
         // 着せ替えボタン
         btnOutfitDefault?.RegisterCallback(callbackOutfit0);
@@ -777,18 +776,43 @@ public class OperatorUIController : IViewController
     // ========================================
 
     /// <summary>
-    /// キャラクタークリック時（UI Toolkit側）
-    /// 詳細なインタラクション（頭なで等）はCharacterInteractionZone（プレハブ）で処理
+    /// キャラクタークリック時（RenderTexture方式）
+    /// UI座標からRaycastを飛ばしてインタラクションゾーンを検出
     /// </summary>
-    private void OnCharacterClicked()
+    private void OnCharacterClicked(ClickEvent evt)
     {
-        if (AffectionManager.Instance != null)
-        {
-            AffectionManager.Instance.OnCharacterClicked();
-        }
+        var presenter = OverlayCharacterPresenter.Instance;
+        if (presenter == null || characterDisplay == null) return;
 
-        // クリック演出
-        // TODO: ハートエフェクトなど
+        // VisualElement内のローカル座標を取得
+        Vector2 localPos = evt.localPosition;
+
+        // 正規化座標に変換 (0-1)
+        Rect contentRect = characterDisplay.contentRect;
+        if (contentRect.width <= 0 || contentRect.height <= 0) return;
+
+        Vector2 normalizedPos = new Vector2(
+            localPos.x / contentRect.width,
+            localPos.y / contentRect.height
+        );
+
+        // Raycastでインタラクションゾーンを検出
+        var zone = presenter.GetInteractionZoneAt(normalizedPos);
+        if (zone != null)
+        {
+            // ゾーンをタッチ
+            zone.HandleTouch();
+            Debug.Log($"[OperatorUI] Touched zone: {zone.Type}");
+        }
+        else
+        {
+            // ゾーン外クリック → 通常のキャラクリック
+            if (AffectionManager.Instance != null)
+            {
+                AffectionManager.Instance.OnCharacterClicked();
+            }
+            Debug.Log("[OperatorUI] Character clicked (no zone)");
+        }
     }
 
     // ========================================
