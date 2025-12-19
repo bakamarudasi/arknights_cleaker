@@ -3,25 +3,26 @@
     <Style src="project://database/Assets/Scripts/Main_UI/Market_/UI/MarketOverlay.uss" />
 
     <!-- 売買操作専用レイヤー（透明背景、操作部分のみ表示） -->
-    <ui:VisualElement name="trade-layer-root" class="trade-layer-root">
+    <!-- picking-mode="Ignore" で背景部分はクリック透過 -->
+    <ui:VisualElement name="trade-layer-root" class="trade-layer-root" picking-mode="Ignore">
 
         <!-- 売買パネル（中央下部に配置） -->
-        <ui:VisualElement class="trade-panel">
-            <ui:VisualElement class="trade-input-area">
+        <ui:VisualElement class="trade-panel" picking-mode="Position">
+            <ui:VisualElement class="trade-input-area" picking-mode="Position">
                 <ui:Label text="数量" class="trade-label" />
-                <ui:TextField name="trade-quantity" value="1" class="trade-quantity-input" />
+                <ui:TextField name="trade-quantity" value="1" class="trade-quantity-input" picking-mode="Position" />
                 <ui:Button name="qty-10" text="10" class="quick-quantity-btn" />
                 <ui:Button name="qty-100" text="100" class="quick-quantity-btn" />
                 <ui:Button name="qty-max" text="MAX" class="quick-quantity-btn" />
             </ui:VisualElement>
-            <ui:VisualElement class="trade-buttons">
+            <ui:VisualElement class="trade-buttons" picking-mode="Position">
                 <ui:Button name="buy-btn" text="BUY" class="buy-btn" />
                 <ui:Button name="sell-btn" text="SELL" class="sell-btn" />
             </ui:VisualElement>
         </ui:VisualElement>
 
         <!-- スキルパネル（右下に配置） -->
-        <ui:VisualElement class="skill-panel-floating">
+        <ui:VisualElement class="skill-panel-floating" picking-mode="Position">
             <ui:Label text="SKILLS" class="panel-title" />
             <ui:Button name="skill-buy-support" text="🖱️ 物理買い支え" class="skill-btn" />
             <ui:Button name="skill-insider" text="👁️ インサイダー" class="skill-btn" />

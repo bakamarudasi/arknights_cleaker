@@ -400,8 +400,22 @@
     margin-right: 10px;
 }
 
+/* TextFieldの内部入力要素にスタイルを適用 */
+.trade-quantity-input > .unity-text-field__input {
+    background-color: #111114;
+    border-width: 0;
+    color: white;
+    font-size: 16px;
+    -unity-text-align: middle-center;
+    padding: 0 8px;
+}
+
 .trade-quantity-input:focus {
     border-color: #ff5000;
+}
+
+.trade-quantity-input:focus > .unity-text-field__input {
+    background-color: #1a1a20;
 }
 
 .quick-quantity-btn {
@@ -1236,33 +1250,30 @@
     bottom: 0;
     /* 背景は透明（クリック透過させるため） */
     background-color: transparent;
-    /* 子要素を下部に配置 */
-    justify-content: flex-end;
-    align-items: center;
-    padding-bottom: 30px;
-    /* pick-mode: ignore で背景部分はクリック透過 */
-    --unity-picking-mode: Ignore;
+    /* 操作パネルを下部中央に横並びで配置 */
+    flex-direction: row;
+    justify-content: center;
+    align-items: flex-end;
+    /* ログエリア（約150px）の上に配置 */
+    padding-bottom: 160px;
+    /* 左右のパネル分を避ける */
+    padding-left: 280px;
+    padding-right: 310px;
 }
 
 .trade-layer-root.visible {
     /* visibleクラスは互換性のため維持 */
 }
 
-/* 売買パネル（操作レイヤー版：ログエリアの上に配置） */
+/* 売買パネル（操作レイヤー版：中央に配置） */
 .trade-layer-root .trade-panel {
-    position: absolute;
-    bottom: 180px;
-    left: 50%;
-    translate: -50% 0;
-    /* pick-modeをPositionに戻す（クリック可能に） */
-    --unity-picking-mode: Position;
+    flex-shrink: 0;
+    margin-right: 15px;
 }
 
-/* スキルパネル（操作レイヤー版：右パネル内に配置） */
+/* スキルパネル（操作レイヤー版：売買パネルの右に配置） */
 .skill-panel-floating {
-    position: absolute;
-    bottom: 180px;
-    right: 320px;
+    flex-shrink: 0;
     width: 200px;
     background-color: rgba(10, 10, 12, 0.95);
     border-width: 1px;
@@ -1270,6 +1281,4 @@
     border-left-width: 3px;
     border-left-color: #a855f7;
     padding: 15px;
-    /* pick-modeをPositionに戻す（クリック可能に） */
-    --unity-picking-mode: Position;
 }
