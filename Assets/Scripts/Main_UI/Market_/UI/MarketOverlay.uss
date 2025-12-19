@@ -699,13 +699,12 @@
     justify-content: center;
     align-items: center;
     background-color: rgba(0, 0, 0, 0.5);
-    opacity: 0;
     display: none;
+    picking-mode: Ignore;
 }
 
 .cut-in-overlay.visible {
     display: flex;
-    opacity: 1;
 }
 
 .cut-in-text {
@@ -733,11 +732,12 @@
     right: 0;
     bottom: 0;
     background-color: rgba(239, 68, 68, 0.1);
-    opacity: 0;
+    display: none;
+    picking-mode: Ignore;
 }
 
 .crash-overlay.active {
-    opacity: 1;
+    display: flex;
 }
 
 /* =========================================
@@ -750,13 +750,12 @@
     right: 0;
     bottom: 0;
     background-color: rgba(0, 0, 0, 0.8);
-    opacity: 0;
-    transition-property: opacity;
-    transition-duration: 0.3s;
+    display: none;
+    picking-mode: Ignore;
 }
 
 .loss-cut-overlay.active {
-    opacity: 1;
+    display: flex;
 }
 
 /* =========================================

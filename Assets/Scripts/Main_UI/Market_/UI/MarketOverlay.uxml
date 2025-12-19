@@ -154,16 +154,16 @@
 
         </ui:VisualElement>
 
-        <!-- カットイン演出 -->
-        <ui:VisualElement name="cut-in-overlay" class="cut-in-overlay">
-            <ui:Label name="cut-in-text" text="BUY!" class="cut-in-text buy" />
+        <!-- カットイン演出（picking-mode=Ignoreでクリック透過） -->
+        <ui:VisualElement name="cut-in-overlay" class="cut-in-overlay" picking-mode="Ignore">
+            <ui:Label name="cut-in-text" text="BUY!" class="cut-in-text buy" picking-mode="Ignore" />
         </ui:VisualElement>
 
-        <!-- 暴落演出 -->
-        <ui:VisualElement name="crash-overlay" class="crash-overlay" />
+        <!-- 暴落演出（picking-mode=Ignoreでクリック透過） -->
+        <ui:VisualElement name="crash-overlay" class="crash-overlay" picking-mode="Ignore" />
 
-        <!-- 損切り演出 -->
-        <ui:VisualElement name="loss-cut-overlay" class="loss-cut-overlay" />
+        <!-- 損切り演出（picking-mode=Ignoreでクリック透過） -->
+        <ui:VisualElement name="loss-cut-overlay" class="loss-cut-overlay" picking-mode="Ignore" />
 
         <!-- PVE: 防衛戦イベントパネル -->
         <ui:VisualElement name="defense-event-panel" class="defense-event-panel">
