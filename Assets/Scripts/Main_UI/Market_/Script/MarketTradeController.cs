@@ -66,6 +66,12 @@ public class MarketTradeController : IDisposable
 
         if (buyButton != null) buyButton.clicked += OnBuyClicked;
         if (sellButton != null) sellButton.clicked += OnSellClicked;
+
+        // 数量入力時にボタン状態を更新
+        if (tradeQuantityInput != null)
+        {
+            tradeQuantityInput.RegisterValueChangedCallback(evt => UpdateTradeButtons());
+        }
     }
 
     // ========================================
@@ -117,10 +123,15 @@ public class MarketTradeController : IDisposable
         int holdings = facade.GetHoldingQuantity(selectedStockId);
         int maxBuyable = facade.GetMaxBuyableQuantity(selectedStockId);
 
+        // デバッグ用ログ
+        Debug.Log($"[Trade] Stock: {selectedStockId}, Qty: {qty}, MaxBuyable: {maxBuyable}, Holdings: {holdings}");
+
         // 購入ボタン
         if (buyButton != null)
         {
-            buyButton.SetEnabled(qty > 0 && qty <= maxBuyable);
+            bool canBuy = qty > 0 && qty <= maxBuyable;
+            buyButton.SetEnabled(canBuy);
+            Debug.Log($"[Trade] BuyButton enabled: {canBuy}");
         }
 
         // 売却ボタン
