@@ -68,7 +68,12 @@ public class MarketFacade : IMarketFacade
 
     public int GetMaxBuyableQuantity(string stockId)
     {
-        return PortfolioManager.Instance?.GetMaxBuyableQuantity(stockId) ?? 0;
+        if (PortfolioManager.Instance == null)
+        {
+            Debug.LogWarning("[MarketFacade] PortfolioManager.Instance is null!");
+            return 0;
+        }
+        return PortfolioManager.Instance.GetMaxBuyableQuantity(stockId);
     }
 
     public bool HasProfit(string stockId)
