@@ -37,7 +37,7 @@ public class MarketFacade : IMarketFacade
         return MarketManager.Instance?.GetCurrentPrice(stockId) ?? 0;
     }
 
-    public StockState GetStockState(string stockId)
+    public StockRuntimeData GetStockState(string stockId)
     {
         return MarketManager.Instance?.GetStockState(stockId);
     }
