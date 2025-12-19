@@ -13,8 +13,8 @@ MonoBehaviour:
   m_Name: income_key_02
   m_EditorClassIdentifier:
   id: income_key_02
-  displayName: "\u6A19\u6E96\u53CE\u76CA\u30D7\u30ED\u30C8\u30B3\u30EB"
-  description: "\u5B89\u5B9A\u3057\u305F\u653E\u7F6E\u53CE\u5165\u3002\u5BDD\u3066\u3044\u308B\u9593\u306B\u3082\u7A3C\u3050\u3002"
+  displayName: "\u8CBF\u6613\u30AA\u30FC\u30C0\u30FC\u8A8D\u53EF\u8A3C"
+  description: "\u8CBF\u6613\u6240\u306E\u904B\u55B6\u30D7\u30ED\u30C8\u30B3\u30EB\u3002\u5B89\u5B9A\u3057\u305F\u53D6\u5F15\u30EB\u30FC\u30C8\u3092\u78BA\u4FDD\u3002"
   icon: {fileID: 0}
   affiliatedCompany: {fileID: 0}
   type: 0

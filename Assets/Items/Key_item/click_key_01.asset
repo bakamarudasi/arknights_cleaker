@@ -13,8 +13,8 @@ MonoBehaviour:
   m_Name: click_key_01
   m_EditorClassIdentifier:
   id: click_key_01
-  displayName: "\u7C21\u6613\u30BF\u30C3\u30D7\u30C1\u30C3\u30D7"
-  description: "\u6700\u4F4E\u9650\u306E\u30AF\u30EA\u30C3\u30AF\u88DC\u52A9\u3002\u306A\u3044\u3088\u308A\u306F\u30DE\u30B7\u3002"
+  displayName: "\u6226\u8853\u30E1\u30E2\u30FB\u7B2C\u4E00\u96C6"
+  description: "\u30ED\u30C9\u30B9\u65B0\u4EBA\u5411\u3051\u57FA\u790E\u6307\u63EE\u6559\u672C\u3002\u8AAD\u307F\u3084\u3059\u3044\u304C\u5185\u5BB9\u306F\u6D45\u3044\u3002"
   icon: {fileID: 0}
   affiliatedCompany: {fileID: 0}
   type: 0
