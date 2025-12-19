@@ -85,12 +85,47 @@ costMultiplier: 1.15         # レベル毎のコスト上昇率
 ```csharp
 public enum ItemType
 {
-    Consumable,    // 消耗品（プレゼント等）
-    Material,      // 素材（強化素材）
-    KeyItem,       // キーアイテム（解放条件）
-    Equipment,     // 装備品（レンズ等）
-    Currency       // 通貨アイテム
+    KeyItem,     // 🎯 重要アイテム（ガチャ排出キャラ、レンズ本体など）
+    Material,    // 素材（強化素材）
+    Consumable   // 消耗品（バッテリー回復、プレゼント等）
 }
+```
+
+### ⚠️ 重要：ガチャ排出アイテムは KeyItem
+
+**ガチャから排出されるアイテム（キャラクター/オペレーター）は必ず `KeyItem` タイプにすること！**
+
+```yaml
+# ガチャ排出キャラの例
+id: "char_silverash"
+displayName: "シルバーアッシュ"
+type: KeyItem              # ← 必ずKeyItem！
+rarity: Star6              # ★6
+description: "カランド貿易のCEO"
+
+# 被り時の変換設定（重要！）
+convertToItem: "token_yellow"   # 被ったら黄色トークンに変換
+convertAmount: 10               # 10個もらえる
+```
+
+### 被り変換システム
+
+ガチャで既に持っているアイテムが出た場合、別のアイテムに変換される：
+
+| 被ったレア | 変換先アイテム | 変換数 |
+|-----------|---------------|-------|
+| ★6 | 黄色資格証 | 10 |
+| ★5 | 黄色資格証 | 5 |
+| ★4 | 緑色資格証 | 3 |
+| ★3 | 緑色資格証 | 1 |
+
+```yaml
+# 変換先トークンの例
+id: "token_yellow"
+displayName: "黄色資格証"
+type: Material
+rarity: Star4
+description: "ガチャ被り時に獲得。ショップで交換可能"
 ```
 
 ### レアリティ
@@ -129,12 +164,73 @@ public enum Rarity
 ```yaml
 id: "lens_basic"
 displayName: "基本レンズ"
-type: Equipment
+type: KeyItem              # レンズもKeyItem
 lensSpecs:
   isLens: true
   penetrateLevel: 1
   maxDuration: 30.0  # 秒
   filterMode: Normal
+```
+
+---
+
+## 🎭 ガチャ排出キャラクター（KeyItem）
+
+### 推奨キャラクターリスト
+
+ガチャから排出されるキャラは全て `ItemData` の `KeyItem` タイプで作成！
+
+#### ★6 キャラクター
+| ID | 名前 | 所属企業 | 被り変換 |
+|----|------|---------|---------|
+| `char_silverash` | シルバーアッシュ | カランド貿易 | 黄色資格証 x10 |
+| `char_exusiai` | エクシア | ペンギン急便 | 黄色資格証 x10 |
+| `char_eyjafjalla` | エイヤフィヤトラ | ライン生命 | 黄色資格証 x10 |
+| `char_saria` | サリア | ライン生命 | 黄色資格証 x10 |
+| `char_chen` | チェン | 龍門近衛局 | 黄色資格証 x10 |
+
+#### ★5 キャラクター
+| ID | 名前 | 所属企業 | 被り変換 |
+|----|------|---------|---------|
+| `char_lappland` | ラップランド | シエスタ | 黄色資格証 x5 |
+| `char_texas` | テキサス | ペンギン急便 | 黄色資格証 x5 |
+| `char_specter` | スペクター | 深海教会 | 黄色資格証 x5 |
+| `char_ptilopsis` | プラチナ | ライン生命 | 黄色資格証 x5 |
+
+#### ★4 キャラクター
+| ID | 名前 | 所属企業 | 被り変換 |
+|----|------|---------|---------|
+| `char_vigna` | ヴィグナ | フリー | 緑色資格証 x3 |
+| `char_shirayuki` | シラユキ | ロドス | 緑色資格証 x3 |
+| `char_cuora` | クオーラ | フリー | 緑色資格証 x3 |
+| `char_gitano` | ギターノ | フリー | 緑色資格証 x3 |
+
+#### ★3 キャラクター
+| ID | 名前 | 所属企業 | 被り変換 |
+|----|------|---------|---------|
+| `char_melantha` | メランサ | フリー | 緑色資格証 x1 |
+| `char_kroos` | クルース | ロドス | 緑色資格証 x1 |
+| `char_beagle` | ビーグル | ロドス | 緑色資格証 x1 |
+| `char_hibiscus` | ハイビスカス | ロドス | 緑色資格証 x1 |
+
+### キャラデータのテンプレート
+
+```yaml
+id: "char_amiya"
+displayName: "アーミヤ"
+type: KeyItem
+rarity: Star5
+description: "ロドス・アイランドのリーダー。兎の獣人。"
+icon: # Spriteをセット
+
+# 被り変換
+convertToItem: "token_yellow"
+convertAmount: 5
+
+# 表示設定
+sortOrder: 1
+categoryIcon: "🐰"
+isSpecial: true  # 主人公なので特別扱い
 ```
 
 ---
@@ -333,22 +429,30 @@ affectionLevels:
 
 ### 最低限必要なデータ
 
-- [ ] UpgradeData x 10種類以上
+- [ ] **UpgradeData** x 10種類以上
   - [ ] クリック系 x 3
   - [ ] 収入系 x 3
   - [ ] クリティカル系 x 2
   - [ ] スキル系 x 2
 
-- [ ] ItemData x 10種類以上
-  - [ ] 素材アイテム x 5
-  - [ ] プレゼント x 3
-  - [ ] キーアイテム x 2
+- [ ] **ItemData（素材・消耗品）** x 10種類以上
+  - [ ] 素材アイテム (Material) x 5
+  - [ ] プレゼント (Consumable) x 3
+  - [ ] 変換トークン (Material) x 2（黄色・緑色資格証）
 
-- [ ] CompanyData x 5種類以上
+- [ ] **ItemData（ガチャ排出キャラ = KeyItem）** x 15種類以上
+  - [ ] ★6 キャラ x 3〜5
+  - [ ] ★5 キャラ x 4〜6
+  - [ ] ★4 キャラ x 4〜6
+  - [ ] ★3 キャラ x 4〜6
+  - [ ] 全キャラに `convertToItem` を設定！
 
-- [ ] GachaBannerData x 2種類以上
+- [ ] **CompanyData** x 5種類以上
+
+- [ ] **GachaBannerData** x 2種類以上
   - [ ] 初心者バナー
   - [ ] 通常バナー
+  - [ ] バナーの `pool` に上記キャラをセット
 
 ---
 
@@ -376,4 +480,21 @@ affectionLevels:
 - 保有ボーナスを1-2個設定
 
 出力形式は上のCompanyDataの形式で。
+```
+
+```
+アークナイツのキャラクターをモチーフにしたガチャ排出アイテムを20個考えてください：
+
+【重要ルール】
+- 全てのキャラは ItemData の type: KeyItem として作成
+- 被り時の変換設定 (convertToItem, convertAmount) を必ず設定
+
+【レアリティ配分】
+- ★6 x 3キャラ（convertAmount: 10）
+- ★5 x 5キャラ（convertAmount: 5）
+- ★4 x 6キャラ（convertAmount: 3）
+- ★3 x 6キャラ（convertAmount: 1）
+
+【出力形式】
+| ID | 名前 | レア | 所属企業 | 説明 | convertToItem | convertAmount |
 ```
