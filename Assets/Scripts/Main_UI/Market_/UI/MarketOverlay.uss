@@ -1224,3 +1224,52 @@
 .insider-dismiss-btn:active {
     scale: 0.98;
 }
+
+/* =========================================
+   売買操作レイヤー（別UIDocument用）
+   ========================================= */
+.trade-layer-root {
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    /* 背景は透明（クリック透過させるため） */
+    background-color: transparent;
+    /* 子要素を下部に配置 */
+    justify-content: flex-end;
+    align-items: center;
+    padding-bottom: 30px;
+    /* pick-mode: ignore で背景部分はクリック透過 */
+    --unity-picking-mode: Ignore;
+}
+
+.trade-layer-root.visible {
+    /* visibleクラスは互換性のため維持 */
+}
+
+/* 売買パネル（操作レイヤー版：中央下部固定） */
+.trade-layer-root .trade-panel {
+    position: absolute;
+    bottom: 30px;
+    left: 50%;
+    translate: -50% 0;
+    /* pick-modeをPositionに戻す（クリック可能に） */
+    --unity-picking-mode: Position;
+}
+
+/* スキルパネル（操作レイヤー版：右下固定） */
+.skill-panel-floating {
+    position: absolute;
+    bottom: 30px;
+    right: 30px;
+    width: 200px;
+    background-color: rgba(10, 10, 12, 0.95);
+    border-width: 1px;
+    border-color: #1a1a1f;
+    border-left-width: 3px;
+    border-left-color: #a855f7;
+    padding: 15px;
+    /* pick-modeをPositionに戻す（クリック可能に） */
+    --unity-picking-mode: Position;
+}
