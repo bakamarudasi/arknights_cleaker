@@ -22,10 +22,7 @@ public class MarketUIController : IViewController
     // ========================================
     // 定数
     // ========================================
-    private const string TRADE_VIEW_PATH = "Main_UI/Market_/UI/MarketTradeView";
-    private const string TRADE_PANEL_SETTINGS_PATH = "UI/TradePanelSettings";
-    private const string PANEL_SETTINGS_PATH = "UI/PanelSettings";
-    private const int TRADE_LAYER_SORT_ORDER = 100;
+    // 売買パネルは同じUIDocument内に統合（別UIDocumentでのクリック透過は困難なため）
 
     // ========================================
     // 依存（ファサード経由）
@@ -46,11 +43,6 @@ public class MarketUIController : IViewController
     // ========================================
     private VisualElement root;
     private VisualElement overlayRoot;
-
-    // 売買レイヤー（動的生成）
-    private GameObject tradeLayerObject;
-    private UIDocument tradeLayerDocument;
-    private VisualElement tradeRoot;
 
     // ヘッダー
     private Label marketTimeLabel;
@@ -100,9 +92,6 @@ public class MarketUIController : IViewController
     {
         this.root = root;
 
-        // 売買レイヤーを動的生成
-        CreateTradeLayer();
-
         QueryElements();
         InitializeSubControllers();
         BindUIEvents();
@@ -130,72 +119,6 @@ public class MarketUIController : IViewController
 
         // 初回オープン時にチュートリアルを開始
         facade.TryStartTutorial("market_basic", root);
-    }
-
-    /// <summary>
-    /// 売買操作専用レイヤーを動的に生成
-    /// Sort Order を高く設定することで、常に最前面に表示される
-    /// </summary>
-    private void CreateTradeLayer()
-    {
-        // UXMLアセットをロード
-        var tradeViewAsset = Resources.Load<VisualTreeAsset>(TRADE_VIEW_PATH);
-        if (tradeViewAsset == null)
-        {
-            Debug.LogError($"[MarketUIController] Failed to load {TRADE_VIEW_PATH}");
-            return;
-        }
-
-        // 売買レイヤー専用のPanelSettingsをロード
-        var panelSettings = Resources.Load<PanelSettings>(TRADE_PANEL_SETTINGS_PATH);
-        if (panelSettings == null)
-        {
-            // フォールバック: 通常のPanelSettingsを使用
-            panelSettings = Resources.Load<PanelSettings>(PANEL_SETTINGS_PATH);
-            Debug.LogWarning($"[MarketUIController] TradePanelSettings not found, using default PanelSettings");
-        }
-
-        if (panelSettings == null)
-        {
-            // フォールバック: 既存のUIDocumentから取得
-            var existingUIDoc = UnityEngine.Object.FindAnyObjectByType<UIDocument>();
-            if (existingUIDoc != null)
-            {
-                panelSettings = existingUIDoc.panelSettings;
-            }
-        }
-
-        if (panelSettings == null)
-        {
-            Debug.LogError($"[MarketUIController] Failed to load PanelSettings. Trade layer will not work correctly.");
-            return;
-        }
-
-        // 新しいGameObjectを作成
-        tradeLayerObject = new GameObject("Market_Trade_Layer");
-
-        // UIDocumentコンポーネントを追加
-        tradeLayerDocument = tradeLayerObject.AddComponent<UIDocument>();
-        tradeLayerDocument.panelSettings = panelSettings;
-        tradeLayerDocument.sortingOrder = TRADE_LAYER_SORT_ORDER;
-
-        // UXMLを適用
-        tradeLayerDocument.visualTreeAsset = tradeViewAsset;
-
-        // ルート要素を取得
-        tradeRoot = tradeLayerDocument.rootVisualElement;
-
-        // rootVisualElement自体もクリック透過に設定（これがないと下のレイヤーにクリックが届かない）
-        tradeRoot.pickingMode = PickingMode.Ignore;
-
-        // trade-layer-rootも念のためIgnoreに設定
-        var tradeLayerRoot = tradeRoot.Q<VisualElement>("trade-layer-root");
-        if (tradeLayerRoot != null)
-        {
-            tradeLayerRoot.pickingMode = PickingMode.Ignore;
-        }
-
-        Debug.Log($"[MarketUIController] Trade layer created with Sort Order: {TRADE_LAYER_SORT_ORDER}, PanelSettings: {panelSettings.name}");
     }
 
     private void QueryElements()
@@ -228,20 +151,17 @@ public class MarketUIController : IViewController
 
     private void InitializeSubControllers()
     {
-        // チャートコントローラ（メインレイヤー）
+        // チャートコントローラ
         chartController = new MarketChartController(root, facade);
         chartController.OnStockSelected += OnStockSelectedFromChart;
 
-        // 売買コントローラ（売買レイヤー - 最前面）
-        // tradeRoot が null の場合は root にフォールバック
-        var tradeControllerRoot = tradeRoot ?? root;
-        tradeController = new MarketTradeController(tradeControllerRoot, facade);
+        // 売買コントローラ（同じUIDocument内）
+        tradeController = new MarketTradeController(root, facade);
         tradeController.OnTradeExecuted += OnTradeExecuted;
         tradeController.OnLossCutExecuted += _ => PlayLossCutEffect();
 
-        // スキルコントローラ（売買レイヤー - 最前面）
-        var skillControllerRoot = tradeRoot ?? root;
-        skillController = new MarketSkillController(skillControllerRoot, facade);
+        // スキルコントローラ（同じUIDocument内）
+        skillController = new MarketSkillController(root, facade);
         skillController.OnInsiderStateChanged += chartController.SetInsiderActive;
 
         // PVE UIコントローラ（メインレイヤー）
@@ -379,31 +299,38 @@ public class MarketUIController : IViewController
         var item = new VisualElement();
         item.AddToClassList("stock-item");
         item.userData = stock.stockId;
+        // 親アイテムがクリックを受け取れるようにする
+        item.pickingMode = PickingMode.Position;
 
-        // ロゴ
+        // ロゴ（クリックは親に伝播）
         var logo = new VisualElement();
         logo.AddToClassList("stock-logo");
+        logo.pickingMode = PickingMode.Ignore;
         if (stock.logo != null)
         {
             logo.style.backgroundImage = new StyleBackground(stock.logo);
         }
 
-        // 情報
+        // 情報（クリックは親に伝播）
         var info = new VisualElement();
         info.AddToClassList("stock-info");
+        info.pickingMode = PickingMode.Ignore;
 
         var code = new Label { text = stock.stockId };
         code.AddToClassList("stock-code");
+        code.pickingMode = PickingMode.Ignore;
 
         var name = new Label { text = stock.companyName };
         name.AddToClassList("stock-name");
+        name.pickingMode = PickingMode.Ignore;
 
         info.Add(code);
         info.Add(name);
 
-        // 価格エリア
+        // 価格エリア（クリックは親に伝播）
         var priceArea = new VisualElement();
         priceArea.AddToClassList("stock-price-area");
+        priceArea.pickingMode = PickingMode.Ignore;
 
         var state = facade.GetStockState(stock.stockId);
         double price = state?.currentPrice ?? stock.initialPrice;
@@ -412,11 +339,13 @@ public class MarketUIController : IViewController
         var priceLabel = new Label { text = facade.FormatPrice(price) };
         priceLabel.AddToClassList("stock-price");
         priceLabel.name = $"price-{stock.stockId}";
+        priceLabel.pickingMode = PickingMode.Ignore;
 
         var changeLabel = new Label { text = facade.FormatChangeRate(change) };
         changeLabel.AddToClassList("stock-change");
         changeLabel.AddToClassList(change >= 0 ? "positive" : "negative");
         changeLabel.name = $"change-{stock.stockId}";
+        changeLabel.pickingMode = PickingMode.Ignore;
 
         priceArea.Add(priceLabel);
         priceArea.Add(changeLabel);
@@ -428,6 +357,7 @@ public class MarketUIController : IViewController
         // クリックイベント
         item.RegisterCallback<ClickEvent>(evt =>
         {
+            Debug.Log($"[MarketUI] Stock clicked: {stock.stockId}");
             SelectStock(stock);
         });
 
@@ -752,24 +682,6 @@ public class MarketUIController : IViewController
         {
             updateTimer.Pause();
             updateTimer = null;
-        }
-
-        // 動的に生成した売買レイヤーを破棄
-        DestroyTradeLayer();
-    }
-
-    /// <summary>
-    /// 動的に生成した売買レイヤーを破棄
-    /// </summary>
-    private void DestroyTradeLayer()
-    {
-        if (tradeLayerObject != null)
-        {
-            UnityEngine.Object.Destroy(tradeLayerObject);
-            tradeLayerObject = null;
-            tradeLayerDocument = null;
-            tradeRoot = null;
-            Debug.Log("[MarketUIController] Trade layer destroyed");
         }
     }
 }
