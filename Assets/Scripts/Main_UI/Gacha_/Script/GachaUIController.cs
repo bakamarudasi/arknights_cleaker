@@ -10,11 +10,8 @@ using UnityEngine.UIElements;
 public class GachaUIController : IViewController
 {
     // ========================================
-    // 設定値 (HDRカラー: Bloom演出用)
+    // 設定値 (HDRカラーはGachaUIConstantsに定義)
     // ========================================
-    private readonly Color hdrColorUR = new Color(3f, 1f, 0f, 1f);   // Orange
-    private readonly Color hdrColorSSR = new Color(3f, 2.5f, 0.5f, 1f); // Yellow
-    private readonly Color hdrColorSR = new Color(1.5f, 1f, 2f, 1f);    // Purple
 
     // ========================================
     // UI要素
@@ -560,18 +557,17 @@ public class GachaUIController : IViewController
         if (lightBeam == null) return;
 
         // 光のビームを伸ばす
-        float maxBeamWidth = 600f;
-        lightBeam.style.width = maxBeamWidth * progress;
+        lightBeam.style.width = GachaUIConstants.BEAM_MAX_WIDTH * progress;
 
         // 最初は弱く、開くにつれて強くなる
-        lightBeam.style.opacity = Mathf.Clamp01(progress * 1.5f);
+        lightBeam.style.opacity = Mathf.Clamp01(progress * GachaUIConstants.BEAM_OPACITY_MULTIPLIER);
 
-        // 進行度が半分を超えたら、最高レア度に応じた色を漏れ出させる
-        if (progress > 0.2f)
+        // 進行度が一定を超えたら、最高レア度に応じた色を漏れ出させる
+        if (progress > GachaUIConstants.COLOR_TRANSITION_START)
         {
             Color baseColor = Color.white;
             Color targetColor = GetHDRColor(maxRarityInResult);
-            float t = (progress - 0.2f) / 0.8f;
+            float t = (progress - GachaUIConstants.COLOR_TRANSITION_START) / GachaUIConstants.COLOR_TRANSITION_RANGE;
 
             // ビーム色の遷移
             lightBeam.style.unityBackgroundImageTintColor = Color.Lerp(baseColor, targetColor, t);
@@ -580,7 +576,7 @@ public class GachaUIController : IViewController
             if (ambientLight != null)
             {
                 ambientLight.style.backgroundColor = targetColor;
-                ambientLight.style.opacity = t * 0.8f;
+                ambientLight.style.opacity = t * GachaUIConstants.AMBIENT_LIGHT_MAX_OPACITY;
             }
 
             // パーティクル発生（進行度に応じて）
@@ -588,7 +584,7 @@ public class GachaUIController : IViewController
         }
 
         // 高レア時：完了間近でシェイク（1回だけ）
-        if (progress > 0.9f && maxRarityInResult >= 5 && !hasShaken)
+        if (progress > GachaUIConstants.SHAKE_PROGRESS_THRESHOLD && maxRarityInResult >= GachaUIConstants.RARITY_SSR_MIN && !hasShaken)
         {
             hasShaken = true;
             PlayScreenShake(maxRarityInResult);
@@ -603,17 +599,17 @@ public class GachaUIController : IViewController
         {
             if (bagScreen != null) bagScreen.AddToClassList("hidden");
             StartResultAnimation(pendingResults);
-        }).ExecuteLater(200); // 200ms待機
+        }).ExecuteLater(GachaUIConstants.ZIPPER_COMPLETE_DELAY_MS);
     }
 
     private Color GetHDRColor(int rarity)
     {
-        switch (rarity)
+        return rarity switch
         {
-            case 6: return hdrColorUR;
-            case 5: return hdrColorSSR;
-            default: return hdrColorSR;
-        }
+            >= GachaUIConstants.RARITY_UR_MIN => GachaUIConstants.HDR_COLOR_UR,
+            >= GachaUIConstants.RARITY_SSR_MIN => GachaUIConstants.HDR_COLOR_SSR,
+            _ => GachaUIConstants.HDR_COLOR_SR
+        };
     }
 
     // ========================================
@@ -622,10 +618,10 @@ public class GachaUIController : IViewController
 
     private void SpawnParticles(float progress)
     {
-        if (particleContainer == null || progress < 0.3f) return;
+        if (particleContainer == null || progress < GachaUIConstants.PARTICLE_SPAWN_START) return;
 
         // 進行度に応じてパーティクル数を増やす
-        int particleCount = (int)((progress - 0.3f) * 8);
+        int particleCount = (int)((progress - GachaUIConstants.PARTICLE_SPAWN_START) * GachaUIConstants.PARTICLE_COUNT_MULTIPLIER);
 
         for (int i = 0; i < particleCount; i++)
         {
@@ -633,7 +629,7 @@ public class GachaUIController : IViewController
             particle.AddToClassList("particle");
 
             // 高レアリティなら大きいパーティクル
-            if (maxRarityInResult >= 6 && UnityEngine.Random.value > 0.7f)
+            if (maxRarityInResult >= GachaUIConstants.RARITY_UR_MIN && UnityEngine.Random.value > GachaUIConstants.LARGE_PARTICLE_THRESHOLD)
             {
                 particle.AddToClassList("particle-large");
             }
@@ -643,10 +639,9 @@ public class GachaUIController : IViewController
             particle.style.backgroundColor = particleColor;
 
             // ランダム位置（ジッパー付近から発生）
-            float railWidth = 650f;
-            float openWidth = railWidth * progress;
-            float xPos = UnityEngine.Random.Range(0f, openWidth) + 50f;
-            float yPos = 200f + UnityEngine.Random.Range(-30f, 30f);
+            float openWidth = GachaUIConstants.ZIPPER_RAIL_WIDTH * progress;
+            float xPos = UnityEngine.Random.Range(0f, openWidth) + GachaUIConstants.PARTICLE_BASE_X_OFFSET;
+            float yPos = GachaUIConstants.PARTICLE_BASE_Y + UnityEngine.Random.Range(-GachaUIConstants.PARTICLE_Y_RANDOM_RANGE, GachaUIConstants.PARTICLE_Y_RANDOM_RANGE);
 
             particle.style.position = Position.Absolute;
             particle.style.left = xPos;
@@ -656,9 +651,9 @@ public class GachaUIController : IViewController
             particleContainer.Add(particle);
 
             // アニメーション：上に舞い上がって消える
-            float targetY = yPos - UnityEngine.Random.Range(80f, 200f);
-            float targetX = xPos + UnityEngine.Random.Range(-50f, 50f);
-            int duration = UnityEngine.Random.Range(400, 800);
+            float targetY = yPos - UnityEngine.Random.Range(GachaUIConstants.PARTICLE_MOVE_Y_MIN, GachaUIConstants.PARTICLE_MOVE_Y_MAX);
+            float targetX = xPos + UnityEngine.Random.Range(-GachaUIConstants.PARTICLE_MOVE_X_RANGE, GachaUIConstants.PARTICLE_MOVE_X_RANGE);
+            int duration = UnityEngine.Random.Range(GachaUIConstants.PARTICLE_ANIM_DURATION_MIN_MS, GachaUIConstants.PARTICLE_ANIM_DURATION_MAX_MS);
 
             root.schedule.Execute(() =>
             {
@@ -673,14 +668,14 @@ public class GachaUIController : IViewController
                 {
                     new TimeValue(duration, TimeUnit.Millisecond)
                 };
-            }).ExecuteLater(10);
+            }).ExecuteLater(GachaUIConstants.PARTICLE_ANIM_START_DELAY_MS);
 
             // 削除
             root.schedule.Execute(() =>
             {
                 if (particleContainer.Contains(particle))
                     particleContainer.Remove(particle);
-            }).ExecuteLater(duration + 50);
+            }).ExecuteLater(duration + GachaUIConstants.PARTICLE_REMOVE_DELAY_MS);
         }
     }
 
@@ -692,22 +687,26 @@ public class GachaUIController : IViewController
     {
         if (bagScreen == null) return;
 
-        int shakeCount = intensity >= 6 ? 6 : (intensity >= 5 ? 4 : 2);
-        float magnitude = intensity >= 6 ? 12f : (intensity >= 5 ? 8f : 4f);
+        int shakeCount = intensity >= GachaUIConstants.RARITY_UR_MIN ? GachaUIConstants.SHAKE_COUNT_UR
+                       : (intensity >= GachaUIConstants.RARITY_SSR_MIN ? GachaUIConstants.SHAKE_COUNT_SSR
+                       : GachaUIConstants.SHAKE_COUNT_DEFAULT);
+        float magnitude = intensity >= GachaUIConstants.RARITY_UR_MIN ? GachaUIConstants.SHAKE_MAGNITUDE_UR
+                        : (intensity >= GachaUIConstants.RARITY_SSR_MIN ? GachaUIConstants.SHAKE_MAGNITUDE_SSR
+                        : GachaUIConstants.SHAKE_MAGNITUDE_DEFAULT);
         int delay = 0;
 
         for (int i = 0; i < shakeCount; i++)
         {
             int currentDelay = delay;
             float offsetX = (i % 2 == 0 ? 1 : -1) * magnitude * (1f - (float)i / shakeCount);
-            float offsetY = UnityEngine.Random.Range(-magnitude * 0.3f, magnitude * 0.3f);
+            float offsetY = UnityEngine.Random.Range(-magnitude * GachaUIConstants.SHAKE_Y_MAGNITUDE_RATIO, magnitude * GachaUIConstants.SHAKE_Y_MAGNITUDE_RATIO);
 
             root.schedule.Execute(() =>
             {
                 bagScreen.style.translate = new Translate(offsetX, offsetY, 0);
             }).ExecuteLater(currentDelay);
 
-            delay += 50;
+            delay += GachaUIConstants.SHAKE_INTERVAL_MS;
         }
 
         // 元に戻す
@@ -731,13 +730,13 @@ public class GachaUIController : IViewController
         // 演出を即座に完了させる
         if (lightBeam != null)
         {
-            lightBeam.style.width = 600f;
+            lightBeam.style.width = GachaUIConstants.BEAM_MAX_WIDTH;
             lightBeam.style.opacity = 1f;
             lightBeam.style.unityBackgroundImageTintColor = GetHDRColor(maxRarityInResult);
         }
 
         // 画面シェイク（高レア時）
-        if (maxRarityInResult >= 5)
+        if (maxRarityInResult >= GachaUIConstants.RARITY_SSR_MIN)
         {
             PlayScreenShake(maxRarityInResult);
         }
@@ -746,7 +745,7 @@ public class GachaUIController : IViewController
         root.schedule.Execute(() =>
         {
             OnZipperOpened();
-        }).ExecuteLater(100);
+        }).ExecuteLater(GachaUIConstants.SKIP_RESULT_DELAY_MS);
     }
 
     // ========================================
@@ -765,7 +764,7 @@ public class GachaUIController : IViewController
         pendingResults = results;
         resultAnimIndex = 0;
 
-        resultAnimTimer = root.schedule.Execute(OnResultAnimTick).Every(150);
+        resultAnimTimer = root.schedule.Execute(OnResultAnimTick).Every(GachaUIConstants.RESULT_ANIM_BASE_INTERVAL_MS);
     }
 
     private void OnResultAnimTick()
@@ -788,10 +787,10 @@ public class GachaUIController : IViewController
         // 高レアは遅延を長く
         int delay = item.rarity switch
         {
-            >= 6 => 500,
-            5 => 350,
-            4 => 200,
-            _ => 100
+            >= GachaUIConstants.RARITY_UR_MIN => GachaUIConstants.RESULT_DELAY_RARITY_6_MS,
+            GachaUIConstants.RARITY_SSR_MIN => GachaUIConstants.RESULT_DELAY_RARITY_5_MS,
+            4 => GachaUIConstants.RESULT_DELAY_RARITY_4_MS,
+            _ => GachaUIConstants.RESULT_DELAY_DEFAULT_MS
         };
 
         // 次のアイテムの遅延を調整
@@ -869,11 +868,11 @@ public class GachaUIController : IViewController
         rarityLabel.AddToClassList("result-item-rarity");
         container.Add(rarityLabel);
 
-        // ★追加: 少し遅延してからvisibleクラスを追加（アニメーション発火）
+        // 少し遅延してからvisibleクラスを追加（アニメーション発火）
         root.schedule.Execute(() =>
         {
             container.AddToClassList("visible");
-        }).ExecuteLater(50);
+        }).ExecuteLater(GachaUIConstants.RESULT_ITEM_VISIBLE_DELAY_MS);
 
         return container;
     }
