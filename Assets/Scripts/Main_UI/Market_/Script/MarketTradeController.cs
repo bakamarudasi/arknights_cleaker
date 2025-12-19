@@ -107,8 +107,24 @@ public class MarketTradeController : IDisposable
 
     public int GetTradeQuantity()
     {
-        if (tradeQuantityInput == null) return 0;
-        return int.TryParse(tradeQuantityInput.value, out int qty) ? qty : 0;
+        if (tradeQuantityInput == null)
+        {
+            Debug.LogWarning("[Trade] tradeQuantityInput is null!");
+            return 0;
+        }
+
+        string rawValue = tradeQuantityInput.value;
+        Debug.Log($"[Trade] TextField raw value: '{rawValue}'");
+
+        if (int.TryParse(rawValue, out int qty))
+        {
+            return qty;
+        }
+        else
+        {
+            Debug.LogWarning($"[Trade] Failed to parse '{rawValue}' as int");
+            return 0;
+        }
     }
 
     // ========================================
