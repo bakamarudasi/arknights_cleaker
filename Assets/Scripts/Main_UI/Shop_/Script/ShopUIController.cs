@@ -108,8 +108,8 @@ public class ShopUIController : IViewController
         SwitchCategory(UpgradeData.UpgradeCategory.Click);
         ClearDetailPanel();
 
-        // 通貨アニメーションループ開始 (30fps程度で更新)
-        currencyTimer = root.schedule.Execute(OnCurrencyTick).Every(30);
+        // 通貨アニメーションループ開始
+        currencyTimer = root.schedule.Execute(OnCurrencyTick).Every(ShopUIConstants.CURRENCY_ANIMATION_INTERVAL_MS);
     }
 
     private void QueryElements()
@@ -147,14 +147,20 @@ public class ShopUIController : IViewController
         {
             buyX1Btn.AddToClassList("buy-x1");
             buyX1Btn.clicked += () => OnBulkBuyClicked(1);
-            buyX1Btn.AddManipulator(new HoldButtonManipulator(() => OnBulkBuyClicked(1), 400, 80));
+            buyX1Btn.AddManipulator(new HoldButtonManipulator(
+                () => OnBulkBuyClicked(1),
+                ShopUIConstants.HOLD_BUTTON_INITIAL_DELAY_MS,
+                ShopUIConstants.HOLD_BUTTON_X1_INTERVAL_MS));
         }
 
         if (buyX10Btn != null)
         {
             buyX10Btn.AddToClassList("buy-x10");
             buyX10Btn.clicked += () => OnBulkBuyClicked(10);
-            buyX10Btn.AddManipulator(new HoldButtonManipulator(() => OnBulkBuyClicked(10), 400, 50));
+            buyX10Btn.AddManipulator(new HoldButtonManipulator(
+                () => OnBulkBuyClicked(10),
+                ShopUIConstants.HOLD_BUTTON_INITIAL_DELAY_MS,
+                ShopUIConstants.HOLD_BUTTON_X10_INTERVAL_MS));
         }
 
         if (buyMaxBtn != null)
@@ -244,7 +250,7 @@ public class ShopUIController : IViewController
         upgradeListView.makeItem = MakeItem;
         upgradeListView.bindItem = BindItem;
         upgradeListView.itemsSource = currentList;
-        upgradeListView.fixedItemHeight = 64;
+        upgradeListView.fixedItemHeight = ShopUIConstants.LIST_ITEM_HEIGHT;
         upgradeListView.selectionType = SelectionType.Single;
         upgradeListView.selectionChanged += OnSelectionChanged;
     }
@@ -475,7 +481,7 @@ public class ShopUIController : IViewController
         detailIcon.schedule.Execute(() =>
         {
             detailIcon.RemoveFromClassList("icon-bounce");
-        }).ExecuteLater(300);
+        }).ExecuteLater(ShopUIConstants.ICON_BOUNCE_DURATION_MS);
     }
 
     /// <summary>
@@ -490,7 +496,7 @@ public class ShopUIController : IViewController
         effectPreviewContainer.schedule.Execute(() =>
         {
             effectPreviewContainer.RemoveFromClassList("effect-flash");
-        }).ExecuteLater(400);
+        }).ExecuteLater(ShopUIConstants.EFFECT_FLASH_DURATION_MS);
     }
 
     /// <summary>
@@ -620,7 +626,7 @@ public class ShopUIController : IViewController
         currentCharIndex = 0;
         detailDesc.text = ""; 
 
-        typewriterTimer = root.schedule.Execute(OnTypewriterTick).Every(20);
+        typewriterTimer = root.schedule.Execute(OnTypewriterTick).Every(ShopUIConstants.TYPEWRITER_INTERVAL_MS);
     }
 
     private void OnTypewriterTick()
@@ -648,54 +654,47 @@ public class ShopUIController : IViewController
 
     private void OnCurrencyTick()
     {
-        bool changed = false;
+        bool moneyChanged = AnimateCurrencyValue(ref currentDisplayMoney, targetMoney);
+        bool certChanged = AnimateCurrencyValue(ref currentDisplayCert, targetCert);
 
-        // Moneyのアニメーション
-        if (System.Math.Abs(currentDisplayMoney - targetMoney) > 0.1)
-        {
-            // 現在値と目標値の差分の10%ずつ近づける（Lerp的挙動）
-            double diff = targetMoney - currentDisplayMoney;
-            
-            // 最小変化量を設定して、最後がダラダラしないようにする
-            double step = diff * 0.2; 
-            if (System.Math.Abs(step) < 1.0) step = diff > 0 ? 1.0 : -1.0;
-
-            currentDisplayMoney += step;
-
-            // 行き過ぎ補正
-            if ((step > 0 && currentDisplayMoney > targetMoney) || (step < 0 && currentDisplayMoney < targetMoney))
-            {
-                currentDisplayMoney = targetMoney;
-            }
-            changed = true;
-        }
-        else
-        {
-            currentDisplayMoney = targetMoney;
-        }
-
-        // Certのアニメーション
-        if (System.Math.Abs(currentDisplayCert - targetCert) > 0.1)
-        {
-            double diff = targetCert - currentDisplayCert;
-            double step = diff * 0.2;
-            if (System.Math.Abs(step) < 1.0) step = diff > 0 ? 1.0 : -1.0;
-            
-            currentDisplayCert += step;
-            if ((step > 0 && currentDisplayCert > targetCert) || (step < 0 && currentDisplayCert < targetCert))
-            {
-                currentDisplayCert = targetCert;
-            }
-            changed = true;
-        }
-        else
-        {
-            currentDisplayCert = targetCert;
-        }
-
-        if (changed)
+        if (moneyChanged || certChanged)
         {
             UpdateCurrencyLabels();
+        }
+    }
+
+    /// <summary>
+    /// 通貨値のアニメーション処理（汎用メソッド）
+    /// </summary>
+    /// <param name="currentValue">現在の表示値（参照）</param>
+    /// <param name="targetValue">目標値</param>
+    /// <returns>値が変化したかどうか</returns>
+    private bool AnimateCurrencyValue(ref double currentValue, double targetValue)
+    {
+        if (System.Math.Abs(currentValue - targetValue) > ShopUIConstants.CURRENCY_ANIMATION_THRESHOLD)
+        {
+            double diff = targetValue - currentValue;
+            double step = diff * ShopUIConstants.CURRENCY_ANIMATION_SMOOTHING;
+
+            // 最小変化量を設定して、最後がダラダラしないようにする
+            if (System.Math.Abs(step) < ShopUIConstants.CURRENCY_ANIMATION_MIN_STEP)
+            {
+                step = diff > 0 ? ShopUIConstants.CURRENCY_ANIMATION_MIN_STEP : -ShopUIConstants.CURRENCY_ANIMATION_MIN_STEP;
+            }
+
+            currentValue += step;
+
+            // 行き過ぎ補正
+            if ((step > 0 && currentValue > targetValue) || (step < 0 && currentValue < targetValue))
+            {
+                currentValue = targetValue;
+            }
+            return true;
+        }
+        else
+        {
+            currentValue = targetValue;
+            return false;
         }
     }
 
@@ -720,18 +719,17 @@ public class ShopUIController : IViewController
         flashOverlay.style.bottom = 0;
         flashOverlay.style.left = 0;
         flashOverlay.style.right = 0;
-        flashOverlay.style.backgroundColor = new Color(1f, 1f, 1f, 0.4f); // 半透明の白
+        flashOverlay.style.backgroundColor = new Color(1f, 1f, 1f, ShopUIConstants.FLASH_OVERLAY_OPACITY);
         flashOverlay.pickingMode = PickingMode.Ignore; // クリック透過
         
         detailPanel.Add(flashOverlay);
 
         // フェードアウトアニメーション
-        // 50ms後にフェード開始
         detailPanel.schedule.Execute(() => {
             flashOverlay.style.transitionProperty = new List<StylePropertyName> { new StylePropertyName("opacity") };
-            flashOverlay.style.transitionDuration = new List<TimeValue> { new TimeValue(200, TimeUnit.Millisecond) };
+            flashOverlay.style.transitionDuration = new List<TimeValue> { new TimeValue(ShopUIConstants.FLASH_FADE_DURATION_MS, TimeUnit.Millisecond) };
             flashOverlay.style.opacity = 0f;
-        }).ExecuteLater(50);
+        }).ExecuteLater(ShopUIConstants.FLASH_FADE_START_DELAY_MS);
 
         // アニメーションが終わった頃に要素を削除
         detailPanel.schedule.Execute(() => {
@@ -739,7 +737,7 @@ public class ShopUIController : IViewController
             {
                 detailPanel.Remove(flashOverlay);
             }
-        }).ExecuteLater(300);
+        }).ExecuteLater(ShopUIConstants.FLASH_REMOVE_DELAY_MS);
     }
 
     // ========================================
