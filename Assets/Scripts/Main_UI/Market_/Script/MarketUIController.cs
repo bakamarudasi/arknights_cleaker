@@ -23,6 +23,7 @@ public class MarketUIController : IViewController
     // 定数
     // ========================================
     private const string TRADE_VIEW_PATH = "Main_UI/Market_/UI/MarketTradeView";
+    private const string TRADE_PANEL_SETTINGS_PATH = "UI/TradePanelSettings";
     private const string PANEL_SETTINGS_PATH = "UI/PanelSettings";
     private const int TRADE_LAYER_SORT_ORDER = 100;
 
@@ -145,8 +146,15 @@ public class MarketUIController : IViewController
             return;
         }
 
-        // PanelSettingsをロード（Resourcesから直接、またはフォールバック）
-        var panelSettings = Resources.Load<PanelSettings>(PANEL_SETTINGS_PATH);
+        // 売買レイヤー専用のPanelSettingsをロード
+        var panelSettings = Resources.Load<PanelSettings>(TRADE_PANEL_SETTINGS_PATH);
+        if (panelSettings == null)
+        {
+            // フォールバック: 通常のPanelSettingsを使用
+            panelSettings = Resources.Load<PanelSettings>(PANEL_SETTINGS_PATH);
+            Debug.LogWarning($"[MarketUIController] TradePanelSettings not found, using default PanelSettings");
+        }
+
         if (panelSettings == null)
         {
             // フォールバック: 既存のUIDocumentから取得
