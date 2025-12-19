@@ -23,6 +23,7 @@ public class MarketUIController : IViewController
     // 定数
     // ========================================
     private const string TRADE_VIEW_PATH = "Main_UI/Market_/UI/MarketTradeView";
+    private const string PANEL_SETTINGS_PATH = "UI/PanelSettings";
     private const int TRADE_LAYER_SORT_ORDER = 100;
 
     // ========================================
@@ -144,19 +145,31 @@ public class MarketUIController : IViewController
             return;
         }
 
+        // PanelSettingsをロード（Resourcesから直接、またはフォールバック）
+        var panelSettings = Resources.Load<PanelSettings>(PANEL_SETTINGS_PATH);
+        if (panelSettings == null)
+        {
+            // フォールバック: 既存のUIDocumentから取得
+            var existingUIDoc = UnityEngine.Object.FindAnyObjectByType<UIDocument>();
+            if (existingUIDoc != null)
+            {
+                panelSettings = existingUIDoc.panelSettings;
+            }
+        }
+
+        if (panelSettings == null)
+        {
+            Debug.LogError($"[MarketUIController] Failed to load PanelSettings. Trade layer will not work correctly.");
+            return;
+        }
+
         // 新しいGameObjectを作成
         tradeLayerObject = new GameObject("Market_Trade_Layer");
 
         // UIDocumentコンポーネントを追加
         tradeLayerDocument = tradeLayerObject.AddComponent<UIDocument>();
+        tradeLayerDocument.panelSettings = panelSettings;
         tradeLayerDocument.sortingOrder = TRADE_LAYER_SORT_ORDER;
-
-        // PanelSettingsを既存のUIDocumentから取得して設定
-        var existingUIDoc = UnityEngine.Object.FindAnyObjectByType<UIDocument>();
-        if (existingUIDoc != null && existingUIDoc.panelSettings != null)
-        {
-            tradeLayerDocument.panelSettings = existingUIDoc.panelSettings;
-        }
 
         // UXMLを適用
         tradeLayerDocument.visualTreeAsset = tradeViewAsset;
@@ -164,7 +177,7 @@ public class MarketUIController : IViewController
         // ルート要素を取得
         tradeRoot = tradeLayerDocument.rootVisualElement;
 
-        Debug.Log($"[MarketUIController] Trade layer created with Sort Order: {TRADE_LAYER_SORT_ORDER}");
+        Debug.Log($"[MarketUIController] Trade layer created with Sort Order: {TRADE_LAYER_SORT_ORDER}, PanelSettings: {panelSettings.name}");
     }
 
     private void QueryElements()
