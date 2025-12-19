@@ -22,8 +22,8 @@ public class OverlayCharacterPresenter : MonoBehaviour
     [Tooltip("カメラが書き込むRenderTexture（なければ自動生成）")]
     [SerializeField] private RenderTexture renderTexture;
 
-    [Tooltip("RenderTextureのサイズ（自動生成時）")]
-    [SerializeField] private Vector2Int renderTextureSize = new Vector2Int(1024, 1024);
+    [Tooltip("RenderTextureのサイズ（自動生成時）※PSBが3000px級なら2048以上推奨")]
+    [SerializeField] private Vector2Int renderTextureSize = new Vector2Int(2048, 2048);
 
     [Header("=== キャラクター設定 ===")]
     [Tooltip("表示するPSBキャラのプレハブ")]
