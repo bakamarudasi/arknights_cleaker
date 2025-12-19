@@ -1,0 +1,42 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 982f177b0feb83043977866d2380a66e, type: 3}
+  m_Name: click_key_02
+  m_EditorClassIdentifier:
+  id: click_key_02
+  displayName: "\u6226\u8853\u30DE\u30CB\u30E5\u30A2\u30EB\u30FB\u6539"
+  description: "\u524D\u7DDA\u6307\u63EE\u5B98\u8A8D\u5B9A\u8A66\u9A13\u306E\u516C\u5F0F\u30C6\u30AD\u30B9\u30C8\u3002\u904E\u53BB\u306E\u4F5C\u6226\u8A18\u9332\u306B\u57FA\u3065\u304F\u5B9F\u8DF5\u7684\u306A\u5185\u5BB9\u3002\u4F59\u767D\u306B\u306F\u5148\u8F29\u30AA\u30DA\u30EC\u30FC\u30BF\u30FC\u305F\u3061\u306E\u66F8\u304D\u8FBC\u307F\u304C\u3073\u3063\u3057\u308A\u3002\u300E\u3053\u3053\u8A66\u9A13\u306B\u51FA\u308B\u300F\u300E\u3053\u306E\u30DA\u30FC\u30B8\u306F\u98DB\u3070\u305B\u300F\u306A\u3069\u3002"
+  icon: {fileID: 0}
+  affiliatedCompany: {fileID: 0}
+  type: 0
+  rarity: 1
+  sortOrder: 101
+  maxStack: -1
+  sellPrice: 30
+  useSound: {fileID: 0}
+  lensSpecs:
+    isLens: 0
+    viewRadius: 100
+    maxDuration: 30
+    penetrateLevel: 1
+    filterMode: 0
+    lensMask: {fileID: 0}
+    stability: 1
+  useEffect: 0
+  effectValue: 0
+  effectDuration: 0
+  convertToItem: {fileID: 0}
+  convertAmount: 1
+  effectFormat: +{0}
+  isPercentDisplay: 0
+  categoryIcon: "\u2694\uFE0F"
+  isSpecial: 0

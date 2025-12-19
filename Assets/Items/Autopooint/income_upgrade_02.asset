@@ -1,0 +1,39 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 65ddf594aa741f742a71c5cd5dd864e0, type: 3}
+  m_Name: income_upgrade_02
+  m_EditorClassIdentifier:
+  id: income_upgrade_02
+  displayName: "\u8CBF\u6613\u53CE\u76CA\u30FB\u4E2D\u7D1A"
+  description: "\u8CBF\u6613\u6240\u306E\u53D6\u5F15\u30EB\u30FC\u30C8\u3092\u62E1\u5927\u3057\u3001\u53CE\u76CA\u6027\u3092\u5411\u4E0A\u3055\u305B\u308B\u3002\u9F8D\u9580\u5546\u4F1A\u3068\u306E\u30B3\u30CD\u304C\u3067\u304D\u308B\u3068\u3044\u3046\u5642\u3082\u3002\u30C6\u30AD\u30B5\u30B9\u66F0\u304F\u300E\u5546\u58F2\u306F\u4FE1\u7528\u304C\u7B2C\u4E00\u3060\u3088\u300F\u3002\n\u203B\u89E3\u653E\u306B\u300C\u8CBF\u6613\u30AA\u30FC\u30C0\u30FC\u8A8D\u53EF\u8A3C\u300D\u304C\u5FC5\u8981"
+  icon: {fileID: 0}
+  affiliatedCompany: {fileID: 0}
+  upgradeType: 2
+  category: 1
+  effectValue: 2
+  maxLevel: 75
+  currencyType: 0
+  baseCost: 75
+  costMultiplier: 1.12
+  requiredMaterials: []
+  materialScaling: 1
+  requiredUnlockItem: {fileID: 0}
+  prerequisiteUpgrade: {fileID: 0}
+  prerequisiteLevel: 1
+  relatedStock: {fileID: 0}
+  scaleWithHolding: 0
+  maxHoldingMultiplier: 2
+  sortOrder: 201
+  effectFormat: "\u81EA\u52D5\u53CE\u5165 +{0}/s"
+  isPercentDisplay: 0
+  categoryIcon: "\uD83D\uDCB0"
+  isSpecial: 0
