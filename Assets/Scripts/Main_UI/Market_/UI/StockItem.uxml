@@ -1,0 +1,23 @@
+<ui:UXML xmlns:ui="UnityEngine.UIElements" editor-extension-mode="False">
+    <ui:VisualElement class="stock-item">
+
+        <!-- 選択インジケーター -->
+        <ui:VisualElement name="selection-bar" class="stock-selection-bar" />
+
+        <!-- ロゴ -->
+        <ui:VisualElement name="stock-logo" class="stock-logo" />
+
+        <!-- 銘柄情報 -->
+        <ui:VisualElement class="stock-info">
+            <ui:Label name="stock-code" text="CODE" class="stock-code" />
+            <ui:Label name="stock-name" text="Company Name" class="stock-name" />
+        </ui:VisualElement>
+
+        <!-- 価格エリア -->
+        <ui:VisualElement class="stock-price-area">
+            <ui:Label name="stock-price" text="0" class="stock-price" />
+            <ui:Label name="stock-change" text="+0.00%" class="stock-change positive" />
+        </ui:VisualElement>
+
+    </ui:VisualElement>
+</ui:UXML>
