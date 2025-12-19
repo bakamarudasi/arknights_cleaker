@@ -112,20 +112,7 @@
 
                 </ui:VisualElement>
 
-                <!-- 売買パネル -->
-                <ui:VisualElement class="trade-panel">
-                    <ui:VisualElement class="trade-input-area">
-                        <ui:Label text="数量" class="trade-label" />
-                        <ui:TextField name="trade-quantity" value="1" class="trade-quantity-input" />
-                        <ui:Button name="qty-10" text="10" class="quick-quantity-btn" />
-                        <ui:Button name="qty-100" text="100" class="quick-quantity-btn" />
-                        <ui:Button name="qty-max" text="MAX" class="quick-quantity-btn" />
-                    </ui:VisualElement>
-                    <ui:VisualElement class="trade-buttons">
-                        <ui:Button name="buy-btn" text="BUY" class="buy-btn" />
-                        <ui:Button name="sell-btn" text="SELL" class="sell-btn" />
-                    </ui:VisualElement>
-                </ui:VisualElement>
+                <!-- 売買パネルは MarketTradeView.uxml に移動 -->
 
             </ui:VisualElement>
 
@@ -142,13 +129,7 @@
                     </ui:ScrollView>
                 </ui:VisualElement>
 
-                <!-- スキルパネル -->
-                <ui:VisualElement class="skill-panel">
-                    <ui:Label text="SKILLS" class="panel-title" />
-                    <ui:Button name="skill-buy-support" text="🖱️ 物理買い支え" class="skill-btn" />
-                    <ui:Button name="skill-insider" text="👁️ インサイダー" class="skill-btn" />
-                    <ui:Label name="skill-cooldown" text="" class="skill-cooldown" />
-                </ui:VisualElement>
+                <!-- スキルパネルは MarketTradeView.uxml に移動 -->
 
             </ui:VisualElement>
 
