@@ -120,6 +120,9 @@ public class MarketUIController : IViewController
         RefreshStockList();
         RefreshAssetPanel();
         RefreshPortfolioList();
+
+        // 初回オープン時にチュートリアルを開始
+        TutorialManager.Instance?.TryStartTutorial("market_basic", root);
     }
 
     private void QueryElements()
@@ -194,7 +197,7 @@ public class MarketUIController : IViewController
 
         if (qty10Btn != null) qty10Btn.clicked += () => SetTradeQuantity(10);
         if (qty100Btn != null) qty100Btn.clicked += () => SetTradeQuantity(100);
-        if (qtyMaxBtn != null) qtyMaxBtn.clicked += SetMaxQuantity;
+        if (qtyMaxBtn != null) qtyMaxBtn.clicked += () => SetMaxQuantity();
 
         // 売買ボタン
         if (buyButton != null) buyButton.clicked += OnBuyClicked;
