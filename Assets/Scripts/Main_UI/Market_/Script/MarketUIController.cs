@@ -177,6 +177,16 @@ public class MarketUIController : IViewController
         // ルート要素を取得
         tradeRoot = tradeLayerDocument.rootVisualElement;
 
+        // rootVisualElement自体もクリック透過に設定（これがないと下のレイヤーにクリックが届かない）
+        tradeRoot.pickingMode = PickingMode.Ignore;
+
+        // trade-layer-rootも念のためIgnoreに設定
+        var tradeLayerRoot = tradeRoot.Q<VisualElement>("trade-layer-root");
+        if (tradeLayerRoot != null)
+        {
+            tradeLayerRoot.pickingMode = PickingMode.Ignore;
+        }
+
         Debug.Log($"[MarketUIController] Trade layer created with Sort Order: {TRADE_LAYER_SORT_ORDER}, PanelSettings: {panelSettings.name}");
     }
 
