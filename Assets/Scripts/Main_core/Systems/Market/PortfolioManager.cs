@@ -281,7 +281,11 @@ public class PortfolioManager : MonoBehaviour
     public int GetMaxBuyableQuantity(string stockId)
     {
         var stock = stockDatabase?.GetByStockId(stockId);
-        if (stock == null) return 0;
+        if (stock == null)
+        {
+            Debug.LogWarning($"[Portfolio] GetMaxBuyableQuantity: stock '{stockId}' not found in database");
+            return 0;
+        }
 
         double currentPrice = MarketManager.Instance?.GetCurrentPrice(stockId) ?? stock.initialPrice;
         double money = WalletManager.Instance?.Money ?? 0;
@@ -289,7 +293,10 @@ public class PortfolioManager : MonoBehaviour
         // 手数料込みの1株あたりコスト
         double costPerShare = currentPrice * (1 + stock.transactionFee);
 
-        return (int)(money / costPerShare);
+        int maxQty = (int)(money / costPerShare);
+        Debug.Log($"[Portfolio] GetMaxBuyableQuantity: stockId={stockId}, price={currentPrice}, money={money}, fee={stock.transactionFee}, costPerShare={costPerShare}, maxQty={maxQty}");
+
+        return maxQty;
     }
 
     /// <summary>
