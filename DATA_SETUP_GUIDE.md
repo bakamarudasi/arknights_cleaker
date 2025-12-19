@@ -356,6 +356,47 @@ pool:
     weight: 20.0
 ```
 
+### 封入数システム（ボックスガチャ）
+
+各アイテムに「封入数」を設定すると、その数だけ排出されたら在庫切れになる：
+
+```yaml
+# 初心者ボックスガチャ（10アイテム限定）
+pool:
+  - item: "char_silverash"
+    weight: 1.0
+    stockCount: 1      # ← 1個だけ封入
+
+  - item: "char_texas"
+    weight: 1.0
+    stockCount: 1
+
+  - item: "char_vigna"
+    weight: 1.0
+    stockCount: 1
+
+  - item: "mat_chip_1"
+    weight: 1.0
+    stockCount: 3      # ← 素材は3個封入
+
+  - item: "gift_cake"
+    weight: 1.0
+    stockCount: 4      # ← プレゼントは4個封入
+```
+
+**ポイント:**
+- `stockCount: 0` = 無制限（通常ガチャ）
+- `stockCount: 1` = 1個だけ（確定入手ボックス）
+- 全アイテムが在庫切れ → バナー完売
+- 在庫データはセーブ/ロード対応済み
+
+**使用例:**
+| バナータイプ | stockCount設定 |
+|-------------|---------------|
+| 通常ガチャ | 全て0（無制限） |
+| 初心者ボックス | 全て1（各1個ずつ） |
+| 素材ボックス | 素材=5、レア=1 |
+
 ---
 
 ## 👤 CharacterData（キャラクターデータ）
