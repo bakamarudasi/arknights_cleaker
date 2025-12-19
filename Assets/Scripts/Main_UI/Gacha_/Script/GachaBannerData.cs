@@ -116,6 +116,32 @@ public class GachaBannerData : ScriptableObject
         }
         return total;
     }
+
+    /// <summary>
+    /// 封入数制限があるバナーかチェック
+    /// </summary>
+    public bool HasLimitedStock()
+    {
+        foreach (var entry in pool)
+        {
+            if (entry.HasStockLimit) return true;
+        }
+        return false;
+    }
+
+    /// <summary>
+    /// 総封入数を取得（制限があるアイテムのみ）
+    /// </summary>
+    public int GetTotalStock()
+    {
+        int total = 0;
+        foreach (var entry in pool)
+        {
+            if (entry.HasStockLimit)
+                total += entry.stockCount;
+        }
+        return total;
+    }
 }
 
 // ========================================
@@ -135,10 +161,18 @@ public class GachaPoolEntry
     [Tooltip("このアイテムはピックアップ対象か")]
     public bool isPickup;
 
+    [Tooltip("封入数（0 = 無制限）")]
+    public int stockCount = 0;
+
     /// <summary>
     /// レアリティ（ItemDataから取得、1〜6）
     /// </summary>
     public int Rarity => item != null ? (int)item.rarity + 1 : 3;
+
+    /// <summary>
+    /// 封入数制限があるか
+    /// </summary>
+    public bool HasStockLimit => stockCount > 0;
 }
 
 // ========================================

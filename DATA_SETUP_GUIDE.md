@@ -85,13 +85,42 @@ costMultiplier: 1.15         # レベル毎のコスト上昇率
 ```csharp
 public enum ItemType
 {
-    Consumable,    // 消耗品（プレゼント等）
-    Material,      // 素材（強化素材）
-    KeyItem,       // キーアイテム（解放条件）
-    Equipment,     // 装備品（レンズ等）
-    Currency       // 通貨アイテム
+    KeyItem,     // 🎯 重要アイテム（ガチャ排出キャラ、レンズ本体など）
+    Material,    // 素材（強化素材）
+    Consumable   // 消耗品（バッテリー回復、プレゼント等）
 }
 ```
+
+### ⚠️ 重要：ガチャ排出アイテムは KeyItem
+
+**ガチャから排出されるアイテム（キャラクター/オペレーター）は必ず `KeyItem` タイプにすること！**
+
+```yaml
+# ガチャ排出キャラの例
+id: "char_silverash"
+displayName: "シルバーアッシュ"
+type: KeyItem              # ← 必ずKeyItem！
+rarity: Star6              # ★6
+description: "カランド貿易のCEO"
+```
+
+### 潜在システム（被り = 強化）
+
+同じキャラを複数回入手すると「潜在」が上がり、効果がアップする：
+
+```
+所持数1 = 潜在1 = 基本性能
+所持数2 = 潜在2 = +20% ボーナス
+所持数3 = 潜在3 = +40% ボーナス
+所持数4 = 潜在4 = +60% ボーナス
+...（上限なし）
+```
+
+**実装ポイント:**
+- `InventoryManager.GetCount(itemId)` = 潜在レベル
+- ボーナス計算: `(所持数 - 1) * 0.2f`
+- 課金要素なし（ゲーム内通貨のみ）
+- ShopViewで「所持: 3個 (+40%)」と表示
 
 ### レアリティ
 
@@ -129,12 +158,72 @@ public enum Rarity
 ```yaml
 id: "lens_basic"
 displayName: "基本レンズ"
-type: Equipment
+type: KeyItem              # レンズもKeyItem
 lensSpecs:
   isLens: true
   penetrateLevel: 1
   maxDuration: 30.0  # 秒
   filterMode: Normal
+```
+
+---
+
+## 🎭 ガチャ排出キャラクター（KeyItem）
+
+### 推奨キャラクターリスト
+
+ガチャから排出されるキャラは全て `ItemData` の `KeyItem` タイプで作成！
+
+#### ★6 キャラクター
+| ID | 名前 | 所属企業 | 備考 |
+|----|------|---------|------|
+| `char_silverash` | シルバーアッシュ | カランド貿易 | 潜在2で+20% |
+| `char_exusiai` | エクシア | ペンギン急便 | 潜在2で+20% |
+| `char_eyjafjalla` | エイヤフィヤトラ | ライン生命 | 潜在2で+20% |
+| `char_saria` | サリア | ライン生命 | 潜在2で+20% |
+| `char_chen` | チェン | 龍門近衛局 | 潜在2で+20% |
+
+#### ★5 キャラクター
+| ID | 名前 | 所属企業 | 備考 |
+|----|------|---------|------|
+| `char_lappland` | ラップランド | シエスタ | 潜在2で+20% |
+| `char_texas` | テキサス | ペンギン急便 | 潜在2で+20% |
+| `char_specter` | スペクター | 深海教会 | 潜在2で+20% |
+| `char_ptilopsis` | プラチナ | ライン生命 | 潜在2で+20% |
+
+#### ★4 キャラクター
+| ID | 名前 | 所属企業 | 備考 |
+|----|------|---------|------|
+| `char_vigna` | ヴィグナ | フリー | 潜在2で+20% |
+| `char_shirayuki` | シラユキ | ロドス | 潜在2で+20% |
+| `char_cuora` | クオーラ | フリー | 潜在2で+20% |
+| `char_gitano` | ギターノ | フリー | 潜在2で+20% |
+
+#### ★3 キャラクター
+| ID | 名前 | 所属企業 | 備考 |
+|----|------|---------|------|
+| `char_melantha` | メランサ | フリー | 潜在2で+20% |
+| `char_kroos` | クルース | ロドス | 潜在2で+20% |
+| `char_beagle` | ビーグル | ロドス | 潜在2で+20% |
+| `char_hibiscus` | ハイビスカス | ロドス | 潜在2で+20% |
+
+### キャラデータのテンプレート
+
+```yaml
+id: "char_amiya"
+displayName: "アーミヤ"
+type: KeyItem
+rarity: Star5
+description: "ロドス・アイランドのリーダー。兎の獣人。"
+icon: # Spriteをセット
+
+# 表示設定
+sortOrder: 1
+categoryIcon: "🐰"
+isSpecial: true  # 主人公なので特別扱い
+
+# ※ 被り = 潜在アップ（所持数で自動計算、設定不要）
+# ※ 所持数2 = 潜在2 = +20%ボーナス
 ```
 
 ---
@@ -267,6 +356,47 @@ pool:
     weight: 20.0
 ```
 
+### 封入数システム（ボックスガチャ）
+
+各アイテムに「封入数」を設定すると、その数だけ排出されたら在庫切れになる：
+
+```yaml
+# 初心者ボックスガチャ（10アイテム限定）
+pool:
+  - item: "char_silverash"
+    weight: 1.0
+    stockCount: 1      # ← 1個だけ封入
+
+  - item: "char_texas"
+    weight: 1.0
+    stockCount: 1
+
+  - item: "char_vigna"
+    weight: 1.0
+    stockCount: 1
+
+  - item: "mat_chip_1"
+    weight: 1.0
+    stockCount: 3      # ← 素材は3個封入
+
+  - item: "gift_cake"
+    weight: 1.0
+    stockCount: 4      # ← プレゼントは4個封入
+```
+
+**ポイント:**
+- `stockCount: 0` = 無制限（通常ガチャ）
+- `stockCount: 1` = 1個だけ（確定入手ボックス）
+- 全アイテムが在庫切れ → バナー完売
+- 在庫データはセーブ/ロード対応済み
+
+**使用例:**
+| バナータイプ | stockCount設定 |
+|-------------|---------------|
+| 通常ガチャ | 全て0（無制限） |
+| 初心者ボックス | 全て1（各1個ずつ） |
+| 素材ボックス | 素材=5、レア=1 |
+
 ---
 
 ## 👤 CharacterData（キャラクターデータ）
@@ -333,22 +463,30 @@ affectionLevels:
 
 ### 最低限必要なデータ
 
-- [ ] UpgradeData x 10種類以上
+- [ ] **UpgradeData** x 10種類以上
   - [ ] クリック系 x 3
   - [ ] 収入系 x 3
   - [ ] クリティカル系 x 2
   - [ ] スキル系 x 2
 
-- [ ] ItemData x 10種類以上
-  - [ ] 素材アイテム x 5
-  - [ ] プレゼント x 3
-  - [ ] キーアイテム x 2
+- [ ] **ItemData（素材・消耗品）** x 10種類以上
+  - [ ] 素材アイテム (Material) x 5
+  - [ ] プレゼント (Consumable) x 3
+  - [ ] 変換トークン (Material) x 2（黄色・緑色資格証）
 
-- [ ] CompanyData x 5種類以上
+- [ ] **ItemData（ガチャ排出キャラ = KeyItem）** x 15種類以上
+  - [ ] ★6 キャラ x 3〜5
+  - [ ] ★5 キャラ x 4〜6
+  - [ ] ★4 キャラ x 4〜6
+  - [ ] ★3 キャラ x 4〜6
+  - [ ] ※ 被り = 潜在システム（自動計算、追加設定不要）
 
-- [ ] GachaBannerData x 2種類以上
+- [ ] **CompanyData** x 5種類以上
+
+- [ ] **GachaBannerData** x 2種類以上
   - [ ] 初心者バナー
   - [ ] 通常バナー
+  - [ ] バナーの `pool` に上記キャラをセット
 
 ---
 
@@ -376,4 +514,22 @@ affectionLevels:
 - 保有ボーナスを1-2個設定
 
 出力形式は上のCompanyDataの形式で。
+```
+
+```
+アークナイツのキャラクターをモチーフにしたガチャ排出アイテムを20個考えてください：
+
+【重要ルール】
+- 全てのキャラは ItemData の type: KeyItem として作成
+- 被り = 潜在アップ（所持数で自動計算、追加設定不要）
+- 潜在2（2体目入手）で+20%ボーナス、上限なし
+
+【レアリティ配分】
+- ★6 x 3キャラ
+- ★5 x 5キャラ
+- ★4 x 6キャラ
+- ★3 x 6キャラ
+
+【出力形式】
+| ID | 名前 | レア | 所属企業 | 説明 | 特殊能力（あれば） |
 ```
