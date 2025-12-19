@@ -363,7 +363,7 @@ public class ShopDetailPanelController
         }
     }
 
-    private VisualElement CreateMaterialElement(MaterialRequirement mat, int owned, bool enough)
+    private VisualElement CreateMaterialElement(ItemCost mat, int owned, bool enough)
     {
         var matElement = new VisualElement();
         matElement.AddToClassList("material-item");

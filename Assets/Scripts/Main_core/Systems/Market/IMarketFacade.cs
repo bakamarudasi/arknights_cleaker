@@ -31,7 +31,7 @@ public interface IMarketFacade
     double GetCurrentPrice(string stockId);
 
     /// <summary>株価状態を取得</summary>
-    StockState GetStockState(string stockId);
+    StockRuntimeData GetStockState(string stockId);
 
     /// <summary>価格履歴を取得</summary>
     double[] GetPriceHistory(string stockId);
