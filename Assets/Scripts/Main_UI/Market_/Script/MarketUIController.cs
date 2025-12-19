@@ -354,11 +354,12 @@ public class MarketUIController : IViewController
         item.Add(info);
         item.Add(priceArea);
 
-        // クリックイベント
-        item.RegisterCallback<ClickEvent>(evt =>
+        // クリックイベント（PointerUpEventを使用 - ScrollView内でより確実に動作）
+        item.RegisterCallback<PointerUpEvent>(evt =>
         {
             Debug.Log($"[MarketUI] Stock clicked: {stock.stockId}");
             SelectStock(stock);
+            evt.StopPropagation();
         });
 
         return item;
