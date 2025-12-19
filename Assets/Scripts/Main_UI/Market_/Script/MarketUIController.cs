@@ -299,31 +299,38 @@ public class MarketUIController : IViewController
         var item = new VisualElement();
         item.AddToClassList("stock-item");
         item.userData = stock.stockId;
+        // 親アイテムがクリックを受け取れるようにする
+        item.pickingMode = PickingMode.Position;
 
-        // ロゴ
+        // ロゴ（クリックは親に伝播）
         var logo = new VisualElement();
         logo.AddToClassList("stock-logo");
+        logo.pickingMode = PickingMode.Ignore;
         if (stock.logo != null)
         {
             logo.style.backgroundImage = new StyleBackground(stock.logo);
         }
 
-        // 情報
+        // 情報（クリックは親に伝播）
         var info = new VisualElement();
         info.AddToClassList("stock-info");
+        info.pickingMode = PickingMode.Ignore;
 
         var code = new Label { text = stock.stockId };
         code.AddToClassList("stock-code");
+        code.pickingMode = PickingMode.Ignore;
 
         var name = new Label { text = stock.companyName };
         name.AddToClassList("stock-name");
+        name.pickingMode = PickingMode.Ignore;
 
         info.Add(code);
         info.Add(name);
 
-        // 価格エリア
+        // 価格エリア（クリックは親に伝播）
         var priceArea = new VisualElement();
         priceArea.AddToClassList("stock-price-area");
+        priceArea.pickingMode = PickingMode.Ignore;
 
         var state = facade.GetStockState(stock.stockId);
         double price = state?.currentPrice ?? stock.initialPrice;
@@ -332,11 +339,13 @@ public class MarketUIController : IViewController
         var priceLabel = new Label { text = facade.FormatPrice(price) };
         priceLabel.AddToClassList("stock-price");
         priceLabel.name = $"price-{stock.stockId}";
+        priceLabel.pickingMode = PickingMode.Ignore;
 
         var changeLabel = new Label { text = facade.FormatChangeRate(change) };
         changeLabel.AddToClassList("stock-change");
         changeLabel.AddToClassList(change >= 0 ? "positive" : "negative");
         changeLabel.name = $"change-{stock.stockId}";
+        changeLabel.pickingMode = PickingMode.Ignore;
 
         priceArea.Add(priceLabel);
         priceArea.Add(changeLabel);
@@ -348,6 +357,7 @@ public class MarketUIController : IViewController
         // クリックイベント
         item.RegisterCallback<ClickEvent>(evt =>
         {
+            Debug.Log($"[MarketUI] Stock clicked: {stock.stockId}");
             SelectStock(stock);
         });
 
