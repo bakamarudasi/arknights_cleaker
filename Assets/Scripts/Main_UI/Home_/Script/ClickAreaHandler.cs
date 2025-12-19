@@ -201,24 +201,158 @@ public class ClickAreaHandler : IDisposable
         // DPS計算用
         _dpsWindowDamage += finalDamage;
 
+        // パーティクルエフェクト
+        SpawnClickParticles(clickPos, isCritical, isSuperCritical);
+
         // ダメージ数字表示
         SpawnDamageNumber(clickPos, finalDamage, isCritical, isSuperCritical);
     }
 
-    private void PlayClickEffects()
+    private void SpawnClickParticles(Vector2 clickPos, bool isCritical, bool isSuperCritical)
     {
-        // リップルエフェクト
-        if (_clickRipple != null)
+        if (_effectLayer == null) return;
+
+        // クリックフラッシュ
+        var flash = new VisualElement();
+        flash.AddToClassList("click-flash");
+        flash.style.left = clickPos.x + 100 - 30;
+        flash.style.top = clickPos.y + 150 - 30;
+        _effectLayer.Add(flash);
+        _root.schedule.Execute(() => flash.AddToClassList("expand")).ExecuteLater(10);
+        _root.schedule.Execute(() => _effectLayer.Remove(flash)).ExecuteLater(250);
+
+        // 衝撃波リング
+        var ring = new VisualElement();
+        ring.AddToClassList("impact-ring");
+        if (isSuperCritical) ring.AddToClassList("super-critical");
+        else if (isCritical) ring.AddToClassList("critical");
+
+        ring.style.left = clickPos.x + 100 - 40;
+        ring.style.top = clickPos.y + 150 - 40;
+        _effectLayer.Add(ring);
+        _root.schedule.Execute(() => ring.AddToClassList("expand")).ExecuteLater(10);
+        _root.schedule.Execute(() => _effectLayer.Remove(ring)).ExecuteLater(450);
+
+        // スパークパーティクル
+        int sparkCount = isSuperCritical ? 12 : (isCritical ? 8 : 5);
+        for (int i = 0; i < sparkCount; i++)
         {
-            _clickRipple.AddToClassList("active");
-            _root.schedule.Execute(() => _clickRipple.RemoveFromClassList("active")).ExecuteLater(300);
+            var spark = new VisualElement();
+            spark.AddToClassList("spark-particle");
+            if (isSuperCritical) spark.AddToClassList("super-critical");
+            else if (isCritical) spark.AddToClassList("critical");
+            else if (UnityEngine.Random.value > 0.7f) spark.AddToClassList("large");
+
+            float angle = UnityEngine.Random.Range(0f, Mathf.PI * 2f);
+            float distance = UnityEngine.Random.Range(80f, 180f);
+            float offsetX = Mathf.Cos(angle) * distance;
+            float offsetY = Mathf.Sin(angle) * distance - 50f; // 上方向にバイアス
+
+            spark.style.left = clickPos.x + 100;
+            spark.style.top = clickPos.y + 150;
+            _effectLayer.Add(spark);
+
+            // フライアウトアニメーション
+            _root.schedule.Execute(() =>
+            {
+                spark.style.translate = new Translate(offsetX, offsetY);
+                spark.AddToClassList("fly");
+            }).ExecuteLater(10);
+            _root.schedule.Execute(() => _effectLayer.Remove(spark)).ExecuteLater(550);
         }
 
-        // コンボが高い時はグロー
-        if (_comboCount > HighComboThreshold && _characterGlow != null)
+        // スターパーティクル（クリティカル時のみ）
+        if (isCritical)
         {
-            _characterGlow.AddToClassList("active");
-            _root.schedule.Execute(() => _characterGlow.RemoveFromClassList("active")).ExecuteLater(500);
+            int starCount = isSuperCritical ? 4 : 2;
+            for (int i = 0; i < starCount; i++)
+            {
+                var star = new Label();
+                star.AddToClassList("star-particle");
+                star.text = "★";
+
+                float angle = UnityEngine.Random.Range(0f, Mathf.PI * 2f);
+                float distance = UnityEngine.Random.Range(100f, 200f);
+                float offsetX = Mathf.Cos(angle) * distance;
+                float offsetY = Mathf.Sin(angle) * distance - 80f;
+                float rotation = UnityEngine.Random.Range(-180f, 180f);
+
+                star.style.left = clickPos.x + 100;
+                star.style.top = clickPos.y + 150;
+                _effectLayer.Add(star);
+
+                _root.schedule.Execute(() =>
+                {
+                    star.style.translate = new Translate(offsetX, offsetY);
+                    star.style.rotate = new Rotate(Angle.Degrees(rotation));
+                    star.AddToClassList("fly");
+                }).ExecuteLater(10);
+                _root.schedule.Execute(() => _effectLayer.Remove(star)).ExecuteLater(850);
+            }
+        }
+    }
+
+    private void PlayClickEffects()
+    {
+        // クリックターゲットのバウンスバック
+        if (_clickTarget != null)
+        {
+            _clickTarget.AddToClassList("flash");
+            _root.schedule.Execute(() =>
+            {
+                _clickTarget.RemoveFromClassList("flash");
+                _clickTarget.AddToClassList("bounce-back");
+            }).ExecuteLater(50);
+            _root.schedule.Execute(() => _clickTarget.RemoveFromClassList("bounce-back")).ExecuteLater(150);
+        }
+
+        // リップルエフェクト（広がって消える）
+        if (_clickRipple != null)
+        {
+            _clickRipple.RemoveFromClassList("expand");
+            _clickRipple.AddToClassList("active");
+            _root.schedule.Execute(() =>
+            {
+                _clickRipple.RemoveFromClassList("active");
+                _clickRipple.AddToClassList("expand");
+            }).ExecuteLater(100);
+            _root.schedule.Execute(() => _clickRipple.RemoveFromClassList("expand")).ExecuteLater(500);
+        }
+
+        // キャラクターグロー（コンボに応じて）
+        if (_characterGlow != null)
+        {
+            if (_comboCount > HighComboThreshold)
+            {
+                _characterGlow.AddToClassList("active");
+                _characterGlow.AddToClassList("pulse");
+                _root.schedule.Execute(() =>
+                {
+                    _characterGlow.RemoveFromClassList("pulse");
+                }).ExecuteLater(150);
+                _root.schedule.Execute(() => _characterGlow.RemoveFromClassList("active")).ExecuteLater(400);
+            }
+            else if (_comboCount > 10)
+            {
+                _characterGlow.AddToClassList("active");
+                _root.schedule.Execute(() => _characterGlow.RemoveFromClassList("active")).ExecuteLater(300);
+            }
+        }
+
+        // 画面シェイク（高コンボ時）
+        if (_comboCount > 30)
+        {
+            var container = _root.Q<VisualElement>("home-container");
+            if (container != null)
+            {
+                bool shakeLeft = UnityEngine.Random.value > 0.5f;
+                container.AddToClassList(shakeLeft ? "shake-left" : "shake");
+                _root.schedule.Execute(() =>
+                {
+                    container.RemoveFromClassList("shake");
+                    container.RemoveFromClassList("shake-left");
+                }).ExecuteLater(50);
+            }
         }
 
         // SPが満タンに近い時
@@ -242,16 +376,41 @@ public class ClickAreaHandler : IDisposable
         if (_comboCountLabel != null)
         {
             _comboCountLabel.text = _comboCount.ToString();
-            _comboCountLabel.AddToClassList("pulse");
-            _root.schedule.Execute(() => _comboCountLabel.RemoveFromClassList("pulse")).ExecuteLater(100);
+
+            // コンボ数に応じたパルスエフェクト
+            if (_comboCount >= 100 && _comboCount % 10 == 0)
+            {
+                // 100コンボ以上で10の倍数の時は特大パルス
+                _comboCountLabel.AddToClassList("mega-pulse");
+                _root.schedule.Execute(() => _comboCountLabel.RemoveFromClassList("mega-pulse")).ExecuteLater(150);
+            }
+            else
+            {
+                _comboCountLabel.AddToClassList("pulse");
+                _root.schedule.Execute(() => _comboCountLabel.RemoveFromClassList("pulse")).ExecuteLater(80);
+            }
         }
 
         if (_comboContainer != null)
         {
             _comboContainer.AddToClassList("active");
 
-            if (_comboCount >= HighComboThreshold)
+            // 高コンボ時のシェイク
+            if (_comboCount > 30 && _comboCount % 5 == 0)
             {
+                _comboContainer.AddToClassList("shake");
+                _root.schedule.Execute(() => _comboContainer.RemoveFromClassList("shake")).ExecuteLater(60);
+            }
+
+            // コンボ段階に応じたスタイル変更
+            if (_comboCount >= 100)
+            {
+                _comboContainer.RemoveFromClassList("high");
+                _comboContainer.AddToClassList("fever");
+            }
+            else if (_comboCount >= HighComboThreshold)
+            {
+                _comboContainer.RemoveFromClassList("fever");
                 _comboContainer.AddToClassList("high");
             }
         }
@@ -274,11 +433,15 @@ public class ClickAreaHandler : IDisposable
         {
             _comboContainer.RemoveFromClassList("active");
             _comboContainer.RemoveFromClassList("high");
+            _comboContainer.RemoveFromClassList("fever");
+            _comboContainer.RemoveFromClassList("shake");
         }
 
         if (_comboCountLabel != null)
         {
             _comboCountLabel.text = "0";
+            _comboCountLabel.RemoveFromClassList("pulse");
+            _comboCountLabel.RemoveFromClassList("mega-pulse");
         }
     }
 
@@ -303,10 +466,12 @@ public class ClickAreaHandler : IDisposable
             return;
         }
 
-        // スタイル設定
+        // スタイルリセット
         label.RemoveFromClassList("critical");
         label.RemoveFromClassList("super-critical");
         label.RemoveFromClassList("combo-bonus");
+        label.RemoveFromClassList("spawn");
+        label.RemoveFromClassList("fly");
 
         if (isSuperCritical)
         {
@@ -323,23 +488,25 @@ public class ClickAreaHandler : IDisposable
         else if (isCritical) label.text += "!";
 
         // 位置設定（ランダムオフセット）
-        float offsetX = UnityEngine.Random.Range(-50f, 50f);
-        float offsetY = UnityEngine.Random.Range(-30f, 30f);
+        float offsetX = UnityEngine.Random.Range(-60f, 60f);
+        float offsetY = UnityEngine.Random.Range(-40f, 40f);
         label.style.left = pos.x + offsetX + 100;
         label.style.top = pos.y + offsetY + 150;
 
-        // 表示
+        // 初期状態
         label.style.display = DisplayStyle.Flex;
-        label.style.opacity = 1f;
         label.style.translate = new Translate(0, 0);
-        label.style.scale = new Scale(Vector2.one);
+        label.style.rotate = new Rotate(Angle.Degrees(0));
 
-        // アニメーション
+        // スポーンアニメーション（ポップイン）
+        _root.schedule.Execute(() => label.AddToClassList("spawn")).ExecuteLater(10);
+
+        // フライアウトアニメーション
         _root.schedule.Execute(() =>
         {
-            label.style.translate = new Translate(0, -80);
-            label.style.opacity = 0f;
-        }).ExecuteLater(50);
+            label.RemoveFromClassList("spawn");
+            label.AddToClassList("fly");
+        }).ExecuteLater(200);
 
         _activeDamageNumbers.Add(label);
     }
@@ -350,9 +517,13 @@ public class ClickAreaHandler : IDisposable
         for (int i = _activeDamageNumbers.Count - 1; i >= 0; i--)
         {
             var label = _activeDamageNumbers[i];
-            if (label.resolvedStyle.opacity < 0.1f)
+            if (label.ClassListContains("fly") && label.resolvedStyle.opacity < 0.1f)
             {
                 label.style.display = DisplayStyle.None;
+                label.RemoveFromClassList("spawn");
+                label.RemoveFromClassList("fly");
+                label.RemoveFromClassList("critical");
+                label.RemoveFromClassList("super-critical");
                 _activeDamageNumbers.RemoveAt(i);
                 _damageNumberPool.Enqueue(label);
             }
