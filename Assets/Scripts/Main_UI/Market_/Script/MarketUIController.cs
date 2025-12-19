@@ -192,9 +192,23 @@ public class MarketUIController : IViewController
         var qty100Btn = root.Q<Button>("qty-100");
         var qtyMaxBtn = root.Q<Button>("qty-max");
 
-        if (qty10Btn != null) qty10Btn.clicked += () => SetTradeQuantity(10);
-        if (qty100Btn != null) qty100Btn.clicked += () => SetTradeQuantity(100);
-        if (qtyMaxBtn != null) qtyMaxBtn.clicked += SetMaxQuantity;
+        Debug.Log($"[Market] qty10Btn: {(qty10Btn != null ? "found" : "NULL")}");
+        Debug.Log($"[Market] qty100Btn: {(qty100Btn != null ? "found" : "NULL")}");
+        Debug.Log($"[Market] qtyMaxBtn: {(qtyMaxBtn != null ? "found" : "NULL")}");
+        Debug.Log($"[Market] tradeQuantityInput: {(tradeQuantityInput != null ? "found" : "NULL")}");
+
+        if (qty10Btn != null) qty10Btn.clicked += () => {
+            Debug.Log("[Market] qty10 clicked!");
+            SetTradeQuantity(10);
+        };
+        if (qty100Btn != null) qty100Btn.clicked += () => {
+            Debug.Log("[Market] qty100 clicked!");
+            SetTradeQuantity(100);
+        };
+        if (qtyMaxBtn != null) qtyMaxBtn.clicked += () => {
+            Debug.Log("[Market] qtyMax clicked!");
+            SetMaxQuantity();
+        };
 
         // 売買ボタン
         if (buyButton != null) buyButton.clicked += OnBuyClicked;
