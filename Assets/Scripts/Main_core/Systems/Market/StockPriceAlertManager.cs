@@ -59,6 +59,7 @@ public class StockPriceAlertManager : MonoBehaviour
     [Tooltip("下落アラート時のSE")]
     [SerializeField] private AudioClip alertDownSound;
 
+#pragma warning disable CS0414 // UI実装時に使用予定の設定フィールド
     [Tooltip("SE音量")]
     [Range(0f, 1f)]
     [SerializeField] private float soundVolume = 0.8f;
@@ -69,6 +70,7 @@ public class StockPriceAlertManager : MonoBehaviour
 
     [Tooltip("同時に表示する最大通知数")]
     [SerializeField] private int maxVisibleNotifications = 3;
+#pragma warning restore CS0414
 
     // ========================================
     // 状態

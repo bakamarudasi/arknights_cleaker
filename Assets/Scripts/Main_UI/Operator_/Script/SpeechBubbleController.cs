@@ -102,7 +102,7 @@ public class SpeechBubbleController : MonoBehaviour
         dialogueText.fontSize = 24;
         dialogueText.color = Color.white;
         dialogueText.alignment = TextAlignmentOptions.Left;
-        dialogueText.enableWordWrapping = true;
+        dialogueText.textWrappingMode = TextWrappingModes.Normal;
 
         // 初期非表示
         bubbleCanvas.gameObject.SetActive(false);
