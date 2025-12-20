@@ -95,6 +95,7 @@ public class OverlayCharacterPresenter : MonoBehaviour
     {
         // カメラリグを作成（すべてをまとめる親）
         _cameraRig = new GameObject("CharacterRenderRig");
+        _cameraRig.hideFlags = HideFlags.HideAndDontSave;
         _cameraRig.transform.SetParent(transform);
         _cameraRig.transform.position = characterSpawnPosition;
 
@@ -108,6 +109,7 @@ public class OverlayCharacterPresenter : MonoBehaviour
                 RenderTextureFormat.ARGB32
             );
             renderTexture.name = "CharacterRenderTexture";
+            renderTexture.hideFlags = HideFlags.HideAndDontSave;
             renderTexture.Create();
             Debug.Log($"[Presenter] Created RenderTexture: {renderTextureSize.x}x{renderTextureSize.y}");
         }
@@ -116,6 +118,7 @@ public class OverlayCharacterPresenter : MonoBehaviour
         if (characterCamera == null)
         {
             var camObj = new GameObject("CharacterCamera");
+            camObj.hideFlags = HideFlags.HideAndDontSave;
             camObj.transform.SetParent(_cameraRig.transform);
             camObj.transform.localPosition = new Vector3(0, 0, -10f);
             camObj.transform.localRotation = Quaternion.identity;
@@ -211,6 +214,7 @@ public class OverlayCharacterPresenter : MonoBehaviour
 
         // キャラクターを生成（カメラリグの子として）
         _currentInstance = Instantiate(characterPrefab, _cameraRig.transform);
+        _currentInstance.hideFlags = HideFlags.HideAndDontSave;
         _currentInstance.transform.localPosition = Vector3.zero;
         _currentInstance.transform.localRotation = Quaternion.identity;
 
