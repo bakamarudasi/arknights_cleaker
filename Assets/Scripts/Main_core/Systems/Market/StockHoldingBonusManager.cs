@@ -94,15 +94,34 @@ public class StockHoldingBonusManager : MonoBehaviour
     }
 
     /// <summary>
-    /// 特定の株の保有率を計算
+    /// 特定の株の保有率を計算（周回補正込み）
     /// </summary>
     private float CalculateHoldingRate(string stockId, StockData stockData)
     {
-        if (stockData == null || stockData.totalShares <= 0) return 0f;
+        if (stockData == null) return 0f;
+
+        // 周回システムから補正済みのtotalSharesを取得
+        long totalShares = GetAdjustedTotalShares(stockId, stockData);
+        if (totalShares <= 0) return 0f;
 
         int holdings = PortfolioManager.Instance?.GetHoldingQuantity(stockId) ?? 0;
 
-        return (float)holdings / stockData.totalShares;
+        return (float)holdings / totalShares;
+    }
+
+    /// <summary>
+    /// 周回補正込みのtotalSharesを取得
+    /// </summary>
+    private long GetAdjustedTotalShares(string stockId, StockData stockData)
+    {
+        // StockPrestigeManagerがあれば周回補正を適用
+        if (StockPrestigeManager.Instance != null)
+        {
+            return StockPrestigeManager.Instance.GetAdjustedTotalShares(stockId);
+        }
+
+        // なければ元のtotalSharesを返す
+        return stockData.totalShares;
     }
 
     // ========================================
