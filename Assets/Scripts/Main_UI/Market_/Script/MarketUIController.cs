@@ -37,6 +37,7 @@ public class MarketUIController : IViewController
     private MarketTradeController tradeController;
     private MarketSkillController skillController;
     private MarketPVEUIController pveUIController;
+    private StockPrestigeUIController prestigeUIController;
 
     // ========================================
     // UI要素
@@ -167,6 +168,10 @@ public class MarketUIController : IViewController
         // PVE UIコントローラ（メインレイヤー）
         pveUIController = new MarketPVEUIController();
         pveUIController.Initialize(root);
+
+        // 周回（プレステージ）UIコントローラ
+        prestigeUIController = new StockPrestigeUIController();
+        prestigeUIController.Initialize(root);
     }
 
     private void BindUIEvents()
@@ -664,11 +669,13 @@ public class MarketUIController : IViewController
         tradeController?.Dispose();
         skillController?.Dispose();
         pveUIController?.Dispose();
+        prestigeUIController?.Dispose();
 
         chartController = null;
         tradeController = null;
         skillController = null;
         pveUIController = null;
+        prestigeUIController = null;
 
         if (updateTimer != null)
         {
