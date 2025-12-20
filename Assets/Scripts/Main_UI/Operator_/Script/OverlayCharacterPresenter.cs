@@ -50,7 +50,9 @@ public class OverlayCharacterPresenter : MonoBehaviour
 
     // イベント
     public event Action OnCharacterReady;
+#pragma warning disable CS0067 // 将来の拡張用に予約
     public event Action<CharacterInteractionZone.ZoneType, int> OnZoneTouched;
+#pragma warning restore CS0067
 
     // ========================================
     // プロパティ
@@ -158,7 +160,10 @@ public class OverlayCharacterPresenter : MonoBehaviour
             );
 
             // アスペクト比を維持してフィット
-            _displayElement.style.unityBackgroundScaleMode = ScaleMode.ScaleToFit;
+            _displayElement.style.backgroundPositionX = new BackgroundPosition(BackgroundPositionKeyword.Center);
+            _displayElement.style.backgroundPositionY = new BackgroundPosition(BackgroundPositionKeyword.Center);
+            _displayElement.style.backgroundRepeat = new BackgroundRepeat(Repeat.NoRepeat, Repeat.NoRepeat);
+            _displayElement.style.backgroundSize = new BackgroundSize(BackgroundSizeType.Contain);
 
             Debug.Log("[Presenter] RenderTexture assigned to VisualElement");
         }

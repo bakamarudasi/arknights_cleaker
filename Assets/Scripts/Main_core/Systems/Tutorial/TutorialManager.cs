@@ -54,8 +54,10 @@ public class TutorialManager : MonoBehaviour
     [Header("チュートリアルデータ")]
     [SerializeField] private List<TutorialSequence> tutorials = new();
 
+#pragma warning disable CS0414 // 自動進行機能実装時に使用予定
     [Header("表示設定")]
     [SerializeField] private float autoAdvanceDelay = 0f;  // 0 = 手動進行
+#pragma warning restore CS0414
 
     // ========================================
     // 状態

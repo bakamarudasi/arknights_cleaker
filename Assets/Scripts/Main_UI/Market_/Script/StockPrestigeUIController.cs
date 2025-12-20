@@ -290,7 +290,8 @@ public class StockPrestigeUIController : IViewController
 
         // 自動クローズ
         popupTimer?.Pause();
-        popupTimer = root.schedule.Execute(CloseAcquisitionPopup).ExecuteLater((long)POPUP_DURATION);
+        popupTimer = root.schedule.Execute(CloseAcquisitionPopup);
+        popupTimer.ExecuteLater((long)POPUP_DURATION);
     }
 
     public void CloseAcquisitionPopup()
