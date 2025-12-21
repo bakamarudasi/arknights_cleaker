@@ -64,11 +64,21 @@ public class StockDatabase : ScriptableObject
     /// <summary>
     /// 特性で絞り込み
     /// </summary>
-    public List<StockData> GetByTrait(StockTrait trait)
+    public List<StockData> GetByTrait(CompanyData.CompanyTrait trait)
     {
         return stocks.Where(s => s != null && s.trait == trait)
                      .OrderBy(s => s.sortOrder)
                      .ToList();
+    }
+
+    /// <summary>
+    /// 特性で絞り込み（後方互換性用オーバーロード）
+    /// </summary>
+    public List<StockData> GetByTrait(StockTrait trait)
+    {
+        // StockTraitをCompanyTraitに変換して検索
+        var companyTrait = (CompanyData.CompanyTrait)(int)trait;
+        return GetByTrait(companyTrait);
     }
 
     /// <summary>

@@ -37,6 +37,16 @@ public class CompanyData : ScriptableObject
     public Sprite logo;            // 企業ロゴ
     [TextArea] public string description;
 
+    [Header("表示設定")]
+    [Tooltip("チャートの色")]
+    public Color chartColor = Color.green;
+
+    [Tooltip("企業テーマカラー")]
+    public Color themeColor = Color.white;
+
+    [Tooltip("ショップでの並び順")]
+    public int sortOrder = 0;
+
     [Header("企業特性 (Company Trait)")]
     [Tooltip("この企業の株やアイテムを持っていると発生するボーナスの種類")]
     public CompanyTrait traitType;
@@ -45,16 +55,36 @@ public class CompanyData : ScriptableObject
     public float traitMultiplier = 1.0f;
 
     [Header("株価設定 (Stock Market)")]
-    [Tooltip("初期株価")]
-    public float baseStockPrice = 100f;
+    [Tooltip("初期株価（LMD）")]
+    public double initialPrice = 1000;
 
-    [Tooltip("株価の変動しやすさ (高いほど乱高下する)")]
-    [Range(0.1f, 3.0f)]
-    public float volatility = 1.0f;
+    [Tooltip("最低株価（これ以下にはならない）")]
+    public double minPrice = 10;
 
-    [Tooltip("長期トレンド傾向 (-1=下降傾向, 0=中立, 1=上昇傾向)")]
-    [Range(-1f, 1f)]
-    public float trendBias = 0f;
+    [Tooltip("最高株価（0 = 無制限）")]
+    public double maxPrice = 0;
+
+    [Header("変動特性")]
+    [Tooltip("ボラティリティ（変動の激しさ: 0.01〜0.5）")]
+    [Range(0.01f, 0.5f)]
+    public float volatility = 0.1f;
+
+    [Tooltip("ドリフト（長期トレンド: -0.1〜0.2、正で右肩上がり）")]
+    [Range(-0.1f, 0.2f)]
+    public float drift = 0.02f;
+
+    [Tooltip("ジャンプ確率（急騰/暴落の発生率: 0〜0.1）")]
+    [Range(0f, 0.1f)]
+    public float jumpProbability = 0.01f;
+
+    [Tooltip("ジャンプ強度（急騰/暴落の大きさ: 0.1〜0.5）")]
+    [Range(0.1f, 0.5f)]
+    public float jumpIntensity = 0.2f;
+
+    [Header("取引設定")]
+    [Tooltip("取引手数料率（0〜0.05）")]
+    [Range(0f, 0.05f)]
+    public float transactionFee = 0.01f;
 
     [Tooltip("業種セクター（同セクターの株は連動しやすい）")]
     public StockSector sector = StockSector.Tech;
@@ -73,6 +103,10 @@ public class CompanyData : ScriptableObject
     [Header("株式保有ボーナス")]
     [Tooltip("株式保有率に応じたボーナス（複数設定可）")]
     public List<StockHoldingBonus> holdingBonuses = new();
+
+    [Header("解放条件")]
+    [Tooltip("この株を解放するキーアイテム（null = 最初から解放）")]
+    public ItemData unlockKeyItem;
 
     [Header("株価変動イベント")]
     [Tooltip("この企業固有のイベント（複数設定可）")]
@@ -111,6 +145,59 @@ public class CompanyData : ScriptableObject
 
     [Tooltip("株主総会の間隔（秒）- 0で無効")]
     public int shareholderMeetingInterval = 600;
+
+    // ========================================
+    // ヘルパーメソッド
+    // ========================================
+
+    /// <summary>
+    /// 株が解放されているかチェック
+    /// </summary>
+    public bool IsUnlocked()
+    {
+        if (unlockKeyItem == null) return true;
+
+        // InventoryManagerがあれば確認
+        if (InventoryManager.Instance != null)
+        {
+            return InventoryManager.Instance.GetCount(unlockKeyItem.id) > 0;
+        }
+        return false;
+    }
+
+    /// <summary>
+    /// 特性の表示名を取得
+    /// </summary>
+    public string GetTraitDisplayName()
+    {
+        return traitType switch
+        {
+            CompanyTrait.Military => "軍事",
+            CompanyTrait.TechInnovation => "革新",
+            CompanyTrait.Logistics => "物流",
+            CompanyTrait.Trading => "貿易",
+            CompanyTrait.Arts => "アーツ",
+            _ => "一般"
+        };
+    }
+
+    /// <summary>
+    /// 購入時の総コストを計算（手数料込み）
+    /// </summary>
+    public double CalculateBuyCost(double currentPrice, int quantity)
+    {
+        double baseCost = currentPrice * quantity;
+        return baseCost * (1 + transactionFee);
+    }
+
+    /// <summary>
+    /// 売却時の受取額を計算（手数料引き）
+    /// </summary>
+    public double CalculateSellReturn(double currentPrice, int quantity)
+    {
+        double baseReturn = currentPrice * quantity;
+        return baseReturn * (1 - transactionFee);
+    }
 }
 
 /// <summary>
