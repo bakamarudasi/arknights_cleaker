@@ -157,9 +157,14 @@ public class CharacterInteractionZone : MonoBehaviour
 
         string reaction = reactions[index];
 
-        // 吹き出しに表示（SpeechBubbleControllerがあれば）
-        if (SpeechBubbleController.Instance != null)
+        // 吹き出しに表示（キャラ内蔵の吹き出しを優先）
+        if (CharacterSpeechBubble.Instance != null)
         {
+            CharacterSpeechBubble.Instance.ShowDialogue(reaction);
+        }
+        else if (SpeechBubbleController.Instance != null)
+        {
+            // フォールバック: 従来のScreen Space方式
             SpeechBubbleController.Instance.ShowDialogue(reaction);
         }
 
