@@ -1,6 +1,7 @@
 using UnityEngine;
 using UnityEngine.UIElements;
 using System;
+using System.Collections.Generic;
 
 /// <summary>
 /// PSBキャラ表示（RenderTexture方式）
@@ -10,6 +11,11 @@ using System;
 /// 1. RenderTexture作成 (1024x1024, ARGB32)
 /// 2. 専用カメラ作成 (Orthographic, 遠い位置に配置)
 /// 3. このスクリプトにカメラとRTをアサイン
+///
+/// ポーズ切り替え:
+/// 1. CharacterPoseData (ScriptableObject) を作成
+/// 2. LoadCharacter(poseData) でキャラ読み込み
+/// 3. SetPose("poseId") でポーズ切り替え
 /// </summary>
 public class OverlayCharacterPresenter : MonoBehaviour
 {
@@ -26,11 +32,19 @@ public class OverlayCharacterPresenter : MonoBehaviour
     [SerializeField] private Vector2Int renderTextureSize = new Vector2Int(2048, 2048);
 
     [Header("=== キャラクター設定 ===")]
-    [Tooltip("表示するPSBキャラのプレハブ")]
+    [Tooltip("表示するPSBキャラのプレハブ（単体使用時）")]
     [SerializeField] private GameObject characterPrefab;
 
     [Tooltip("キャラを配置する位置（カメラから離れた場所）")]
     [SerializeField] private Vector3 characterSpawnPosition = new Vector3(1000f, 0f, 0f);
+
+    [Header("=== ポーズ管理 ===")]
+    [Tooltip("キャラクターポーズデータ（ScriptableObject）")]
+    [SerializeField] private CharacterPoseData characterPoseData;
+
+    // ポーズ管理用内部状態
+    private CharacterPoseData _currentCharacterData;
+    private string _currentPoseId;
 
     [Header("=== カメラ設定 ===")]
     [Tooltip("カメラのOrthographicSize（キャラの大きさ調整）")]
@@ -54,6 +68,12 @@ public class OverlayCharacterPresenter : MonoBehaviour
     public event Action<CharacterInteractionZone.ZoneType, int> OnZoneTouched;
 #pragma warning restore CS0067
 
+    /// <summary>ポーズ変更時に発火（poseId）</summary>
+    public event Action<string> OnPoseChanged;
+
+    /// <summary>キャラクター読み込み時に発火</summary>
+    public event Action<CharacterPoseData> OnCharacterLoaded;
+
     // ========================================
     // プロパティ
     // ========================================
@@ -62,6 +82,16 @@ public class OverlayCharacterPresenter : MonoBehaviour
     public RenderTexture RenderTexture => renderTexture;
     public GameObject CurrentInstance => _currentInstance;
     public bool IsShowing => _isShowing;
+
+    /// <summary>現在読み込まれているキャラクターデータ</summary>
+    public CharacterPoseData CurrentCharacterData => _currentCharacterData;
+
+    /// <summary>現在表示中のポーズID</summary>
+    public string CurrentPoseId => _currentPoseId;
+
+    /// <summary>現在のポーズエントリ</summary>
+    public CharacterPoseData.PoseEntry CurrentPoseEntry =>
+        _currentCharacterData?.GetPose(_currentPoseId);
 
     // ========================================
     // 初期化
@@ -77,6 +107,12 @@ public class OverlayCharacterPresenter : MonoBehaviour
         Instance = this;
 
         SetupRenderSystem();
+
+        // InspectorでCharacterPoseDataが設定されていれば自動読み込み
+        if (characterPoseData != null)
+        {
+            LoadCharacter(characterPoseData, autoShow: false);
+        }
     }
 
     private void OnDestroy()
@@ -273,6 +309,147 @@ public class OverlayCharacterPresenter : MonoBehaviour
             _currentInstance = null;
         }
         _isShowing = false;
+    }
+
+    // ========================================
+    // ポーズ管理
+    // ========================================
+
+    /// <summary>
+    /// キャラクターデータを読み込み（デフォルトポーズで表示）
+    /// </summary>
+    /// <param name="data">CharacterPoseData (ScriptableObject)</param>
+    /// <param name="autoShow">読み込み後に自動表示するか</param>
+    public void LoadCharacter(CharacterPoseData data, bool autoShow = true)
+    {
+        if (data == null)
+        {
+            Debug.LogWarning("[Presenter] CharacterPoseData is null!");
+            return;
+        }
+
+        _currentCharacterData = data;
+        _currentPoseId = data.defaultPoseId;
+
+        var defaultPose = data.GetDefaultPose();
+        if (defaultPose == null)
+        {
+            Debug.LogWarning($"[Presenter] No poses found in CharacterPoseData: {data.characterId}");
+            return;
+        }
+
+        characterPrefab = defaultPose.prefab;
+
+        Debug.Log($"[Presenter] Loaded character: {data.characterId}, default pose: {_currentPoseId}");
+        OnCharacterLoaded?.Invoke(data);
+
+        if (autoShow)
+        {
+            Show();
+        }
+    }
+
+    /// <summary>
+    /// ポーズを切り替え
+    /// </summary>
+    /// <param name="poseId">ポーズID</param>
+    /// <returns>成功したか</returns>
+    public bool SetPose(string poseId)
+    {
+        if (_currentCharacterData == null)
+        {
+            Debug.LogWarning("[Presenter] No character loaded. Call LoadCharacter() first.");
+            return false;
+        }
+
+        var poseEntry = _currentCharacterData.GetPose(poseId);
+        if (poseEntry == null)
+        {
+            Debug.LogWarning($"[Presenter] Pose not found: {poseId}");
+            return false;
+        }
+
+        if (poseEntry.prefab == null)
+        {
+            Debug.LogWarning($"[Presenter] Pose prefab is null: {poseId}");
+            return false;
+        }
+
+        // 同じポーズなら何もしない
+        if (_currentPoseId == poseId && _currentInstance != null)
+        {
+            Debug.Log($"[Presenter] Already showing pose: {poseId}");
+            return true;
+        }
+
+        string previousPoseId = _currentPoseId;
+        _currentPoseId = poseId;
+
+        // 現在のインスタンスを破棄
+        if (_currentInstance != null)
+        {
+            Destroy(_currentInstance);
+            _currentInstance = null;
+        }
+
+        // 新しいプレハブを設定して表示
+        characterPrefab = poseEntry.prefab;
+
+        // 推奨カメラサイズがあれば設定
+        if (poseEntry.recommendedCameraSize > 0)
+        {
+            cameraOrthoSize = poseEntry.recommendedCameraSize;
+        }
+
+        // 表示中なら新しいポーズで再表示
+        if (_isShowing)
+        {
+            Show();
+        }
+
+        Debug.Log($"[Presenter] Pose changed: {previousPoseId} → {poseId}");
+        OnPoseChanged?.Invoke(poseId);
+
+        return true;
+    }
+
+    /// <summary>
+    /// 利用可能なポーズ一覧を取得（UI用）
+    /// </summary>
+    /// <param name="currentAffectionLevel">現在の好感度レベル（アンロック判定用）</param>
+    /// <returns>ポーズエントリのリスト</returns>
+    public List<CharacterPoseData.PoseEntry> GetAvailablePoses(int currentAffectionLevel = 999)
+    {
+        if (_currentCharacterData == null)
+        {
+            return new List<CharacterPoseData.PoseEntry>();
+        }
+        return _currentCharacterData.GetUnlockedPoses(currentAffectionLevel);
+    }
+
+    /// <summary>
+    /// 全ポーズ一覧を取得（ロック状態含む）
+    /// </summary>
+    public List<CharacterPoseData.PoseEntry> GetAllPoses()
+    {
+        if (_currentCharacterData == null)
+        {
+            return new List<CharacterPoseData.PoseEntry>();
+        }
+        return _currentCharacterData.poses;
+    }
+
+    /// <summary>
+    /// 指定ポーズがアンロック済みか確認
+    /// </summary>
+    public bool IsPoseUnlocked(string poseId, int currentAffectionLevel = 999)
+    {
+        if (_currentCharacterData == null) return false;
+
+        var pose = _currentCharacterData.GetPose(poseId);
+        if (pose == null) return false;
+
+        return !pose.isLocked || pose.requiredAffectionLevel <= currentAffectionLevel;
     }
 
     // ========================================
