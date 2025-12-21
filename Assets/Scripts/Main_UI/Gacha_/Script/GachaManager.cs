@@ -310,22 +310,32 @@ public class GachaManager : MonoBehaviour
     // ========================================
 
     /// <summary>
-    /// バナーの在庫を初期化（初回アクセス時）
+    /// バナーの在庫を初期化（初回アクセス時、または新しいアイテム追加時）
     /// </summary>
     private void InitializeStock(GachaBannerData banner)
     {
         if (banner == null || string.IsNullOrEmpty(banner.bannerId)) return;
-        if (_stockData.ContainsKey(banner.bannerId)) return; // 既に初期化済み
 
-        var bannerStock = new SerializableDictionary<string, int>();
+        // バナーの在庫データがなければ作成
+        if (!_stockData.ContainsKey(banner.bannerId))
+        {
+            _stockData[banner.bannerId] = new SerializableDictionary<string, int>();
+        }
+
+        var bannerStock = _stockData[banner.bannerId];
+
+        // 各エントリについて、在庫データがなければ初期化（新しいアイテム対応）
         foreach (var entry in banner.pool)
         {
             if (entry.item != null && entry.HasStockLimit)
             {
-                bannerStock[entry.item.id] = entry.stockCount;
+                // 既に在庫データがあればそのまま維持、なければ初期化
+                if (!bannerStock.ContainsKey(entry.item.id))
+                {
+                    bannerStock[entry.item.id] = entry.stockCount;
+                }
             }
         }
-        _stockData[banner.bannerId] = bannerStock;
     }
 
     /// <summary>
