@@ -156,6 +156,14 @@ public class CharacterInteractionZone : MonoBehaviour
         index = Mathf.Max(0, index);
 
         string reaction = reactions[index];
+
+        // 吹き出しに表示（SpeechBubbleControllerがあれば）
+        if (SpeechBubbleController.Instance != null)
+        {
+            SpeechBubbleController.Instance.ShowDialogue(reaction);
+        }
+
+        // ログにも表示
         LogUIController.Msg(reaction);
     }
 
