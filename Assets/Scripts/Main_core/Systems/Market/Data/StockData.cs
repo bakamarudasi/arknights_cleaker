@@ -4,114 +4,94 @@ using UnityEngine;
 
 /// <summary>
 /// 銘柄データ（ScriptableObject）
-/// 各企業の株式情報を定義
+/// CompanyDataをマスターとして参照し、株式市場での表示・動作を定義
 /// </summary>
 [CreateAssetMenu(fileName = "New_Stock", menuName = "ArknightsClicker/Market/Stock Data")]
 public class StockData : ScriptableObject
 {
     // ========================================
-    // 基本情報
+    // 企業データ参照（マスター）
     // ========================================
-    [Header("基本情報")]
-    [Tooltip("銘柄コード（例: RL, PL, BSW）")]
-    public string stockId;
-
-    [Tooltip("企業名")]
-    public string companyName;
-
-    [Tooltip("企業の説明")]
-    [TextArea(2, 4)]
-    public string description;
-
-    [Tooltip("企業ロゴ")]
-    public Sprite logo;
+    [Header("企業データ")]
+    [Tooltip("この株に対応する企業データ（マスター）")]
+    public CompanyData companyData;
 
     // ========================================
-    // 株価設定
+    // 株式固有の設定（表示順など）
     // ========================================
-    [Header("株価設定")]
-    [Tooltip("初期株価（LMD）")]
-    public double initialPrice = 1000;
-
-    [Tooltip("最低株価（これ以下にはならない）")]
-    public double minPrice = 10;
-
-    [Tooltip("最高株価（0 = 無制限）")]
-    public double maxPrice = 0;
+    [Header("銘柄表示設定")]
+    [Tooltip("銘柄コード（例: RL, PL, BSW）- 空の場合はcompanyData.idを使用")]
+    public string stockIdOverride;
 
     // ========================================
-    // 変動特性
+    // ヘルパープロパティ（後方互換性のため）
     // ========================================
-    [Header("変動特性")]
-    [Tooltip("ボラティリティ（変動の激しさ: 0.01〜0.5）")]
-    [Range(0.01f, 0.5f)]
-    public float volatility = 0.1f;
 
-    [Tooltip("ドリフト（長期トレンド: -0.1〜0.2、正で右肩上がり）")]
-    [Range(-0.1f, 0.2f)]
-    public float drift = 0.02f;
+    /// <summary>銘柄コード</summary>
+    public string stockId => !string.IsNullOrEmpty(stockIdOverride) ? stockIdOverride : companyData?.id ?? "";
 
-    [Tooltip("ジャンプ確率（急騰/暴落の発生率: 0〜0.1）")]
-    [Range(0f, 0.1f)]
-    public float jumpProbability = 0.01f;
+    /// <summary>企業名</summary>
+    public string companyName => companyData?.displayName ?? "";
 
-    [Tooltip("ジャンプ強度（急騰/暴落の大きさ: 0.1〜0.5）")]
-    [Range(0.1f, 0.5f)]
-    public float jumpIntensity = 0.2f;
+    /// <summary>企業の説明</summary>
+    public string description => companyData?.description ?? "";
 
-    // ========================================
-    // 企業特性
-    // ========================================
-    [Header("企業特性")]
-    public StockTrait trait;
+    /// <summary>企業ロゴ</summary>
+    public Sprite logo => companyData?.logo;
 
-    [Tooltip("取引手数料率（0〜0.05）")]
-    [Range(0f, 0.05f)]
-    public float transactionFee = 0.01f;
+    /// <summary>初期株価（LMD）</summary>
+    public double initialPrice => companyData?.initialPrice ?? 1000;
 
-    // ========================================
-    // 解放条件
-    // ========================================
-    [Header("解放条件")]
-    [Tooltip("この株を解放するキーアイテム（null = 最初から解放）")]
-    public ItemData unlockKeyItem;
+    /// <summary>最低株価</summary>
+    public double minPrice => companyData?.minPrice ?? 10;
 
-    [Tooltip("ショップでの並び順")]
-    public int sortOrder = 0;
+    /// <summary>最高株価（0 = 無制限）</summary>
+    public double maxPrice => companyData?.maxPrice ?? 0;
 
-    // ========================================
-    // 表示設定
-    // ========================================
-    [Header("表示設定")]
-    [Tooltip("チャートの色")]
-    public Color chartColor = Color.green;
+    /// <summary>ボラティリティ</summary>
+    public float volatility => companyData?.volatility ?? 0.1f;
 
-    [Tooltip("企業テーマカラー")]
-    public Color themeColor = Color.white;
+    /// <summary>ドリフト（長期トレンド）</summary>
+    public float drift => companyData?.drift ?? 0.02f;
 
-    // ========================================
-    // 株式発行・配当設定
-    // ========================================
-    [Header("株式発行・配当設定")]
-    [Tooltip("発行済み株式数（保有率計算用）")]
-    public long totalShares = 1000000;
+    /// <summary>ジャンプ確率</summary>
+    public float jumpProbability => companyData?.jumpProbability ?? 0.01f;
 
-    [Tooltip("配当率 (0.02 = 2%)")]
-    [Range(0f, 0.1f)]
-    public float dividendRate = 0f;
+    /// <summary>ジャンプ強度</summary>
+    public float jumpIntensity => companyData?.jumpIntensity ?? 0.2f;
 
-    [Tooltip("配当間隔（秒）- 0で配当なし")]
-    public int dividendIntervalSeconds = 0;
+    /// <summary>企業特性</summary>
+    public CompanyData.CompanyTrait trait => companyData?.traitType ?? CompanyData.CompanyTrait.None;
 
-    // ========================================
-    // 株式保有ボーナス
-    // ========================================
-    [Header("株式保有ボーナス")]
-    [Tooltip("株式保有率に応じたボーナス（複数設定可）")]
-    public List<StockHoldingBonus> holdingBonuses = new();
+    /// <summary>取引手数料率</summary>
+    public float transactionFee => companyData?.transactionFee ?? 0.01f;
+
+    /// <summary>解放キーアイテム</summary>
+    public ItemData unlockKeyItem => companyData?.unlockKeyItem;
+
+    /// <summary>並び順</summary>
+    public int sortOrder => companyData?.sortOrder ?? 0;
+
+    /// <summary>チャートの色</summary>
+    public Color chartColor => companyData?.chartColor ?? Color.green;
+
+    /// <summary>企業テーマカラー</summary>
+    public Color themeColor => companyData?.themeColor ?? Color.white;
+
+    /// <summary>発行済み株式数</summary>
+    public long totalShares => companyData?.totalShares ?? 1000000;
+
+    /// <summary>配当率</summary>
+    public float dividendRate => companyData?.dividendRate ?? 0f;
+
+    /// <summary>配当間隔（秒）</summary>
+    public int dividendIntervalSeconds => companyData?.dividendIntervalSeconds ?? 0;
+
+    /// <summary>保有ボーナス</summary>
+    public List<StockHoldingBonus> holdingBonuses => companyData?.holdingBonuses ?? new List<StockHoldingBonus>();
 
     // ========================================
-    // ヘルパーメソッド
+    // ヘルパーメソッド（後方互換性のため）
     // ========================================
 
     /// <summary>
@@ -119,14 +99,7 @@ public class StockData : ScriptableObject
     /// </summary>
     public bool IsUnlocked()
     {
-        if (unlockKeyItem == null) return true;
-
-        // InventoryManagerがあれば確認
-        if (InventoryManager.Instance != null)
-        {
-            return InventoryManager.Instance.GetCount(unlockKeyItem.id) > 0;
-        }
-        return false;
+        return companyData?.IsUnlocked() ?? true;
     }
 
     /// <summary>
@@ -134,16 +107,7 @@ public class StockData : ScriptableObject
     /// </summary>
     public string GetTraitDisplayName()
     {
-        return trait switch
-        {
-            StockTrait.Military => "軍事",
-            StockTrait.Innovation => "革新",
-            StockTrait.Logistics => "物流",
-            StockTrait.Trading => "貿易",
-            StockTrait.Medical => "医療",
-            StockTrait.Energy => "エネルギー",
-            _ => "一般"
-        };
+        return companyData?.GetTraitDisplayName() ?? "一般";
     }
 
     /// <summary>
@@ -151,8 +115,8 @@ public class StockData : ScriptableObject
     /// </summary>
     public double CalculateBuyCost(double currentPrice, int quantity)
     {
-        double baseCost = currentPrice * quantity;
-        return baseCost * (1 + transactionFee);
+        return companyData?.CalculateBuyCost(currentPrice, quantity)
+            ?? currentPrice * quantity * (1 + 0.01);
     }
 
     /// <summary>
@@ -160,24 +124,24 @@ public class StockData : ScriptableObject
     /// </summary>
     public double CalculateSellReturn(double currentPrice, int quantity)
     {
-        double baseReturn = currentPrice * quantity;
-        return baseReturn * (1 - transactionFee);
+        return companyData?.CalculateSellReturn(currentPrice, quantity)
+            ?? currentPrice * quantity * (1 - 0.01);
     }
 }
 
 /// <summary>
-/// 企業の特性タイプ
-/// イベントやニュースの影響を決定
+/// 企業の特性タイプ（後方互換性のためのエイリアス）
+/// 新規コードでは CompanyData.CompanyTrait を使用してください
 /// </summary>
 public enum StockTrait
 {
-    General,    // 一般（特殊効果なし）
-    Military,   // 軍事（戦争イベントで急騰）
-    Innovation, // 革新（ボラティリティ高い）
-    Logistics,  // 物流（景気敏感）
-    Trading,    // 貿易（手数料安い、安定）
-    Medical,    // 医療（源石関連イベントで変動）
-    Energy      // エネルギー（長期安定成長）
+    General = CompanyData.CompanyTrait.None,
+    Military = CompanyData.CompanyTrait.Military,
+    Innovation = CompanyData.CompanyTrait.TechInnovation,
+    Logistics = CompanyData.CompanyTrait.Logistics,
+    Trading = CompanyData.CompanyTrait.Trading,
+    Medical = CompanyData.CompanyTrait.Arts, // Medical -> Arts にマッピング
+    Energy = CompanyData.CompanyTrait.None   // Energy -> None にマッピング（該当なし）
 }
 
 // StockHoldingBonus と HoldingBonusType は CompanyData.cs で定義済み
