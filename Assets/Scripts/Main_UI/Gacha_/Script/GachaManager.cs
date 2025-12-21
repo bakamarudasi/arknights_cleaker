@@ -174,6 +174,8 @@ public class GachaManager : MonoBehaviour
         var pool = banner.pool;
         float totalWeight = 0f;
 
+        Debug.Log($"[Gacha Debug] SelectFromPool: bannerId={banner.bannerId}, poolCount={pool.Count}");
+
         // 在庫初期化
         InitializeStock(banner);
 
@@ -183,15 +185,22 @@ public class GachaManager : MonoBehaviour
         foreach (var entry in pool)
         {
             float weight = entry.weight;
+            string itemId = entry.item != null ? entry.item.id : "(null)";
+            string itemName = entry.item != null ? entry.item.displayName : "(null)";
 
             // 在庫チェック：在庫切れは重み0
             if (entry.HasStockLimit && entry.item != null)
             {
                 int remaining = GetRemainingStock(banner, entry.item.id);
+                Debug.Log($"[Gacha Debug]   Item: {itemName} (id={itemId}), weight={entry.weight}, stockCount={entry.stockCount}, remaining={remaining}, HasStockLimit={entry.HasStockLimit}");
                 if (remaining == 0)
                 {
                     weight = 0f;
                 }
+            }
+            else
+            {
+                Debug.Log($"[Gacha Debug]   Item: {itemName} (id={itemId}), weight={entry.weight}, stockCount={entry.stockCount}, HasStockLimit={entry.HasStockLimit} (no stock check)");
             }
 
             // ソフト天井：高レアの確率を徐々に上昇
