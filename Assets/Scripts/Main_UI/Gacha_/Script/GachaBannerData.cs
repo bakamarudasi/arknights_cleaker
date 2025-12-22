@@ -112,7 +112,8 @@ public class GachaBannerData : ScriptableObject
         float total = 0f;
         foreach (var entry in pool)
         {
-            total += entry.weight;
+            // weightが0以下の場合はデフォルト値1を使用（設定ミス対策）
+            total += entry.weight > 0 ? entry.weight : 1f;
         }
         return total;
     }
