@@ -187,9 +187,49 @@ public class CharacterLayerController : MonoBehaviour
     public int LayerCount => layers.Count;
 
 #if UNITY_EDITOR
+    [Header("=== 自動セットアップ設定 ===")]
+    [Tooltip("レイヤー検出用のプレフィックス（カンマ区切りで複数指定可）")]
+    [SerializeField]
+    private string layerPrefixes = "layer_,lv_,l_";
+
     [Header("=== デバッグ ===")]
     [SerializeField]
     private int debugPenetrateLevel = 0;
+
+    // 既知のレイヤー名と透視レベルのマッピング
+    private static readonly Dictionary<string, int> KnownLayerLevels = new Dictionary<string, int>
+    {
+        // 素体系（常に表示）
+        { "body", 0 },
+        { "base", 0 },
+        { "skin", 0 },
+        { "face", 0 },
+        { "hair", 0 },
+
+        // 下着系（Lv3で非表示）
+        { "underwear", 3 },
+        { "uw", 3 },
+        { "bra", 3 },
+        { "panty", 3 },
+        { "panties", 3 },
+
+        // インナー系（Lv2で非表示）
+        { "inner", 2 },
+        { "undershirt", 2 },
+        { "tanktop", 2 },
+
+        // 上着系（Lv1で非表示）
+        { "outer", 1 },
+        { "clothes", 1 },
+        { "jacket", 1 },
+        { "shirt", 1 },
+        { "dress", 1 },
+        { "uniform", 1 },
+        { "top", 1 },
+        { "bottom", 1 },
+        { "skirt", 1 },
+        { "pants", 1 },
+    };
 
     [ContextMenu("Apply Debug Penetrate Level")]
     private void ApplyDebugLevel()
@@ -197,47 +237,192 @@ public class CharacterLayerController : MonoBehaviour
         SetPenetrateLevelImmediate(debugPenetrateLevel);
     }
 
-    [ContextMenu("Auto Setup Layers From Children")]
-    private void AutoSetupLayers()
+    [ContextMenu("Auto Setup - プレフィックス検出")]
+    private void AutoSetupByPrefix()
     {
-        layers.Clear();
+        AutoSetupLayers(usePrefix: true, useKeyword: false);
+    }
 
-        // 子オブジェクトから "layer_" プレフィックスを持つものを検索
+    [ContextMenu("Auto Setup - キーワード検出")]
+    private void AutoSetupByKeyword()
+    {
+        AutoSetupLayers(usePrefix: false, useKeyword: true);
+    }
+
+    [ContextMenu("Auto Setup - 両方で検出")]
+    private void AutoSetupBoth()
+    {
+        AutoSetupLayers(usePrefix: true, useKeyword: true);
+    }
+
+    [ContextMenu("全SpriteRendererを「その他」に追加")]
+    private void AutoSetupAllAsOther()
+    {
+        var allRenderers = GetComponentsInChildren<SpriteRenderer>(true);
+
+        // 既存のレイヤーに含まれていないものだけ追加
+        var existingSprites = new HashSet<SpriteRenderer>();
+        foreach (var layer in layers)
+        {
+            foreach (var sr in layer.sprites)
+            {
+                existingSprites.Add(sr);
+            }
+        }
+
+        var others = new List<SpriteRenderer>();
+        foreach (var sr in allRenderers)
+        {
+            if (!existingSprites.Contains(sr))
+            {
+                others.Add(sr);
+            }
+        }
+
+        if (others.Count > 0)
+        {
+            var entry = new LayerEntry
+            {
+                layerName = "other",
+                sprites = others.ToArray(),
+                hideAtPenetrateLevel = 0,
+                fadeDuration = 0.3f
+            };
+            layers.Add(entry);
+            UnityEditor.EditorUtility.SetDirty(this);
+            Debug.Log($"[LayerController] Added {others.Count} sprites to 'other' layer");
+        }
+    }
+
+    private void AutoSetupLayers(bool usePrefix, bool useKeyword)
+    {
+        var prefixList = layerPrefixes.Split(',');
         var allRenderers = GetComponentsInChildren<SpriteRenderer>(true);
         var layerGroups = new Dictionary<string, List<SpriteRenderer>>();
 
         foreach (var sr in allRenderers)
         {
             string name = sr.gameObject.name.ToLower();
+            string detectedLayer = null;
 
-            // layer_body, layer_underwear などのパターンを検出
-            if (name.StartsWith("layer_"))
+            // プレフィックス検出: "layer_body_arm" → "body"
+            if (usePrefix)
             {
-                string layerName = name.Substring(6); // "layer_" を除去
-                if (!layerGroups.ContainsKey(layerName))
+                foreach (var prefix in prefixList)
                 {
-                    layerGroups[layerName] = new List<SpriteRenderer>();
+                    string p = prefix.Trim().ToLower();
+                    if (string.IsNullOrEmpty(p)) continue;
+
+                    if (name.StartsWith(p))
+                    {
+                        string rest = name.Substring(p.Length);
+                        // 次のセパレータまでを取得
+                        int sepIndex = rest.IndexOfAny(new char[] { '_', '-', '.' });
+                        detectedLayer = sepIndex > 0 ? rest.Substring(0, sepIndex) : rest;
+                        break;
+                    }
                 }
-                layerGroups[layerName].Add(sr);
+            }
+
+            // キーワード検出: "jacket_front" → "jacket" (→ outer扱い)
+            if (useKeyword && detectedLayer == null)
+            {
+                foreach (var kvp in KnownLayerLevels)
+                {
+                    if (name.Contains(kvp.Key))
+                    {
+                        detectedLayer = kvp.Key;
+                        break;
+                    }
+                }
+            }
+
+            if (detectedLayer != null)
+            {
+                if (!layerGroups.ContainsKey(detectedLayer))
+                {
+                    layerGroups[detectedLayer] = new List<SpriteRenderer>();
+                }
+                layerGroups[detectedLayer].Add(sr);
             }
         }
 
-        // レイヤーエントリを作成
-        int hideLevel = 0;
-        foreach (var kvp in layerGroups)
+        // 既存レイヤーをクリアせず、マージするかどうか
+        if (layers.Count > 0)
         {
-            var entry = new LayerEntry
+            bool merge = UnityEditor.EditorUtility.DisplayDialog(
+                "レイヤー設定",
+                "既存のレイヤー設定があります。\n\n・上書き：既存設定をクリアして新規作成\n・マージ：既存設定に追加",
+                "上書き", "マージ");
+
+            if (merge)
             {
-                layerName = kvp.Key,
-                sprites = kvp.Value.ToArray(),
-                hideAtPenetrateLevel = hideLevel,
-                fadeDuration = 0.3f
-            };
-            layers.Add(entry);
-            hideLevel++;
+                // 既存レイヤー名を取得
+                var existingNames = new HashSet<string>();
+                foreach (var l in layers)
+                {
+                    existingNames.Add(l.layerName.ToLower());
+                }
+
+                // 新規のみ追加
+                foreach (var kvp in layerGroups)
+                {
+                    if (!existingNames.Contains(kvp.Key))
+                    {
+                        var entry = CreateLayerEntry(kvp.Key, kvp.Value);
+                        layers.Add(entry);
+                    }
+                }
+
+                UnityEditor.EditorUtility.SetDirty(this);
+                Debug.Log($"[LayerController] Merged: {layerGroups.Count} layer groups processed");
+                return;
+            }
         }
 
-        Debug.Log($"[LayerController] Auto setup: {layers.Count} layers found");
+        // 上書きモード
+        layers.Clear();
+        foreach (var kvp in layerGroups)
+        {
+            var entry = CreateLayerEntry(kvp.Key, kvp.Value);
+            layers.Add(entry);
+        }
+
+        // hideAtPenetrateLevelでソート（0が先頭）
+        layers.Sort((a, b) => a.hideAtPenetrateLevel.CompareTo(b.hideAtPenetrateLevel));
+
+        UnityEditor.EditorUtility.SetDirty(this);
+        Debug.Log($"[LayerController] Auto setup complete: {layers.Count} layers found");
+
+        // 結果をログ出力
+        foreach (var layer in layers)
+        {
+            Debug.Log($"  - {layer.layerName}: {layer.sprites.Length} sprites, hideAt={layer.hideAtPenetrateLevel}");
+        }
+    }
+
+    private LayerEntry CreateLayerEntry(string layerName, List<SpriteRenderer> sprites)
+    {
+        // 既知のレイヤー名からhideAtPenetrateLevelを決定
+        int hideLevel = 0;
+        string lowerName = layerName.ToLower();
+
+        foreach (var kvp in KnownLayerLevels)
+        {
+            if (lowerName.Contains(kvp.Key))
+            {
+                hideLevel = kvp.Value;
+                break;
+            }
+        }
+
+        return new LayerEntry
+        {
+            layerName = layerName,
+            sprites = sprites.ToArray(),
+            hideAtPenetrateLevel = hideLevel,
+            fadeDuration = 0.3f
+        };
     }
 #endif
 }
