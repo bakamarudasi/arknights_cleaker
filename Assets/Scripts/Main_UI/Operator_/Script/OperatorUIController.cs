@@ -99,6 +99,8 @@ public class OperatorUIController : IViewController
         lensController = new OperatorLensController();
         lensController.Initialize(root);
         lensController.OnLensModeChanged += OnLensModeChanged;
+        lensController.OnLensShapeChanged += OnLensShapeChanged;
+        lensController.OnLensSizeChanged += OnLensSizeChanged;
 
         // プレゼントコントローラー
         giftController = new OperatorGiftController();
@@ -200,6 +202,18 @@ public class OperatorUIController : IViewController
     private void OnGiftGiven(ItemData item)
     {
         affectionController.UpdateAffectionUI();
+    }
+
+    private void OnLensShapeChanged(LensMaskController.LensShape shape)
+    {
+        var presenter = OverlayCharacterPresenter.Instance;
+        presenter?.SetLensShape(shape);
+    }
+
+    private void OnLensSizeChanged(float size)
+    {
+        var presenter = OverlayCharacterPresenter.Instance;
+        presenter?.SetLensSize(size);
     }
 
     // ========================================
@@ -469,6 +483,8 @@ public class OperatorUIController : IViewController
         if (lensController != null)
         {
             lensController.OnLensModeChanged -= OnLensModeChanged;
+            lensController.OnLensShapeChanged -= OnLensShapeChanged;
+            lensController.OnLensSizeChanged -= OnLensSizeChanged;
             lensController.Dispose();
         }
 

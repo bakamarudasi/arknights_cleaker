@@ -72,6 +72,19 @@
                         <ui:Button name="btn-lens-normal" text="NORMAL" class="btn-lens active" />
                         <ui:Button name="btn-lens-clothes" text="X-RAY" class="btn-lens" />
                     </ui:VisualElement>
+
+                    <!-- レンズ形状切り替え -->
+                    <ui:Label text="LENS SHAPE" class="section-title-small" />
+                    <ui:VisualElement class="lens-shape-buttons">
+                        <ui:Button name="btn-lens-circle" text="●" class="btn-lens-shape active" />
+                        <ui:Button name="btn-lens-rect" text="■" class="btn-lens-shape" />
+                    </ui:VisualElement>
+
+                    <!-- レンズサイズ -->
+                    <ui:VisualElement class="lens-size-section">
+                        <ui:Label text="SIZE" class="lens-size-label" />
+                        <ui:Slider name="lens-size-slider" low-value="1" high-value="5" value="2" class="lens-size-slider" />
+                    </ui:VisualElement>
                 </ui:VisualElement>
 
                 <!-- 好感度セクション -->

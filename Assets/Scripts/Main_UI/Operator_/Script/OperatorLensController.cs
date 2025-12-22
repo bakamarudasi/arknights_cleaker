@@ -18,6 +18,9 @@ public class OperatorLensController
     private VisualElement lensBatteryBar;
     private Button btnLensNormal;
     private Button btnLensClothes;
+    private Button btnLensCircle;
+    private Button btnLensRect;
+    private Slider lensSizeSlider;
 
     // ========================================
     // 状態
@@ -28,6 +31,8 @@ public class OperatorLensController
     private float maxBatteryTime;
     private bool isLensActive;
     private int currentLensMode = 0;
+    private LensMaskController.LensShape currentLensShape = LensMaskController.LensShape.Circle;
+    private float currentLensSize = 2f;
 
     // ========================================
     // キャッシュ
@@ -42,6 +47,12 @@ public class OperatorLensController
     /// <summary>レンズモードが変更された時に発火</summary>
     public event Action<int> OnLensModeChanged;
 
+    /// <summary>レンズ形状が変更された時に発火</summary>
+    public event Action<LensMaskController.LensShape> OnLensShapeChanged;
+
+    /// <summary>レンズサイズが変更された時に発火</summary>
+    public event Action<float> OnLensSizeChanged;
+
     // ========================================
     // プロパティ
     // ========================================
@@ -49,6 +60,8 @@ public class OperatorLensController
     public bool IsLensActive => isLensActive;
     public int CurrentLensMode => currentLensMode;
     public ItemData CurrentLensItem => currentLensItem;
+    public LensMaskController.LensShape CurrentLensShape => currentLensShape;
+    public float CurrentLensSize => currentLensSize;
 
     // ========================================
     // 初期化
@@ -71,12 +84,18 @@ public class OperatorLensController
         lensBatteryBar = root.Q<VisualElement>("lens-battery-fill");
         btnLensNormal = root.Q<Button>("btn-lens-normal");
         btnLensClothes = root.Q<Button>("btn-lens-clothes");
+        btnLensCircle = root.Q<Button>("btn-lens-circle");
+        btnLensRect = root.Q<Button>("btn-lens-rect");
+        lensSizeSlider = root.Q<Slider>("lens-size-slider");
     }
 
     private void BindButtons()
     {
         btnLensNormal?.RegisterCallback<ClickEvent>(evt => SetLensMode(0));
         btnLensClothes?.RegisterCallback<ClickEvent>(evt => SetLensMode(1));
+        btnLensCircle?.RegisterCallback<ClickEvent>(evt => SetLensShape(LensMaskController.LensShape.Circle));
+        btnLensRect?.RegisterCallback<ClickEvent>(evt => SetLensShape(LensMaskController.LensShape.Rectangle));
+        lensSizeSlider?.RegisterValueChangedCallback(evt => SetLensSize(evt.newValue));
     }
 
     // ========================================
@@ -301,6 +320,51 @@ public class OperatorLensController
     }
 
     // ========================================
+    // レンズ形状・サイズ
+    // ========================================
+
+    /// <summary>
+    /// レンズ形状を設定
+    /// </summary>
+    public void SetLensShape(LensMaskController.LensShape shape)
+    {
+        if (currentLensShape == shape) return;
+
+        currentLensShape = shape;
+        UpdateShapeButtons();
+
+        string shapeName = shape == LensMaskController.LensShape.Circle ? "丸型" : "四角型";
+        LogUIController.Msg($"レンズ形状: {shapeName}");
+
+        OnLensShapeChanged?.Invoke(shape);
+    }
+
+    private void UpdateShapeButtons()
+    {
+        btnLensCircle?.RemoveFromClassList("active");
+        btnLensRect?.RemoveFromClassList("active");
+
+        switch (currentLensShape)
+        {
+            case LensMaskController.LensShape.Circle:
+                btnLensCircle?.AddToClassList("active");
+                break;
+            case LensMaskController.LensShape.Rectangle:
+                btnLensRect?.AddToClassList("active");
+                break;
+        }
+    }
+
+    /// <summary>
+    /// レンズサイズを設定
+    /// </summary>
+    public void SetLensSize(float size)
+    {
+        currentLensSize = size;
+        OnLensSizeChanged?.Invoke(size);
+    }
+
+    // ========================================
     // クリーンアップ
     // ========================================
 
@@ -310,5 +374,7 @@ public class OperatorLensController
     public void Dispose()
     {
         OnLensModeChanged = null;
+        OnLensShapeChanged = null;
+        OnLensSizeChanged = null;
     }
 }

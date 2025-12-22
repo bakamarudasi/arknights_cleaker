@@ -455,6 +455,84 @@
 }
 
 /* ========================================= */
+/* Lens Shape Section                        */
+/* ========================================= */
+
+.lens-shape-buttons {
+    flex-direction: row;
+    margin-bottom: 8px;
+}
+
+.btn-lens-shape {
+    flex-grow: 1;
+    height: 32px;
+    margin-right: 8px;
+    background-color: rgba(255, 255, 255, 0.05);
+    border-width: 1px;
+    border-color: rgba(255, 255, 255, 0.1);
+    border-radius: 4px;
+    color: #888888;
+    font-size: 16px;
+    transition-duration: 0.2s;
+}
+
+.btn-lens-shape:hover {
+    background-color: rgba(255, 255, 255, 0.1);
+    border-color: rgba(100, 200, 255, 0.3);
+    color: #ffffff;
+}
+
+.btn-lens-shape.active {
+    background-color: rgba(100, 200, 255, 0.15);
+    border-color: #64c8ff;
+    color: #64c8ff;
+}
+
+/* ========================================= */
+/* Lens Size Section                         */
+/* ========================================= */
+
+.lens-size-section {
+    flex-direction: row;
+    align-items: center;
+    margin-bottom: 8px;
+    padding: 6px 8px;
+    background-color: rgba(255, 255, 255, 0.02);
+    border-width: 1px;
+    border-color: rgba(255, 255, 255, 0.05);
+    border-radius: 4px;
+}
+
+.lens-size-label {
+    font-size: 10px;
+    color: #888888;
+    letter-spacing: 1px;
+    width: 40px;
+}
+
+.lens-size-slider {
+    flex-grow: 1;
+}
+
+.lens-size-slider .unity-base-slider__dragger {
+    width: 14px;
+    height: 14px;
+    border-radius: 7px;
+    background-color: #64c8ff;
+    border-width: 0;
+}
+
+.lens-size-slider .unity-base-slider__tracker {
+    height: 4px;
+    background-color: rgba(255, 255, 255, 0.2);
+    border-radius: 2px;
+}
+
+.lens-size-slider .unity-base-slider__drag-container {
+    height: 14px;
+}
+
+/* ========================================= */
 /* Head Pet Area (Interaction)              */
 /* ========================================= */
 
