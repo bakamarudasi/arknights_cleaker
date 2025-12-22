@@ -21,6 +21,9 @@ public class MainUIController : MonoBehaviour
     [Header("Menu Data")]
     [SerializeField] private List<MenuItemData> menuItems = new List<MenuItemData>();
 
+    [Header("View Controller Prefabs")]
+    [Tooltip("OperatorUIController プレハブ")]
+    [SerializeField] private OperatorUIController operatorUIPrefab;
 
     // UI Elements
     public VisualElement ContentArea { get; private set; }
@@ -28,6 +31,9 @@ public class MainUIController : MonoBehaviour
 
     // 現在のコントローラーを保持 (インターフェース型に変更)
     private IViewController currentViewController;
+
+    // MonoBehaviourベースのコントローラー用（GameObject破棄用）
+    private GameObject _currentViewControllerObject;
 
     private void Awake()
     {
@@ -150,6 +156,13 @@ public class MainUIController : MonoBehaviour
             currentViewController = null;
         }
 
+        // MonoBehaviourベースのコントローラーのGameObjectを破棄
+        if (_currentViewControllerObject != null)
+        {
+            Destroy(_currentViewControllerObject);
+            _currentViewControllerObject = null;
+        }
+
         switch (menuType)
         {
             case MenuType.Start:
@@ -165,10 +178,19 @@ public class MainUIController : MonoBehaviour
                 break;
 
             case MenuType.Operators:
-                var operatorController = new OperatorUIController();
-                operatorController.Initialize(ContentArea);
-                operatorController.OnBackRequested += () => SwitchToMenu(MenuType.Shop);
-                currentViewController = operatorController;
+                if (operatorUIPrefab != null)
+                {
+                    // プレハブからインスタンス化
+                    var operatorController = Instantiate(operatorUIPrefab, transform);
+                    operatorController.Initialize(ContentArea);
+                    operatorController.OnBackRequested += () => SwitchToMenu(MenuType.Shop);
+                    currentViewController = operatorController;
+                    _currentViewControllerObject = operatorController.gameObject;
+                }
+                else
+                {
+                    Debug.LogError("[MainUIController] operatorUIPrefab is not assigned!");
+                }
                 break;
 
             case MenuType.Gacha:

@@ -1,87 +1,107 @@
+using UnityEngine;
 using UnityEngine.UIElements;
 
 /// <summary>
 /// フルスクリーンシーンUI（サイドパネルなし）
 /// 温泉イベントなど、特殊なシーンで使用
+///
+/// 使い方:
+/// 1. 空のGameObjectにこのスクリプトをアタッチ
+/// 2. プレハブ化
+/// 3. OperatorUIControllerのfullscreenSceneUIにアサイン
 /// </summary>
-public class FullscreenSceneUI : ISceneUI
+public class FullscreenSceneUI : BaseSceneUI
 {
-    private VisualElement root;
-    private VisualElement sidePanel;
-    private Button btnBack;
-    private bool hideBackButton;
+    [Header("=== フルスクリーン設定 ===")]
+    [Tooltip("戻るボタンも非表示にするか")]
+    [SerializeField] private bool hideBackButton = false;
 
-    private bool isVisible = false;
+    // 既存UI要素への参照
+    private VisualElement _sidePanel;
+    private Button _btnBack;
 
-    public bool IsVisible => isVisible;
+    // 元の戻るボタンスタイル（復元用）
+    private StyleLength _originalBtnTop;
+    private StyleLength _originalBtnLeft;
+    private StyleLength _originalBtnWidth;
+    private Position _originalBtnPosition;
 
     /// <summary>
-    /// 初期化
+    /// 戻るボタンの非表示設定
     /// </summary>
-    /// <param name="hideBack">戻るボタンも非表示にするか</param>
-    public void SetHideBackButton(bool hideBack)
+    public void SetHideBackButton(bool hide)
     {
-        hideBackButton = hideBack;
+        hideBackButton = hide;
     }
 
-    public void Initialize(VisualElement rootElement)
+    protected override void OnInitialize()
     {
-        root = rootElement;
-        sidePanel = root?.Q<VisualElement>("side-panel");
-        btnBack = root?.Q<Button>("btn-back");
+        _sidePanel = QueryRoot<VisualElement>("side-panel");
+        _btnBack = QueryRoot<Button>("btn-back");
+
+        // 元のスタイルを保存
+        if (_btnBack != null)
+        {
+            _originalBtnPosition = _btnBack.style.position.value;
+            _originalBtnTop = _btnBack.style.top;
+            _originalBtnLeft = _btnBack.style.left;
+            _originalBtnWidth = _btnBack.style.width;
+        }
     }
 
-    public void Show()
+    protected override void OnShow()
     {
         // サイドパネルを非表示
-        if (sidePanel != null)
+        if (_sidePanel != null)
         {
-            sidePanel.style.display = DisplayStyle.None;
+            _sidePanel.style.display = DisplayStyle.None;
         }
 
-        // 戻るボタンの表示/非表示
-        if (btnBack != null)
+        // 戻るボタンの処理
+        if (_btnBack != null)
         {
-            btnBack.style.display = hideBackButton ? DisplayStyle.None : DisplayStyle.Flex;
-
-            // 戻るボタンを画面左上に移動（サイドパネルがないので）
-            if (!hideBackButton)
+            if (hideBackButton)
             {
-                btnBack.style.position = Position.Absolute;
-                btnBack.style.top = 20;
-                btnBack.style.left = 20;
-                btnBack.style.width = 100;
+                _btnBack.style.display = DisplayStyle.None;
+            }
+            else
+            {
+                // 戻るボタンを画面左上に移動
+                _btnBack.style.display = DisplayStyle.Flex;
+                _btnBack.style.position = Position.Absolute;
+                _btnBack.style.top = 20;
+                _btnBack.style.left = 20;
+                _btnBack.style.width = 100;
             }
         }
 
-        isVisible = true;
+        Debug.Log($"[FullscreenSceneUI] Shown (hideBackButton: {hideBackButton})");
     }
 
-    public void Hide()
+    protected override void OnHide()
     {
         // サイドパネルを再表示
-        if (sidePanel != null)
+        if (_sidePanel != null)
         {
-            sidePanel.style.display = DisplayStyle.Flex;
+            _sidePanel.style.display = DisplayStyle.Flex;
         }
 
         // 戻るボタンの位置をリセット
-        if (btnBack != null)
+        if (_btnBack != null)
         {
-            btnBack.style.position = Position.Relative;
-            btnBack.style.top = StyleKeyword.Auto;
-            btnBack.style.left = StyleKeyword.Auto;
-            btnBack.style.width = StyleKeyword.Auto;
-            btnBack.style.display = DisplayStyle.Flex;
+            _btnBack.style.position = _originalBtnPosition;
+            _btnBack.style.top = _originalBtnTop;
+            _btnBack.style.left = _originalBtnLeft;
+            _btnBack.style.width = _originalBtnWidth;
+            _btnBack.style.display = DisplayStyle.Flex;
         }
 
-        isVisible = false;
+        Debug.Log("[FullscreenSceneUI] Hidden");
     }
 
-    public void Dispose()
+    protected override void OnDispose()
     {
-        root = null;
-        sidePanel = null;
-        btnBack = null;
+        _sidePanel = null;
+        _btnBack = null;
     }
 }

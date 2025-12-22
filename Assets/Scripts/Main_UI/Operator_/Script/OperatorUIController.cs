@@ -3,11 +3,35 @@ using UnityEngine.UIElements;
 using System;
 
 /// <summary>
-/// オペレーター画面のUIファサード
+/// オペレーター画面のUIファサード (MonoBehaviour)
 /// 単一責任: 各サブコントローラーの統合と画面全体のライフサイクル管理
+///
+/// 使い方:
+/// 1. 空のGameObjectにこのスクリプトをアタッチ
+/// 2. Inspectorで UXML/USS、シーンUIプレハブを設定
+/// 3. プレハブ化
+/// 4. MainUIControllerから生成
 /// </summary>
-public class OperatorUIController : IViewController
+public class OperatorUIController : MonoBehaviour, IViewController
 {
+    // ========================================
+    // Inspector設定
+    // ========================================
+
+    [Header("=== UI テンプレート ===")]
+    [Tooltip("OperatorView.uxml")]
+    [SerializeField] private VisualTreeAsset viewTemplate;
+
+    [Tooltip("OperatorStyles.uss")]
+    [SerializeField] private StyleSheet styleSheet;
+
+    [Header("=== シーンUI プレハブ ===")]
+    [Tooltip("デフォルトシーンUI（サイドパネル表示）")]
+    [SerializeField] private BaseSceneUI defaultSceneUIPrefab;
+
+    [Tooltip("フルスクリーンシーンUI（サイドパネル非表示）")]
+    [SerializeField] private BaseSceneUI fullscreenSceneUIPrefab;
+
     // ========================================
     // UI要素
     // ========================================
@@ -32,8 +56,8 @@ public class OperatorUIController : IViewController
     // ========================================
 
     private ISceneUI _currentSceneUI;
-    private DefaultSceneUI _defaultSceneUI;
-    private FullscreenSceneUI _fullscreenSceneUI;
+    private BaseSceneUI _defaultSceneUI;
+    private BaseSceneUI _fullscreenSceneUI;
 
     // ========================================
     // 状態
@@ -62,8 +86,22 @@ public class OperatorUIController : IViewController
     // 初期化
     // ========================================
 
+    /// <summary>
+    /// 外部からの初期化（MainUIControllerから呼ばれる）
+    /// </summary>
     public void Initialize(VisualElement contentArea)
     {
+        // UXMLをContentAreaに追加
+        if (viewTemplate != null)
+        {
+            viewTemplate.CloneTree(contentArea);
+
+            if (styleSheet != null)
+            {
+                contentArea.styleSheets.Add(styleSheet);
+            }
+        }
+
         root = contentArea;
 
         QueryElements();
@@ -112,13 +150,27 @@ public class OperatorUIController : IViewController
 
     private void InitializeSceneUIs()
     {
-        // デフォルトシーンUI
-        _defaultSceneUI = new DefaultSceneUI();
-        _defaultSceneUI.Initialize(root);
+        // デフォルトシーンUI（プレハブから生成）
+        if (defaultSceneUIPrefab != null)
+        {
+            _defaultSceneUI = Instantiate(defaultSceneUIPrefab, transform);
+            _defaultSceneUI.Initialize(root);
+        }
+        else
+        {
+            Debug.LogWarning("[OperatorUI] defaultSceneUIPrefab is not assigned!");
+        }
 
-        // フルスクリーンシーンUI
-        _fullscreenSceneUI = new FullscreenSceneUI();
-        _fullscreenSceneUI.Initialize(root);
+        // フルスクリーンシーンUI（プレハブから生成）
+        if (fullscreenSceneUIPrefab != null)
+        {
+            _fullscreenSceneUI = Instantiate(fullscreenSceneUIPrefab, transform);
+            _fullscreenSceneUI.Initialize(root);
+        }
+        else
+        {
+            Debug.LogWarning("[OperatorUI] fullscreenSceneUIPrefab is not assigned!");
+        }
 
         // 初期状態はデフォルト
         _currentSceneUI = _defaultSceneUI;
@@ -227,7 +279,10 @@ public class OperatorUIController : IViewController
         // ポーズ設定に応じてシーンUIを選択
         if (poseEntry != null && poseEntry.hideSidePanel)
         {
-            _fullscreenSceneUI.SetHideBackButton(poseEntry.hideBackButton);
+            if (_fullscreenSceneUI is FullscreenSceneUI fullscreen)
+            {
+                fullscreen.SetHideBackButton(poseEntry.hideBackButton);
+            }
             _currentSceneUI = _fullscreenSceneUI;
         }
         else
@@ -238,7 +293,7 @@ public class OperatorUIController : IViewController
         // 新しいシーンUIを表示
         _currentSceneUI?.Show();
 
-        UnityEngine.Debug.Log($"[OperatorUI] Scene UI switched: {_currentSceneUI?.GetType().Name}");
+        Debug.Log($"[OperatorUI] Scene UI switched: {_currentSceneUI?.GetType().Name}");
     }
 
     /// <summary>
@@ -437,8 +492,16 @@ public class OperatorUIController : IViewController
 
         // シーンUIの解放
         _currentSceneUI?.Hide();
-        _defaultSceneUI?.Dispose();
-        _fullscreenSceneUI?.Dispose();
+        if (_defaultSceneUI != null)
+        {
+            _defaultSceneUI.Dispose();
+            Destroy(_defaultSceneUI.gameObject);
+        }
+        if (_fullscreenSceneUI != null)
+        {
+            _fullscreenSceneUI.Dispose();
+            Destroy(_fullscreenSceneUI.gameObject);
+        }
         _currentSceneUI = null;
         _defaultSceneUI = null;
         _fullscreenSceneUI = null;
@@ -457,5 +520,10 @@ public class OperatorUIController : IViewController
         callbackCharacterClick = null;
 
         LogUIController.LogSystem("Operator View Disposed.");
+    }
+
+    private void OnDestroy()
+    {
+        Dispose();
     }
 }

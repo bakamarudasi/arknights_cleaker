@@ -1,55 +1,59 @@
+using UnityEngine;
 using UnityEngine.UIElements;
 
 /// <summary>
 /// デフォルトのシーンUI（サイドパネル表示あり）
 /// 通常のオペレーター画面で使用される標準UI
+///
+/// 使い方:
+/// 1. 空のGameObjectにこのスクリプトをアタッチ
+/// 2. プレハブ化
+/// 3. OperatorUIControllerのdefaultSceneUIにアサイン
 /// </summary>
-public class DefaultSceneUI : ISceneUI
+public class DefaultSceneUI : BaseSceneUI
 {
-    private VisualElement root;
-    private VisualElement sidePanel;
-    private Button btnBack;
+    // 既存UI要素への参照
+    private VisualElement _sidePanel;
+    private Button _btnBack;
 
-    private bool isVisible = false;
-
-    public bool IsVisible => isVisible;
-
-    public void Initialize(VisualElement rootElement)
+    protected override void OnInitialize()
     {
-        root = rootElement;
-        sidePanel = root?.Q<VisualElement>("side-panel");
-        btnBack = root?.Q<Button>("btn-back");
+        // 既存のUI要素を取得
+        _sidePanel = QueryRoot<VisualElement>("side-panel");
+        _btnBack = QueryRoot<Button>("btn-back");
     }
 
-    public void Show()
+    protected override void OnShow()
     {
-        if (sidePanel != null)
+        // サイドパネルを表示
+        if (_sidePanel != null)
         {
-            sidePanel.style.display = DisplayStyle.Flex;
+            _sidePanel.style.display = DisplayStyle.Flex;
         }
 
-        if (btnBack != null)
+        // 戻るボタンを表示
+        if (_btnBack != null)
         {
-            btnBack.style.display = DisplayStyle.Flex;
+            _btnBack.style.display = DisplayStyle.Flex;
         }
 
-        isVisible = true;
+        Debug.Log("[DefaultSceneUI] Shown");
     }
 
-    public void Hide()
+    protected override void OnHide()
     {
-        if (sidePanel != null)
+        // サイドパネルを非表示
+        if (_sidePanel != null)
         {
-            sidePanel.style.display = DisplayStyle.None;
+            _sidePanel.style.display = DisplayStyle.None;
         }
 
-        isVisible = false;
+        Debug.Log("[DefaultSceneUI] Hidden");
     }
 
-    public void Dispose()
+    protected override void OnDispose()
     {
-        root = null;
-        sidePanel = null;
-        btnBack = null;
+        _sidePanel = null;
+        _btnBack = null;
     }
 }
