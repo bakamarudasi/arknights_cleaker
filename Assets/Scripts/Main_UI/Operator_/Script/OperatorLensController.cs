@@ -132,7 +132,26 @@ public class OperatorLensController
     {
         if (_cachedAllItems == null)
         {
-            _cachedAllItems = Resources.LoadAll<ItemData>("Data/Items");
+            var itemList = new List<ItemData>();
+
+            // GachaDatabaseから全バナーの全アイテムを取得
+            if (GachaManager.Instance?.Database != null)
+            {
+                var banners = GachaManager.Instance.Database.GetAllBanners();
+                foreach (var banner in banners)
+                {
+                    if (banner.pool == null) continue;
+                    foreach (var entry in banner.pool)
+                    {
+                        if (entry.item != null && !itemList.Contains(entry.item))
+                        {
+                            itemList.Add(entry.item);
+                        }
+                    }
+                }
+            }
+
+            _cachedAllItems = itemList.ToArray();
         }
         return _cachedAllItems;
     }
