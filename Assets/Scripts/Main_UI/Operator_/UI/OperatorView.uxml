@@ -31,87 +31,83 @@
             <!-- 右側：操作パネル -->
             <ui:VisualElement name="side-panel" class="side-panel">
 
-                <!-- ヘッダー -->
+                <!-- ヘッダー（固定） -->
                 <ui:VisualElement class="side-header">
                     <ui:Label text="OPERATOR FILE" class="header-title" />
                 </ui:VisualElement>
 
-                <!-- 着せ替えセクション -->
-                <ui:VisualElement class="outfit-section">
-                    <ui:Label text="OUTFIT" class="section-title" />
+                <!-- スクロール可能なコンテンツエリア -->
+                <ui:ScrollView class="side-scroll-content" vertical-scroller-visibility="Auto" horizontal-scroller-visibility="Hidden">
 
-                    <ui:VisualElement class="outfit-buttons">
-                        <ui:Button name="btn-outfit-default" text="DEFAULT" class="btn-outfit active" />
-                        <ui:Button name="btn-outfit-skin1" text="SKIN 1" class="btn-outfit" />
-                        <ui:Button name="btn-outfit-skin2" text="SKIN 2" class="btn-outfit" />
-                    </ui:VisualElement>
-                </ui:VisualElement>
-
-                <!-- レンズアイテムセクション -->
-                <ui:VisualElement class="lens-section">
-                    <ui:Label text="LENS ITEMS" class="section-title" />
-
-                    <!-- 所持レンズアイテム一覧 -->
-                    <ui:ScrollView class="lens-items-scroll" horizontal-scroller-visibility="Hidden">
-                        <ui:VisualElement name="lens-items-container" class="lens-items-container">
-                            <!-- アイテムはコードで動的に追加 -->
-                        </ui:VisualElement>
-                    </ui:ScrollView>
-
-                    <!-- バッテリー表示 -->
-                    <ui:VisualElement class="battery-section">
-                        <ui:Label name="lens-battery-label" text="BATTERY: --" class="battery-label" />
-                        <ui:VisualElement class="battery-bar-bg">
-                            <ui:VisualElement name="lens-battery-fill" class="battery-bar-fill" />
+                    <!-- 着せ替えセクション -->
+                    <ui:VisualElement class="outfit-section">
+                        <ui:Label text="OUTFIT" class="section-title" />
+                        <ui:VisualElement class="outfit-buttons">
+                            <ui:Button name="btn-outfit-default" text="DEFAULT" class="btn-outfit active" />
+                            <ui:Button name="btn-outfit-skin1" text="SKIN 1" class="btn-outfit" />
+                            <ui:Button name="btn-outfit-skin2" text="SKIN 2" class="btn-outfit" />
                         </ui:VisualElement>
                     </ui:VisualElement>
 
-                    <!-- レンズモード切り替え -->
-                    <ui:Label text="VIEW MODE" class="section-title-small" />
-                    <ui:VisualElement class="lens-buttons">
-                        <ui:Button name="btn-lens-normal" text="NORMAL" class="btn-lens active" />
-                        <ui:Button name="btn-lens-clothes" text="X-RAY" class="btn-lens" />
-                    </ui:VisualElement>
+                    <!-- レンズセクション -->
+                    <ui:VisualElement class="lens-section">
+                        <ui:Label text="LENS" class="section-title" />
 
-                    <!-- レンズ形状切り替え -->
-                    <ui:Label text="LENS SHAPE" class="section-title-small" />
-                    <ui:VisualElement class="lens-shape-buttons">
-                        <ui:Button name="btn-lens-circle" text="●" class="btn-lens-shape active" />
-                        <ui:Button name="btn-lens-rect" text="■" class="btn-lens-shape" />
-                    </ui:VisualElement>
+                        <!-- 所持レンズアイテム -->
+                        <ui:ScrollView class="lens-items-scroll" horizontal-scroller-visibility="Hidden">
+                            <ui:VisualElement name="lens-items-container" class="lens-items-container">
+                            </ui:VisualElement>
+                        </ui:ScrollView>
 
-                    <!-- レンズサイズ -->
-                    <ui:VisualElement class="lens-size-section">
-                        <ui:Label text="SIZE" class="lens-size-label" />
-                        <ui:Slider name="lens-size-slider" low-value="1" high-value="5" value="2" class="lens-size-slider" />
-                    </ui:VisualElement>
-                </ui:VisualElement>
-
-                <!-- 好感度セクション -->
-                <ui:VisualElement class="affection-section">
-                    <ui:Label text="AFFECTION" class="section-title" />
-
-                    <ui:VisualElement class="affection-display">
-                        <ui:Label name="affection-level" text="Lv.1 知り合い" class="affection-level" />
-                        <ui:VisualElement class="affection-bar-bg">
-                            <ui:VisualElement name="affection-bar-fill" class="affection-bar-fill" />
+                        <!-- バッテリー -->
+                        <ui:VisualElement class="battery-section">
+                            <ui:Label name="lens-battery-label" text="BATTERY: --" class="battery-label" />
+                            <ui:VisualElement class="battery-bar-bg">
+                                <ui:VisualElement name="lens-battery-fill" class="battery-bar-fill" />
+                            </ui:VisualElement>
                         </ui:VisualElement>
-                        <ui:Label name="affection-value" text="0 / 50" class="affection-value" />
-                    </ui:VisualElement>
-                </ui:VisualElement>
 
-                <!-- プレゼントセクション -->
-                <ui:VisualElement class="gift-section">
-                    <ui:Label text="GIFT" class="section-title" />
-
-                    <ui:ScrollView class="gift-scroll" horizontal-scroller-visibility="Hidden">
-                        <ui:VisualElement name="gift-container" class="gift-container">
-                            <!-- アイテムはコードで動的に追加 -->
+                        <!-- VIEW MODE -->
+                        <ui:Label text="VIEW MODE" class="section-title-small" />
+                        <ui:VisualElement class="lens-buttons">
+                            <ui:Button name="btn-lens-normal" text="NORMAL" class="btn-lens active" />
+                            <ui:Button name="btn-lens-clothes" text="X-RAY" class="btn-lens" />
                         </ui:VisualElement>
-                    </ui:ScrollView>
-                </ui:VisualElement>
 
-                <!-- 戻るボタン -->
+                        <!-- レンズ設定（形状とサイズを横並び） -->
+                        <ui:VisualElement class="lens-config-row">
+                            <ui:VisualElement class="lens-shape-group">
+                                <ui:Button name="btn-lens-circle" text="●" class="btn-lens-shape active" />
+                                <ui:Button name="btn-lens-rect" text="■" class="btn-lens-shape" />
+                            </ui:VisualElement>
+                            <ui:Slider name="lens-size-slider" low-value="1" high-value="5" value="2" class="lens-size-slider" />
+                        </ui:VisualElement>
+                    </ui:VisualElement>
+
+                    <!-- 好感度セクション -->
+                    <ui:VisualElement class="affection-section">
+                        <ui:Label text="AFFECTION" class="section-title" />
+                        <ui:VisualElement class="affection-display">
+                            <ui:Label name="affection-level" text="Lv.1 知り合い" class="affection-level" />
+                            <ui:VisualElement class="affection-bar-bg">
+                                <ui:VisualElement name="affection-bar-fill" class="affection-bar-fill" />
+                            </ui:VisualElement>
+                            <ui:Label name="affection-value" text="0/50" class="affection-value" />
+                        </ui:VisualElement>
+                    </ui:VisualElement>
+
+                    <!-- プレゼントセクション -->
+                    <ui:VisualElement class="gift-section">
+                        <ui:Label text="GIFT" class="section-title" />
+                        <ui:ScrollView class="gift-scroll" horizontal-scroller-visibility="Hidden">
+                            <ui:VisualElement name="gift-container" class="gift-container">
+                            </ui:VisualElement>
+                        </ui:ScrollView>
+                    </ui:VisualElement>
+
+                </ui:ScrollView>
+
+                <!-- 戻るボタン（固定） -->
                 <ui:Button name="btn-back" text="BACK" class="btn-back" />
 
             </ui:VisualElement>
