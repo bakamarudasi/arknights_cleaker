@@ -369,10 +369,13 @@ public class OperatorUIController : IViewController
         var presenter = OverlayCharacterPresenter.Instance;
         if (presenter == null) return;
 
+        // 透視レベルを適用
+        presenter.SetPenetrateLevel(lensMode);
+
         var lensItem = lensController.CurrentLensItem;
         if (lensItem != null && lensItem.lensSpecs.isLens)
         {
-            Debug.Log($"[Lens] Filter: {lensItem.lensSpecs.filterMode}, Level: {lensMode}");
+            Debug.Log($"[Lens] Applied - Filter: {lensItem.lensSpecs.filterMode}, Level: {lensMode}");
         }
     }
 
