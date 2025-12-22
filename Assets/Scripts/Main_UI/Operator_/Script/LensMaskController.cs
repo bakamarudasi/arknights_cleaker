@@ -69,6 +69,9 @@ public class LensMaskController : MonoBehaviour
         _spriteMask = _maskObject.AddComponent<SpriteMask>();
         _spriteMask.alphaCutoff = 0.5f;
 
+        // 重要: SpriteMaskを全てのソーティングレイヤーに適用
+        _spriteMask.isCustomRangeActive = false;
+
         // フレーム表示用のSpriteRenderer（オプション）
         var frameObj = new GameObject("LensFrame");
         frameObj.transform.SetParent(_maskObject.transform);
