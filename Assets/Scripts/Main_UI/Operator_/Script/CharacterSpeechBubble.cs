@@ -26,6 +26,9 @@ public class CharacterSpeechBubble : MonoBehaviour
     [SerializeField] private float maxWidth = 5f;
     [SerializeField] private float heightPerLine = 0.5f;
 
+    [Header("レイヤー設定")]
+    [SerializeField] private int sortingOrder = 100; // PSBより上に表示
+
     // 状態
     private Coroutine _displayCoroutine;
     private bool _isShowing;
@@ -55,9 +58,15 @@ public class CharacterSpeechBubble : MonoBehaviour
 
         // 初期色を保存
         if (bubbleSprite != null)
+        {
             _originalSpriteColor = bubbleSprite.color;
+            bubbleSprite.sortingOrder = sortingOrder;
+        }
         if (bubbleText != null)
+        {
             _originalTextColor = bubbleText.color;
+            bubbleText.sortingOrder = sortingOrder + 1; // テキストは吹き出しより上
+        }
 
         // 初期状態は非表示
         SetAlpha(0f);
