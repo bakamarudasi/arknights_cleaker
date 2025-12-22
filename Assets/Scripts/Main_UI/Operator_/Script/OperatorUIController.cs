@@ -99,6 +99,8 @@ public class OperatorUIController : IViewController
         lensController = new OperatorLensController();
         lensController.Initialize(root);
         lensController.OnLensModeChanged += OnLensModeChanged;
+        lensController.OnLensShapeChanged += OnLensShapeChanged;
+        lensController.OnLensSizeChanged += OnLensSizeChanged;
 
         // プレゼントコントローラー
         giftController = new OperatorGiftController();
@@ -200,6 +202,18 @@ public class OperatorUIController : IViewController
     private void OnGiftGiven(ItemData item)
     {
         affectionController.UpdateAffectionUI();
+    }
+
+    private void OnLensShapeChanged(LensMaskController.LensShape shape)
+    {
+        var presenter = OverlayCharacterPresenter.Instance;
+        presenter?.SetLensShape(shape);
+    }
+
+    private void OnLensSizeChanged(float size)
+    {
+        var presenter = OverlayCharacterPresenter.Instance;
+        presenter?.SetLensSize(size);
     }
 
     // ========================================
@@ -364,16 +378,61 @@ public class OperatorUIController : IViewController
     // レンズ効果
     // ========================================
 
+    private EventCallback<MouseMoveEvent> callbackLensMouseMove;
+
     private void ApplyLensEffect(int lensMode)
     {
         var presenter = OverlayCharacterPresenter.Instance;
         if (presenter == null) return;
 
+        if (lensMode > 0)
+        {
+            // レンズモードON → SpriteMaskモードを有効化
+            presenter.EnableLensMask(lensMode);
+
+            // マウス追従を開始
+            if (callbackLensMouseMove == null)
+            {
+                callbackLensMouseMove = OnLensMouseMove;
+                characterDisplay?.RegisterCallback(callbackLensMouseMove);
+            }
+        }
+        else
+        {
+            // レンズモードOFF → SpriteMaskモードを無効化
+            presenter.DisableLensMask();
+
+            // マウス追従を停止
+            if (callbackLensMouseMove != null)
+            {
+                characterDisplay?.UnregisterCallback(callbackLensMouseMove);
+                callbackLensMouseMove = null;
+            }
+        }
+
         var lensItem = lensController.CurrentLensItem;
         if (lensItem != null && lensItem.lensSpecs.isLens)
         {
-            Debug.Log($"[Lens] Filter: {lensItem.lensSpecs.filterMode}, Level: {lensMode}");
+            Debug.Log($"[Lens] Applied - Filter: {lensItem.lensSpecs.filterMode}, Level: {lensMode}, MaskMode: {lensMode > 0}");
         }
+    }
+
+    private void OnLensMouseMove(MouseMoveEvent evt)
+    {
+        var presenter = OverlayCharacterPresenter.Instance;
+        if (presenter == null || characterDisplay == null) return;
+
+        Rect contentRect = characterDisplay.contentRect;
+        if (contentRect.width <= 0 || contentRect.height <= 0) return;
+
+        // 正規化座標を計算
+        Vector2 normalizedPos = new Vector2(
+            evt.localMousePosition.x / contentRect.width,
+            evt.localMousePosition.y / contentRect.height
+        );
+
+        // レンズ位置を更新
+        presenter.UpdateLensPosition(normalizedPos);
     }
 
     // ========================================
@@ -424,6 +483,8 @@ public class OperatorUIController : IViewController
         if (lensController != null)
         {
             lensController.OnLensModeChanged -= OnLensModeChanged;
+            lensController.OnLensShapeChanged -= OnLensShapeChanged;
+            lensController.OnLensSizeChanged -= OnLensSizeChanged;
             lensController.Dispose();
         }
 
@@ -449,12 +510,14 @@ public class OperatorUIController : IViewController
         if (callbackOutfit2 != null) btnOutfitSkin2?.UnregisterCallback(callbackOutfit2);
         if (callbackBack != null) btnBack?.UnregisterCallback(callbackBack);
         if (callbackCharacterClick != null) characterDisplay?.UnregisterCallback(callbackCharacterClick);
+        if (callbackLensMouseMove != null) characterDisplay?.UnregisterCallback(callbackLensMouseMove);
 
         callbackOutfit0 = null;
         callbackOutfit1 = null;
         callbackOutfit2 = null;
         callbackBack = null;
         callbackCharacterClick = null;
+        callbackLensMouseMove = null;
 
         LogUIController.LogSystem("Operator View Disposed.");
     }

@@ -93,6 +93,14 @@ public class OverlayCharacterPresenter : MonoBehaviour
     public CharacterPoseData.PoseEntry CurrentPoseEntry =>
         _currentCharacterData?.GetPose(_currentPoseId);
 
+    /// <summary>現在のレイヤーコントローラー</summary>
+    public CharacterLayerController LayerController => _layerController;
+    private CharacterLayerController _layerController;
+
+    /// <summary>レンズマスクコントローラー</summary>
+    public LensMaskController LensMask => _lensMaskController;
+    private LensMaskController _lensMaskController;
+
     // ========================================
     // 初期化
     // ========================================
@@ -260,6 +268,13 @@ public class OverlayCharacterPresenter : MonoBehaviour
 
         // インタラクションゾーンにコライダーがあることを確認
         SetupInteractionZones();
+
+        // レイヤーコントローラーを取得
+        _layerController = _currentInstance.GetComponent<CharacterLayerController>();
+        if (_layerController != null)
+        {
+            Debug.Log($"[Presenter] LayerController found: {_layerController.LayerCount} layers");
+        }
 
         // カメラサイズをキャラに合わせて調整
         AdjustCameraToCharacter();
@@ -587,6 +602,140 @@ public class OverlayCharacterPresenter : MonoBehaviour
         if (_currentInstance == null) return Array.Empty<CharacterInteractionZone>();
         return _currentInstance.GetComponentsInChildren<CharacterInteractionZone>();
     }
+
+    // ========================================
+    // レイヤー制御（透視機能）
+    // ========================================
+
+    /// <summary>
+    /// 透視レベルを設定
+    /// </summary>
+    /// <param name="level">透視レベル（0=通常, 1〜5=透視段階）</param>
+    public void SetPenetrateLevel(int level)
+    {
+        if (_layerController != null)
+        {
+            _layerController.SetPenetrateLevel(level);
+        }
+        else
+        {
+            Debug.LogWarning("[Presenter] LayerController not found on character prefab");
+        }
+    }
+
+    /// <summary>
+    /// 透視レベルを即座に設定（フェードなし）
+    /// </summary>
+    public void SetPenetrateLevelImmediate(int level)
+    {
+        if (_layerController != null)
+        {
+            _layerController.SetPenetrateLevelImmediate(level);
+        }
+    }
+
+    /// <summary>
+    /// 通常表示に戻す
+    /// </summary>
+    public void ResetPenetrateLevel()
+    {
+        SetPenetrateLevel(0);
+    }
+
+    /// <summary>
+    /// 現在の透視レベルを取得
+    /// </summary>
+    public int CurrentPenetrateLevel => _layerController?.CurrentPenetrateLevel ?? 0;
+
+    // ========================================
+    // レンズマスク制御（SpriteMask方式）
+    // ========================================
+
+    /// <summary>
+    /// レンズマスクを初期化
+    /// </summary>
+    private void SetupLensMask()
+    {
+        if (_lensMaskController != null) return;
+
+        var maskObj = new GameObject("LensMaskController");
+        maskObj.transform.SetParent(_cameraRig.transform);
+        maskObj.transform.localPosition = Vector3.zero;
+
+        _lensMaskController = maskObj.AddComponent<LensMaskController>();
+        _lensMaskController.Initialize(characterCamera);
+
+        Debug.Log("[Presenter] LensMask initialized");
+    }
+
+    /// <summary>
+    /// レンズ透視を開始（SpriteMaskモード）
+    /// </summary>
+    /// <param name="penetrateLevel">透視レベル</param>
+    public void EnableLensMask(int penetrateLevel)
+    {
+        if (_lensMaskController == null)
+        {
+            SetupLensMask();
+        }
+
+        // LayerControllerにマスクモードを有効化
+        if (_layerController != null)
+        {
+            _layerController.EnableMaskMode(penetrateLevel);
+        }
+
+        // マスクを表示
+        _lensMaskController?.Show();
+
+        Debug.Log($"[Presenter] LensMask enabled - Level: {penetrateLevel}");
+    }
+
+    /// <summary>
+    /// レンズ透視を終了
+    /// </summary>
+    public void DisableLensMask()
+    {
+        // LayerControllerのマスクモードを無効化
+        if (_layerController != null)
+        {
+            _layerController.DisableMaskMode();
+        }
+
+        // マスクを非表示
+        _lensMaskController?.Hide();
+
+        Debug.Log("[Presenter] LensMask disabled");
+    }
+
+    /// <summary>
+    /// レンズ位置を更新（正規化座標 0-1）
+    /// </summary>
+    public void UpdateLensPosition(Vector2 normalizedPos)
+    {
+        _lensMaskController?.UpdatePositionFromNormalized(normalizedPos);
+    }
+
+    /// <summary>
+    /// レンズの形状を設定
+    /// </summary>
+    public void SetLensShape(LensMaskController.LensShape shape)
+    {
+        _lensMaskController?.SetShape(shape);
+    }
+
+    /// <summary>
+    /// レンズのサイズを設定
+    /// </summary>
+    public void SetLensSize(float size)
+    {
+        _lensMaskController?.SetSize(size);
+    }
+
+    /// <summary>
+    /// レンズマスクがアクティブか
+    /// </summary>
+    public bool IsLensMaskActive => _lensMaskController?.IsActive ?? false;
 
     // ========================================
     // 互換性メソッド
