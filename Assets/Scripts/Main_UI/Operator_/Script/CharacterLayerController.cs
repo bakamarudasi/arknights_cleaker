@@ -40,9 +40,17 @@ public class CharacterLayerController : MonoBehaviour
     [SerializeField]
     private List<LayerEntry> layers = new List<LayerEntry>();
 
+    [Header("=== SpriteMaskモード設定 ===")]
+    [Tooltip("SpriteMaskを使用したレンズ透視モードを有効にするか")]
+    [SerializeField]
+    private bool useMaskMode = true;
+
     [Header("=== 状態 ===")]
     [SerializeField, ReadOnly]
     private int _currentPenetrateLevel = 0;
+
+    [SerializeField, ReadOnly]
+    private bool _isMaskModeActive = false;
 
     // フェード処理用
     private Dictionary<SpriteRenderer, Coroutine> _fadeCoroutines = new Dictionary<SpriteRenderer, Coroutine>();
@@ -53,6 +61,8 @@ public class CharacterLayerController : MonoBehaviour
     // プロパティ
     public int CurrentPenetrateLevel => _currentPenetrateLevel;
     public IReadOnlyList<LayerEntry> Layers => layers;
+    public bool UseMaskMode => useMaskMode;
+    public bool IsMaskModeActive => _isMaskModeActive;
 
     // ========================================
     // 初期化
@@ -171,6 +181,115 @@ public class CharacterLayerController : MonoBehaviour
     public void ResetToNormal()
     {
         SetPenetrateLevelImmediate(0);
+        DisableMaskMode();
+    }
+
+    // ========================================
+    // SpriteMaskモード（レンズ透視）
+    // ========================================
+
+    /// <summary>
+    /// SpriteMaskモードを有効化（レンズ透視開始）
+    /// </summary>
+    /// <param name="penetrateLevel">透視レベル</param>
+    public void EnableMaskMode(int penetrateLevel)
+    {
+        if (!useMaskMode) return;
+
+        _isMaskModeActive = true;
+        _currentPenetrateLevel = Mathf.Clamp(penetrateLevel, 1, 5);
+
+        // 全スプライトのアルファを1に戻す
+        RestoreAllAlpha();
+
+        // MaskInteractionを設定
+        ApplyMaskInteraction(_currentPenetrateLevel);
+
+        Debug.Log($"[LayerController] MaskMode enabled - Level: {_currentPenetrateLevel}");
+    }
+
+    /// <summary>
+    /// SpriteMaskモードを無効化（通常表示に戻す）
+    /// </summary>
+    public void DisableMaskMode()
+    {
+        if (!_isMaskModeActive) return;
+
+        _isMaskModeActive = false;
+        _currentPenetrateLevel = 0;
+
+        // MaskInteractionをNoneに戻す
+        ClearMaskInteraction();
+
+        Debug.Log("[LayerController] MaskMode disabled");
+    }
+
+    /// <summary>
+    /// 透視レベルに応じてMaskInteractionを設定
+    /// </summary>
+    private void ApplyMaskInteraction(int level)
+    {
+        foreach (var layer in layers)
+        {
+            // 透視対象（このレベルで消えるべきレイヤー）
+            bool isXRayTarget = layer.hideAtPenetrateLevel > 0 && level >= layer.hideAtPenetrateLevel;
+
+            SpriteMaskInteraction interaction;
+            if (isXRayTarget)
+            {
+                // 透視対象 → マスク外でのみ表示（マスク内で消える）
+                interaction = SpriteMaskInteraction.VisibleOutsideMask;
+            }
+            else
+            {
+                // 透視結果（body等）→ マスク内でのみ表示
+                // ただし hideAtPenetrateLevel = 0 のものは常に表示したいので None
+                if (layer.hideAtPenetrateLevel == 0)
+                {
+                    interaction = SpriteMaskInteraction.None;
+                }
+                else
+                {
+                    interaction = SpriteMaskInteraction.VisibleInsideMask;
+                }
+            }
+
+            foreach (var sprite in layer.sprites)
+            {
+                if (sprite == null) continue;
+                sprite.maskInteraction = interaction;
+            }
+        }
+    }
+
+    /// <summary>
+    /// 全スプライトのMaskInteractionをNoneに戻す
+    /// </summary>
+    private void ClearMaskInteraction()
+    {
+        foreach (var layer in layers)
+        {
+            foreach (var sprite in layer.sprites)
+            {
+                if (sprite == null) continue;
+                sprite.maskInteraction = SpriteMaskInteraction.None;
+            }
+        }
+    }
+
+    /// <summary>
+    /// 全スプライトのアルファを1に戻す
+    /// </summary>
+    private void RestoreAllAlpha()
+    {
+        foreach (var layer in layers)
+        {
+            foreach (var sprite in layer.sprites)
+            {
+                if (sprite == null) continue;
+                SetSpriteAlpha(sprite, 1f);
+            }
+        }
     }
 
     /// <summary>

@@ -97,6 +97,10 @@ public class OverlayCharacterPresenter : MonoBehaviour
     public CharacterLayerController LayerController => _layerController;
     private CharacterLayerController _layerController;
 
+    /// <summary>レンズマスクコントローラー</summary>
+    public LensMaskController LensMask => _lensMaskController;
+    private LensMaskController _lensMaskController;
+
     // ========================================
     // 初期化
     // ========================================
@@ -642,6 +646,96 @@ public class OverlayCharacterPresenter : MonoBehaviour
     /// 現在の透視レベルを取得
     /// </summary>
     public int CurrentPenetrateLevel => _layerController?.CurrentPenetrateLevel ?? 0;
+
+    // ========================================
+    // レンズマスク制御（SpriteMask方式）
+    // ========================================
+
+    /// <summary>
+    /// レンズマスクを初期化
+    /// </summary>
+    private void SetupLensMask()
+    {
+        if (_lensMaskController != null) return;
+
+        var maskObj = new GameObject("LensMaskController");
+        maskObj.transform.SetParent(_cameraRig.transform);
+        maskObj.transform.localPosition = Vector3.zero;
+
+        _lensMaskController = maskObj.AddComponent<LensMaskController>();
+        _lensMaskController.Initialize(characterCamera);
+
+        Debug.Log("[Presenter] LensMask initialized");
+    }
+
+    /// <summary>
+    /// レンズ透視を開始（SpriteMaskモード）
+    /// </summary>
+    /// <param name="penetrateLevel">透視レベル</param>
+    public void EnableLensMask(int penetrateLevel)
+    {
+        if (_lensMaskController == null)
+        {
+            SetupLensMask();
+        }
+
+        // LayerControllerにマスクモードを有効化
+        if (_layerController != null)
+        {
+            _layerController.EnableMaskMode(penetrateLevel);
+        }
+
+        // マスクを表示
+        _lensMaskController?.Show();
+
+        Debug.Log($"[Presenter] LensMask enabled - Level: {penetrateLevel}");
+    }
+
+    /// <summary>
+    /// レンズ透視を終了
+    /// </summary>
+    public void DisableLensMask()
+    {
+        // LayerControllerのマスクモードを無効化
+        if (_layerController != null)
+        {
+            _layerController.DisableMaskMode();
+        }
+
+        // マスクを非表示
+        _lensMaskController?.Hide();
+
+        Debug.Log("[Presenter] LensMask disabled");
+    }
+
+    /// <summary>
+    /// レンズ位置を更新（正規化座標 0-1）
+    /// </summary>
+    public void UpdateLensPosition(Vector2 normalizedPos)
+    {
+        _lensMaskController?.UpdatePositionFromNormalized(normalizedPos);
+    }
+
+    /// <summary>
+    /// レンズの形状を設定
+    /// </summary>
+    public void SetLensShape(LensMaskController.LensShape shape)
+    {
+        _lensMaskController?.SetShape(shape);
+    }
+
+    /// <summary>
+    /// レンズのサイズを設定
+    /// </summary>
+    public void SetLensSize(float size)
+    {
+        _lensMaskController?.SetSize(size);
+    }
+
+    /// <summary>
+    /// レンズマスクがアクティブか
+    /// </summary>
+    public bool IsLensMaskActive => _lensMaskController?.IsActive ?? false;
 
     // ========================================
     // 互換性メソッド
