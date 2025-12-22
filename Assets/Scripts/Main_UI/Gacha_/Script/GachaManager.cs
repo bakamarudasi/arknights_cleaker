@@ -182,7 +182,8 @@ public class GachaManager : MonoBehaviour
 
         foreach (var entry in pool)
         {
-            float weight = entry.weight;
+            // weightが0以下の場合はデフォルト値1を使用（設定ミス対策）
+            float weight = entry.weight > 0 ? entry.weight : 1f;
 
             // 在庫チェック：在庫切れは重み0
             if (entry.HasStockLimit && entry.item != null)
