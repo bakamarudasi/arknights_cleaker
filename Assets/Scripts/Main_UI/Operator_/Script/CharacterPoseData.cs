@@ -57,6 +57,16 @@ public class CharacterPoseData : ScriptableObject
 
         [Tooltip("解放に必要な好感度レベル（将来の拡張用）")]
         public int requiredAffectionLevel = 0;
+
+        [Header("=== UI設定 ===")]
+        [Tooltip("サイドパネルを非表示にする（フルスクリーンモード）")]
+        public bool hideSidePanel = false;
+
+        [Tooltip("戻るボタンを非表示にする")]
+        public bool hideBackButton = false;
+
+        [Tooltip("カスタムシーンUIのタイプ（空の場合はデフォルト）")]
+        public string sceneUIType = "";
     }
 
     // ========================================

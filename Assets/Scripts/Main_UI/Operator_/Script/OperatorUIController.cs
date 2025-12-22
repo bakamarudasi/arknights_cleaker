@@ -28,6 +28,14 @@ public class OperatorUIController : IViewController
     private OperatorAffectionController affectionController;
 
     // ========================================
+    // シーンUI（ポーズ/シーンに応じたUI切り替え）
+    // ========================================
+
+    private ISceneUI _currentSceneUI;
+    private DefaultSceneUI _defaultSceneUI;
+    private FullscreenSceneUI _fullscreenSceneUI;
+
+    // ========================================
     // 状態
     // ========================================
 
@@ -60,6 +68,7 @@ public class OperatorUIController : IViewController
 
         QueryElements();
         InitializeSubControllers();
+        InitializeSceneUIs();
         SetupCallbacks();
         SubscribeToEvents();
 
@@ -68,6 +77,9 @@ public class OperatorUIController : IViewController
 
         // 初期表示
         UpdateOutfitButtons();
+
+        // 初期シーンUIを表示
+        ApplyCurrentPoseUI();
 
         LogUIController.LogSystem("Operator View Initialized.");
     }
@@ -96,6 +108,20 @@ public class OperatorUIController : IViewController
         // 好感度コントローラー
         affectionController = new OperatorAffectionController();
         affectionController.Initialize(root);
+    }
+
+    private void InitializeSceneUIs()
+    {
+        // デフォルトシーンUI
+        _defaultSceneUI = new DefaultSceneUI();
+        _defaultSceneUI.Initialize(root);
+
+        // フルスクリーンシーンUI
+        _fullscreenSceneUI = new FullscreenSceneUI();
+        _fullscreenSceneUI.Initialize(root);
+
+        // 初期状態はデフォルト
+        _currentSceneUI = _defaultSceneUI;
     }
 
     private void SetupCallbacks()
@@ -128,6 +154,12 @@ public class OperatorUIController : IViewController
         {
             InventoryManager.Instance.OnItemCountChanged += OnItemCountChanged;
         }
+
+        // Presenterのポーズ変更イベント
+        if (OverlayCharacterPresenter.Instance != null)
+        {
+            OverlayCharacterPresenter.Instance.OnPoseChanged += OnPoseChanged;
+        }
     }
 
     private void UnsubscribeFromEvents()
@@ -140,6 +172,12 @@ public class OperatorUIController : IViewController
         if (InventoryManager.Instance != null)
         {
             InventoryManager.Instance.OnItemCountChanged -= OnItemCountChanged;
+        }
+
+        // Presenterのポーズ変更イベント解除
+        if (OverlayCharacterPresenter.Instance != null)
+        {
+            OverlayCharacterPresenter.Instance.OnPoseChanged -= OnPoseChanged;
         }
     }
 
@@ -163,6 +201,50 @@ public class OperatorUIController : IViewController
     {
         affectionController.UpdateAffectionUI();
     }
+
+    // ========================================
+    // シーンUI切り替え
+    // ========================================
+
+    private void OnPoseChanged(string poseId)
+    {
+        ApplyCurrentPoseUI();
+    }
+
+    /// <summary>
+    /// 現在のポーズに応じたUIを適用
+    /// </summary>
+    private void ApplyCurrentPoseUI()
+    {
+        var presenter = OverlayCharacterPresenter.Instance;
+        if (presenter == null) return;
+
+        var poseEntry = presenter.CurrentPoseEntry;
+
+        // 現在のシーンUIを非表示
+        _currentSceneUI?.Hide();
+
+        // ポーズ設定に応じてシーンUIを選択
+        if (poseEntry != null && poseEntry.hideSidePanel)
+        {
+            _fullscreenSceneUI.SetHideBackButton(poseEntry.hideBackButton);
+            _currentSceneUI = _fullscreenSceneUI;
+        }
+        else
+        {
+            _currentSceneUI = _defaultSceneUI;
+        }
+
+        // 新しいシーンUIを表示
+        _currentSceneUI?.Show();
+
+        UnityEngine.Debug.Log($"[OperatorUI] Scene UI switched: {_currentSceneUI?.GetType().Name}");
+    }
+
+    /// <summary>
+    /// 現在のシーンUIを取得
+    /// </summary>
+    public ISceneUI CurrentSceneUI => _currentSceneUI;
 
     // ========================================
     // キャラクター表示
@@ -352,6 +434,14 @@ public class OperatorUIController : IViewController
         }
 
         affectionController?.Dispose();
+
+        // シーンUIの解放
+        _currentSceneUI?.Hide();
+        _defaultSceneUI?.Dispose();
+        _fullscreenSceneUI?.Dispose();
+        _currentSceneUI = null;
+        _defaultSceneUI = null;
+        _fullscreenSceneUI = null;
 
         // コールバック解除
         if (callbackOutfit0 != null) btnOutfitDefault?.UnregisterCallback(callbackOutfit0);
