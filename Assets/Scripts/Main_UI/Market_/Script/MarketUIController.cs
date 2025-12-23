@@ -544,18 +544,14 @@ public class MarketUIController : IViewController
     {
         RefreshPortfolioList();
         RefreshAssetPanel();
-        LogUIController.Msg($"📈 {stockId} を {quantity} 株購入 (-{totalCost:N0} LMD)");
+        // 通知は MarketNotificationManager が担当（2重通知防止）
     }
 
     private void OnStockSold(string stockId, int quantity, double totalReturn, double profitLoss)
     {
         RefreshPortfolioList();
         RefreshAssetPanel();
-
-        string resultText = profitLoss >= 0
-            ? $"利確 +{profitLoss:N0} 🚀"
-            : $"損切り {profitLoss:N0} 💀";
-        LogUIController.Msg($"📉 {stockId} を {quantity} 株売却 ({resultText})");
+        // 通知は MarketNotificationManager が担当（2重通知防止）
     }
 
     private void OnPriceCrash(string stockId, double changeRate)
@@ -579,14 +575,8 @@ public class MarketUIController : IViewController
 
     private void OnNewsGenerated(MarketNews news)
     {
-        string prefix = news.type switch
-        {
-            MarketNewsType.Positive => "📈",
-            MarketNewsType.Negative => "📉",
-            MarketNewsType.Breaking => "🔴",
-            _ => "📰"
-        };
-        LogUIController.Msg($"{prefix} {news.text}");
+        // 通知は MarketNotificationManager が担当（2重通知防止）
+        // UI側ではニュースティッカーなど別途視覚的な表示があれば更新する
     }
 
     private void OnMoneyChanged(double amount)

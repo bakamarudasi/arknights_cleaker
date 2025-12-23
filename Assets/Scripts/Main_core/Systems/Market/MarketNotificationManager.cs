@@ -107,6 +107,8 @@ public class MarketNotificationManager : MonoBehaviour
     {
         if (!showNewsNotification) return;
 
+        MarketSound.Instance?.PlayNews();
+
         string prefix = news.type switch
         {
             MarketNewsType.Positive => "📈",
@@ -135,6 +137,8 @@ public class MarketNotificationManager : MonoBehaviour
     {
         if (!showPriceAlertNotification) return;
 
+        MarketSound.Instance?.PlaySurge();
+
         string stockName = GetStockName(stockId);
         LogUIController.Msg($"<color=#4ade80>🚀 {stockName} が急騰！ +{changeRate:P1}</color>");
     }
@@ -142,6 +146,8 @@ public class MarketNotificationManager : MonoBehaviour
     private void OnPriceCrash(string stockId, double changeRate)
     {
         if (!showPriceAlertNotification) return;
+
+        MarketSound.Instance?.PlayCrash();
 
         string stockName = GetStockName(stockId);
         LogUIController.Msg($"<color=#ef4444>💥 {stockName} が暴落！ {changeRate:P1}</color>");
@@ -155,6 +161,8 @@ public class MarketNotificationManager : MonoBehaviour
     {
         if (!showTradeNotification) return;
 
+        MarketSound.Instance?.PlayBuy();
+
         string stockName = GetStockName(stockId);
         LogUIController.Msg($"<color=#4ade80>📈 {stockName} を {quantity} 株購入 (-{totalCost:N0} LMD)</color>");
     }
@@ -162,6 +170,8 @@ public class MarketNotificationManager : MonoBehaviour
     private void OnStockSold(string stockId, int quantity, double totalReturn, double profitLoss)
     {
         if (!showTradeNotification) return;
+
+        MarketSound.Instance?.PlaySell(profitLoss >= 0);
 
         string stockName = GetStockName(stockId);
         string resultText = profitLoss >= 0
@@ -178,6 +188,8 @@ public class MarketNotificationManager : MonoBehaviour
     private void OnDividendPaid(DividendPayment payment)
     {
         if (!showDividendNotification) return;
+
+        MarketSound.Instance?.PlayDividend();
 
         string rankName = RhodosStockManager.GetRankDisplayName(payment.rank);
         string rewards = "";
@@ -202,6 +214,8 @@ public class MarketNotificationManager : MonoBehaviour
     {
         if (!showEventNotification) return;
 
+        MarketSound.Instance?.PlayDefenseStart();
+
         string stockName = GetStockName(data.targetStockId);
         LogUIController.Msg($"<color=#ef4444>⚠️ 緊急イベント発生！ {data.title} ({stockName})</color>");
     }
@@ -209,6 +223,8 @@ public class MarketNotificationManager : MonoBehaviour
     private void OnMarketEventEnded(MarketEventSnapshot data, bool success)
     {
         if (!showEventNotification) return;
+
+        MarketSound.Instance?.PlayDefenseResult(success);
 
         if (success)
         {
@@ -224,6 +240,8 @@ public class MarketNotificationManager : MonoBehaviour
     {
         if (!showEventNotification) return;
 
+        MarketSound.Instance?.PlayTakeoverStart();
+
         string stockName = GetStockName(data.targetStockId);
         LogUIController.Msg($"<color=#a855f7>⚔️ 敵対的買収発生！ {data.attackerName} が {stockName} を狙っています！</color>");
     }
@@ -231,6 +249,8 @@ public class MarketNotificationManager : MonoBehaviour
     private void OnTakeoverEnded(TakeoverEventData data, bool playerWon)
     {
         if (!showEventNotification) return;
+
+        MarketSound.Instance?.PlayTakeoverResult(playerWon);
 
         if (playerWon)
         {
@@ -260,6 +280,8 @@ public class MarketNotificationManager : MonoBehaviour
 
     private void OnStockUnlocked(string stockId)
     {
+        MarketSound.Instance?.PlayUnlock();
+
         string stockName = GetStockName(stockId);
         LogUIController.Msg($"<color=#a855f7>🔓 新銘柄「{stockName}」が解放されました！</color>");
     }
