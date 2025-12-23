@@ -600,6 +600,90 @@
 }
 
 /* ========================================= */
+/* Talk Section                             */
+/* ========================================= */
+
+.btn-random-talk {
+    height: 40px;
+    margin-bottom: 10px;
+    background-color: rgba(180, 140, 255, 0.12);
+    border-width: 1px;
+    border-color: rgba(180, 140, 255, 0.3);
+    border-radius: 6px;
+    color: #b48cff;
+    font-size: 12px;
+    letter-spacing: 1px;
+    transition-duration: 0.2s;
+}
+
+.btn-random-talk:hover {
+    background-color: rgba(180, 140, 255, 0.25);
+    border-color: #b48cff;
+    color: #ffffff;
+}
+
+.talk-scroll {
+    max-height: 150px;
+    background-color: rgba(255, 255, 255, 0.02);
+    border-width: 1px;
+    border-color: rgba(255, 255, 255, 0.05);
+    border-radius: 4px;
+}
+
+.talk-list-container {
+    padding: 6px;
+}
+
+.talk-item {
+    height: 36px;
+    margin-bottom: 4px;
+    padding: 0 10px;
+    background-color: rgba(255, 255, 255, 0.03);
+    border-width: 1px;
+    border-color: rgba(255, 255, 255, 0.08);
+    border-radius: 4px;
+    flex-direction: row;
+    align-items: center;
+    justify-content: space-between;
+    transition-duration: 0.15s;
+}
+
+.talk-item:hover {
+    background-color: rgba(180, 140, 255, 0.1);
+    border-color: rgba(180, 140, 255, 0.3);
+}
+
+.talk-item.locked {
+    opacity: 0.5;
+}
+
+.talk-item-title {
+    font-size: 11px;
+    color: #cccccc;
+    flex-grow: 1;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.talk-item-status {
+    font-size: 9px;
+    color: #888888;
+    margin-left: 8px;
+}
+
+.talk-item.locked .talk-item-status {
+    color: #ff6666;
+}
+
+.talk-empty-text {
+    font-size: 10px;
+    color: #555555;
+    -unity-font-style: italic;
+    padding: 12px;
+    -unity-text-align: middle-center;
+}
+
+/* ========================================= */
 /* Back Button                              */
 /* ========================================= */
 

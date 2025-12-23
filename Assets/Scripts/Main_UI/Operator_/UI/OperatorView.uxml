@@ -47,6 +47,9 @@
                     <ui:Button name="tab-icon-gift" class="tab-icon" tooltip="プレゼント">
                         <ui:Label text="🎁" class="tab-icon-emoji" />
                     </ui:Button>
+                    <ui:Button name="tab-icon-talk" class="tab-icon" tooltip="会話">
+                        <ui:Label text="💬" class="tab-icon-emoji" />
+                    </ui:Button>
                 </ui:VisualElement>
 
                 <!-- スクロール可能なコンテンツエリア -->
@@ -114,6 +117,24 @@
                             </ui:VisualElement>
                             <ui:ScrollView class="gift-scroll" horizontal-scroller-visibility="Hidden">
                                 <ui:VisualElement name="gift-container" class="gift-container">
+                                </ui:VisualElement>
+                            </ui:ScrollView>
+                        </ui:VisualElement>
+
+                        <!-- 会話タブ -->
+                        <ui:VisualElement name="tab-talk" class="tab-content hidden">
+                            <ui:VisualElement class="tab-header">
+                                <ui:Label text="TALK" class="section-title" />
+                                <ui:Button name="btn-close-talk" text="✕" class="btn-tab-close" />
+                            </ui:VisualElement>
+
+                            <!-- ランダム雑談ボタン -->
+                            <ui:Button name="btn-random-talk" text="RANDOM TALK" class="btn-random-talk" />
+
+                            <!-- 会話リスト -->
+                            <ui:Label text="CONVERSATIONS" class="section-title-small" />
+                            <ui:ScrollView class="talk-scroll" horizontal-scroller-visibility="Hidden">
+                                <ui:VisualElement name="talk-list-container" class="talk-list-container">
                                 </ui:VisualElement>
                             </ui:ScrollView>
                         </ui:VisualElement>

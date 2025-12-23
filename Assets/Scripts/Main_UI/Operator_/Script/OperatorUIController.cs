@@ -23,12 +23,15 @@ public class OperatorUIController : IViewController
     private Button tabIconOutfit;
     private Button tabIconLens;
     private Button tabIconGift;
+    private Button tabIconTalk;
     private VisualElement tabOutfit;
     private VisualElement tabLens;
     private VisualElement tabGift;
+    private VisualElement tabTalk;
     private Button btnCloseOutfit;
     private Button btnCloseLens;
     private Button btnCloseGift;
+    private Button btnCloseTalk;
 
     // ========================================
     // サブコントローラー（分離された責任）
@@ -37,6 +40,7 @@ public class OperatorUIController : IViewController
     private OperatorLensController lensController;
     private OperatorGiftController giftController;
     private OperatorAffectionController affectionController;
+    private OperatorTalkController talkController;
 
     // ========================================
     // シーンUI（ポーズ/シーンに応じたUI切り替え）
@@ -67,9 +71,11 @@ public class OperatorUIController : IViewController
     private EventCallback<ClickEvent> callbackTabOutfit;
     private EventCallback<ClickEvent> callbackTabLens;
     private EventCallback<ClickEvent> callbackTabGift;
+    private EventCallback<ClickEvent> callbackTabTalk;
     private EventCallback<ClickEvent> callbackCloseOutfit;
     private EventCallback<ClickEvent> callbackCloseLens;
     private EventCallback<ClickEvent> callbackCloseGift;
+    private EventCallback<ClickEvent> callbackCloseTalk;
 
     // ========================================
     // イベント
@@ -100,6 +106,9 @@ public class OperatorUIController : IViewController
         // 初期シーンUIを表示
         ApplyCurrentPoseUI();
 
+        // 会話リストの初期化
+        UpdateTalkControllerForCurrentPose();
+
         LogUIController.LogSystem("Operator View Initialized.");
     }
 
@@ -115,12 +124,15 @@ public class OperatorUIController : IViewController
         tabIconOutfit = root.Q<Button>("tab-icon-outfit");
         tabIconLens = root.Q<Button>("tab-icon-lens");
         tabIconGift = root.Q<Button>("tab-icon-gift");
+        tabIconTalk = root.Q<Button>("tab-icon-talk");
         tabOutfit = root.Q<VisualElement>("tab-outfit");
         tabLens = root.Q<VisualElement>("tab-lens");
         tabGift = root.Q<VisualElement>("tab-gift");
+        tabTalk = root.Q<VisualElement>("tab-talk");
         btnCloseOutfit = root.Q<Button>("btn-close-outfit");
         btnCloseLens = root.Q<Button>("btn-close-lens");
         btnCloseGift = root.Q<Button>("btn-close-gift");
+        btnCloseTalk = root.Q<Button>("btn-close-talk");
     }
 
     private void InitializeSubControllers()
@@ -140,6 +152,12 @@ public class OperatorUIController : IViewController
         // 好感度コントローラー
         affectionController = new OperatorAffectionController();
         affectionController.Initialize(root);
+
+        // 会話コントローラー
+        talkController = new OperatorTalkController();
+        talkController.Initialize(root);
+        talkController.OnConversationStarted += OnConversationStarted;
+        talkController.OnConversationEnded += OnConversationEnded;
     }
 
     private void InitializeSceneUIs()
@@ -174,16 +192,20 @@ public class OperatorUIController : IViewController
         callbackTabOutfit = evt => ToggleTab("outfit");
         callbackTabLens = evt => ToggleTab("lens");
         callbackTabGift = evt => ToggleTab("gift");
+        callbackTabTalk = evt => ToggleTab("talk");
         callbackCloseOutfit = evt => CloseTab("outfit");
         callbackCloseLens = evt => CloseTab("lens");
         callbackCloseGift = evt => CloseTab("gift");
+        callbackCloseTalk = evt => CloseTab("talk");
 
         tabIconOutfit?.RegisterCallback(callbackTabOutfit);
         tabIconLens?.RegisterCallback(callbackTabLens);
         tabIconGift?.RegisterCallback(callbackTabGift);
+        tabIconTalk?.RegisterCallback(callbackTabTalk);
         btnCloseOutfit?.RegisterCallback(callbackCloseOutfit);
         btnCloseLens?.RegisterCallback(callbackCloseLens);
         btnCloseGift?.RegisterCallback(callbackCloseGift);
+        btnCloseTalk?.RegisterCallback(callbackCloseTalk);
     }
 
     // ========================================
@@ -267,6 +289,18 @@ public class OperatorUIController : IViewController
         affectionController.UpdateAffectionUI();
     }
 
+    private void OnConversationStarted(PoseConversation conv)
+    {
+        Debug.Log($"[OperatorUI] Conversation started: {conv.title}");
+    }
+
+    private void OnConversationEnded()
+    {
+        Debug.Log("[OperatorUI] Conversation ended");
+        // 好感度が上がった可能性があるので更新
+        affectionController?.UpdateAffectionUI();
+    }
+
     private void OnLensShapeChanged(LensMaskController.LensShape shape)
     {
         var presenter = OverlayCharacterPresenter.Instance;
@@ -286,6 +320,20 @@ public class OperatorUIController : IViewController
     private void OnPoseChanged(string poseId)
     {
         ApplyCurrentPoseUI();
+        UpdateTalkControllerForCurrentPose();
+    }
+
+    private void UpdateTalkControllerForCurrentPose()
+    {
+        if (talkController == null) return;
+
+        var presenter = OverlayCharacterPresenter.Instance;
+        if (presenter == null) return;
+
+        var characterId = presenter.CurrentCharacterData?.characterId;
+        var poseEntry = presenter.CurrentPoseEntry;
+
+        talkController.UpdateForPose(characterId, poseEntry);
     }
 
     /// <summary>
@@ -534,6 +582,7 @@ public class OperatorUIController : IViewController
             "outfit" => (tabOutfit, tabIconOutfit),
             "lens" => (tabLens, tabIconLens),
             "gift" => (tabGift, tabIconGift),
+            "talk" => (tabTalk, tabIconTalk),
             _ => (null, null)
         };
     }
@@ -660,6 +709,13 @@ public class OperatorUIController : IViewController
 
         affectionController?.Dispose();
 
+        if (talkController != null)
+        {
+            talkController.OnConversationStarted -= OnConversationStarted;
+            talkController.OnConversationEnded -= OnConversationEnded;
+            talkController.Dispose();
+        }
+
         // シーンUIの解放
         _currentSceneUI?.Hide();
         _defaultSceneUI?.Dispose();
@@ -680,9 +736,11 @@ public class OperatorUIController : IViewController
         if (callbackTabOutfit != null) tabIconOutfit?.UnregisterCallback(callbackTabOutfit);
         if (callbackTabLens != null) tabIconLens?.UnregisterCallback(callbackTabLens);
         if (callbackTabGift != null) tabIconGift?.UnregisterCallback(callbackTabGift);
+        if (callbackTabTalk != null) tabIconTalk?.UnregisterCallback(callbackTabTalk);
         if (callbackCloseOutfit != null) btnCloseOutfit?.UnregisterCallback(callbackCloseOutfit);
         if (callbackCloseLens != null) btnCloseLens?.UnregisterCallback(callbackCloseLens);
         if (callbackCloseGift != null) btnCloseGift?.UnregisterCallback(callbackCloseGift);
+        if (callbackCloseTalk != null) btnCloseTalk?.UnregisterCallback(callbackCloseTalk);
 
         callbackOutfit0 = null;
         callbackOutfit1 = null;
@@ -693,9 +751,11 @@ public class OperatorUIController : IViewController
         callbackTabOutfit = null;
         callbackTabLens = null;
         callbackTabGift = null;
+        callbackTabTalk = null;
         callbackCloseOutfit = null;
         callbackCloseLens = null;
         callbackCloseGift = null;
+        callbackCloseTalk = null;
 
         LogUIController.LogSystem("Operator View Disposed.");
     }
