@@ -248,17 +248,9 @@ public class TradeHistoryManager : MonoBehaviour
 
         string result = $"{time} | {typeIcon} {record.stockName} {typeText} {record.quantity}株 @ {record.pricePerShare:N0}";
 
-        if (record.type == TradeType.Sell)
-        {
-            string plText = record.profitLoss >= 0
-                ? $"<color=#4ade80>+{record.profitLoss:N0}</color>"
-                : $"<color=#ef4444>{record.profitLoss:N0}</color>";
-            result += $" ({plText})";
-        }
-        else
-        {
-            result += $" (-{record.totalAmount:N0} LMD)";
-        }
+        result += record.type == TradeType.Sell
+            ? $" ({FormatPnL(record.profitLoss)})"
+            : $" (-{record.totalAmount:N0} LMD)";
 
         return result;
     }
@@ -270,12 +262,9 @@ public class TradeHistoryManager : MonoBehaviour
     {
         var stats = GetStatistics();
 
-        string plColor = stats.totalProfitLoss >= 0 ? "#4ade80" : "#ef4444";
-        string plSign = stats.totalProfitLoss >= 0 ? "+" : "";
-
         return $"取引回数: {stats.totalTrades} (買{stats.totalBuys}/売{stats.totalSells})\n" +
                $"勝率: {stats.winRate:P1} ({stats.winCount}勝 {stats.lossCount}敗)\n" +
-               $"<color={plColor}>総損益: {plSign}{stats.totalProfitLoss:N0} LMD</color>\n" +
+               $"{FormatPnLWithLabel(stats.totalProfitLoss, "総損益")}\n" +
                $"PF: {stats.profitFactor:F2}";
     }
 
@@ -314,9 +303,7 @@ public class TradeHistoryManager : MonoBehaviour
             }
         }
 
-        string pnlColor = dailyPnL >= 0 ? "#4ade80" : "#ef4444";
-        string pnlSign = dailyPnL >= 0 ? "+" : "";
-        lines.Add($"<color={pnlColor}>日計: {pnlSign}{dailyPnL:N0} LMD</color>");
+        lines.Add(FormatPnLWithLabel(dailyPnL, "日計"));
 
         return string.Join("\n", lines);
     }
@@ -359,13 +346,10 @@ public class TradeHistoryManager : MonoBehaviour
     /// </summary>
     public string FormatStockSummary(StockTradeSummary summary)
     {
-        string pnlColor = summary.totalProfitLoss >= 0 ? "#4ade80" : "#ef4444";
-        string pnlSign = summary.totalProfitLoss >= 0 ? "+" : "";
-
         return $"{summary.stockName}\n" +
                $"  取引: {summary.buyCount + summary.sellCount}回 (買{summary.buyCount}/売{summary.sellCount})\n" +
                $"  勝率: {summary.winRate:P0} ({summary.winCount}勝{summary.lossCount}敗)\n" +
-               $"  <color={pnlColor}>損益: {pnlSign}{summary.totalProfitLoss:N0}</color>";
+               $"  {FormatPnLWithLabel(summary.totalProfitLoss, "損益")}";
     }
 
     /// <summary>
@@ -407,13 +391,10 @@ public class TradeHistoryManager : MonoBehaviour
         int losses = sells.Count(r => r.profitLoss < 0);
         double winRate = sells.Count > 0 ? (double)wins / sells.Count : 0;
 
-        string pnlColor = pnl >= 0 ? "#4ade80" : "#ef4444";
-        string pnlSign = pnl >= 0 ? "+" : "";
-
         return $"【{periodName}の成績】\n" +
                $"取引: {periodRecords.Count}回\n" +
                $"勝率: {winRate:P0} ({wins}勝{losses}敗)\n" +
-               $"<color={pnlColor}>損益: {pnlSign}{pnl:N0} LMD</color>";
+               $"{FormatPnLWithLabel(pnl, "損益")}";
     }
 
     /// <summary>
@@ -429,9 +410,7 @@ public class TradeHistoryManager : MonoBehaviour
 
         if (record.type == TradeType.Sell)
         {
-            string pnlColor = record.profitLoss >= 0 ? "#4ade80" : "#ef4444";
-            string pnlSign = record.profitLoss >= 0 ? "+" : "";
-            result += $" <color={pnlColor}>{pnlSign}{record.profitLoss:N0}</color>";
+            result += $" {FormatPnL(record.profitLoss)}";
         }
 
         return result;
@@ -455,9 +434,7 @@ public class TradeHistoryManager : MonoBehaviour
 
         if (record.type == TradeType.Sell)
         {
-            string pnlColor = record.profitLoss >= 0 ? "#4ade80" : "#ef4444";
-            string pnlSign = record.profitLoss >= 0 ? "+" : "";
-            lines.Add($"<color={pnlColor}>損益: {pnlSign}{record.profitLoss:N0} LMD</color>");
+            lines.Add(FormatPnLWithLabel(record.profitLoss, "損益"));
         }
 
         return string.Join("\n", lines);
@@ -471,6 +448,33 @@ public class TradeHistoryManager : MonoBehaviour
     {
         var stock = MarketManager.Instance?.stockDatabase?.GetByStockId(stockId);
         return stock != null ? stock.companyName : stockId;
+    }
+
+    // ========================================
+    // PnLフォーマットヘルパー（重複解消）
+    // ========================================
+
+    private const string PnLPositiveColor = "#4ade80";
+    private const string PnLNegativeColor = "#ef4444";
+
+    /// <summary>
+    /// PnLを色付きテキストにフォーマット
+    /// </summary>
+    private static string FormatPnL(double pnl, string suffix = "")
+    {
+        string color = pnl >= 0 ? PnLPositiveColor : PnLNegativeColor;
+        string sign = pnl >= 0 ? "+" : "";
+        return $"<color={color}>{sign}{pnl:N0}{suffix}</color>";
+    }
+
+    /// <summary>
+    /// PnLをラベル付きで色付きテキストにフォーマット
+    /// </summary>
+    private static string FormatPnLWithLabel(double pnl, string label)
+    {
+        string color = pnl >= 0 ? PnLPositiveColor : PnLNegativeColor;
+        string sign = pnl >= 0 ? "+" : "";
+        return $"<color={color}>{label}: {sign}{pnl:N0} LMD</color>";
     }
 
     // ========================================
