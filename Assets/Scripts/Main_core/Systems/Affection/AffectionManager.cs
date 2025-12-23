@@ -153,6 +153,9 @@ public class AffectionManager : MonoBehaviour
                 OnAffectionLevelUp?.Invoke(characterId, levelData);
                 TriggerDialogue(DialogueType.LevelUp);
                 LogUIController.Msg($"<color=#FFD700>好感度レベルアップ！ → {levelData.levelName}</color>");
+
+                // 好感度連動の衣装解放
+                CostumeManager.Instance?.CheckAffectionUnlock(characterId, levelData);
             }
         }
     }
