@@ -66,6 +66,23 @@ public class DialogLine
 
     [Tooltip("表情変更（キャラに複数表情がある場合）")]
     public int expressionIndex = 0;
+
+    [Header("チュートリアル用")]
+    [Tooltip("ハイライトするUI要素名（チュートリアル用）")]
+    public string highlightElement;
+
+    [Tooltip("ダイアログの表示位置")]
+    public DialogPosition dialogPosition = DialogPosition.Bottom;
+}
+
+/// <summary>
+/// ダイアログボックスの表示位置
+/// </summary>
+public enum DialogPosition
+{
+    Bottom,
+    Top,
+    Center
 }
 
 /// <summary>
