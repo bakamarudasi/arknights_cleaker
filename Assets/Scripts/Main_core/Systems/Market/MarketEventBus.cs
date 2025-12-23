@@ -326,12 +326,4 @@ public struct DividendPayment
     public List<ItemReward> itemRewards;
 }
 
-/// <summary>
-/// アイテム報酬
-/// </summary>
-[Serializable]
-public struct ItemReward
-{
-    public string itemId;
-    public int amount;
-}
+// ItemReward は GameEventData.cs で定義されています

@@ -289,7 +289,7 @@ public class OperatorUIController : IViewController
         affectionController.UpdateAffectionUI();
     }
 
-    private void OnConversationStarted(PoseConversation conv)
+    private void OnConversationStarted(CharacterPoseData.PoseConversation conv)
     {
         Debug.Log($"[OperatorUI] Conversation started: {conv.title}");
     }
