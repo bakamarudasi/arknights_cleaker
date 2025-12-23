@@ -15,7 +15,17 @@ public class MenuItemData : ScriptableObject
     
     [Header("初期状態")]
     public bool showBadgeOnStart = false;
-    
+
+    [Header("アンロック設定")]
+    [Tooltip("初期状態でロックされているか")]
+    public bool isLockedByDefault = false;
+
+    [Tooltip("ロック中に表示するヒントテキスト")]
+    public string lockedHintText = "???で解放";
+
+    [Tooltip("ロック中に表示するアイコン（null=通常アイコンをグレーアウト）")]
+    public Sprite lockedIcon;
+
     [Header("View設定")]
     [Tooltip("このメニューで表示するUXMLテンプレート（オプション）")]
     public VisualTreeAsset viewTemplate;

@@ -22,6 +22,7 @@ public static class UIConstants
     public const string CLS_SELECTED      = "selected";
     public const string CLS_SHOW          = "show";
     public const string CLS_COLLAPSED     = "collapsed";
+    public const string CLS_LOCKED        = "locked";
 }
 
 // MenuTypeの定義などはそのままでOK

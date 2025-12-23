@@ -1,0 +1,42 @@
+<ui:UXML xmlns:ui="UnityEngine.UIElements" editor-extension-mode="False">
+    <Style src="project://database/Assets/Scripts/Main_UI/Conversation_/view/Conversation.uss" />
+
+    <!-- フルスクリーンオーバーレイ -->
+    <ui:VisualElement name="conversation-overlay" class="conversation-overlay">
+
+        <!-- 背景（タップで進める用） -->
+        <ui:VisualElement name="tap-area" class="tap-area" />
+
+        <!-- キャラクター表示エリア -->
+        <ui:VisualElement name="character-area" class="character-area">
+            <!-- 左キャラ -->
+            <ui:VisualElement name="character-left" class="character-sprite left" />
+            <!-- 右キャラ -->
+            <ui:VisualElement name="character-right" class="character-sprite right" />
+        </ui:VisualElement>
+
+        <!-- ダイアログボックス -->
+        <ui:VisualElement name="dialog-box" class="dialog-box">
+
+            <!-- 名前プレート -->
+            <ui:VisualElement name="name-plate" class="name-plate">
+                <ui:Label name="speaker-name" text="アーミヤ" class="speaker-name" />
+            </ui:VisualElement>
+
+            <!-- テキストエリア -->
+            <ui:VisualElement name="text-area" class="text-area">
+                <ui:Label name="dialog-text" text="ドクター、お帰りなさい。" class="dialog-text" />
+            </ui:VisualElement>
+
+            <!-- 次へインジケーター -->
+            <ui:VisualElement name="next-indicator" class="next-indicator">
+                <ui:Label text="▼" class="next-arrow" />
+            </ui:VisualElement>
+
+        </ui:VisualElement>
+
+        <!-- スキップボタン -->
+        <ui:Button name="skip-button" text="SKIP" class="skip-button" />
+
+    </ui:VisualElement>
+</ui:UXML>
