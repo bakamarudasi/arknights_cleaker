@@ -170,6 +170,14 @@ public class AffectionManager : MonoBehaviour
     }
 
     /// <summary>
+    /// 好感度レベル（インデックス）を取得
+    /// </summary>
+    public int GetLevel(string characterId)
+    {
+        return GetAffectionLevelIndex(characterId);
+    }
+
+    /// <summary>
     /// 現在のキャラの好感度を取得
     /// </summary>
     public int GetCurrentAffection()

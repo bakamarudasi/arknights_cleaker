@@ -294,7 +294,7 @@ public class EventManager : MonoBehaviour
 
         foreach (var item in evt.rewardItems)
         {
-            gc.Inventory.AddItem(item.itemId, item.amount);
+            gc.Inventory.Add(item.itemId, item.amount);
         }
     }
 
