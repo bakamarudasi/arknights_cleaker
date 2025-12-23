@@ -37,6 +37,12 @@ public class EventManager : MonoBehaviour
     /// <summary>イベント処理中かどうか</summary>
     public bool IsEventActive => currentEventInstance != null;
 
+    /// <summary>初回起動かどうか（セーブデータがない状態）</summary>
+    public bool IsFirstLaunch { get; private set; } = true;
+
+    /// <summary>セッション開始時刻</summary>
+    private float sessionStartTime;
+
     // ========================================
     // イベント（外部通知用）
     // ========================================
@@ -83,8 +89,31 @@ public class EventManager : MonoBehaviour
             return;
         }
 
+        sessionStartTime = Time.realtimeSinceStartup;
         SubscribeToGameEvents();
+
+        // 起動時イベントをチェック（少し遅延させてUIの準備を待つ）
+        Invoke(nameof(CheckStartupEvents), 0.5f);
+
         Debug.Log($"[EventManager] Initialized with {allEvents.Count} events");
+    }
+
+    /// <summary>
+    /// 起動時のイベントをチェック
+    /// </summary>
+    private void CheckStartupEvents()
+    {
+        foreach (var evt in GetPendingEvents())
+        {
+            bool shouldTrigger = evt.triggerType switch
+            {
+                EventTriggerType.FirstLaunch => IsFirstLaunch,
+                EventTriggerType.OnGameStart => true,
+                _ => false
+            };
+
+            if (shouldTrigger) TriggerEvent(evt);
+        }
     }
 
     // ========================================
@@ -172,6 +201,7 @@ public class EventManager : MonoBehaviour
         if (gc == null) return;
 
         var stats = gc.GetStatistics();
+        float sessionTime = Time.realtimeSinceStartup - sessionStartTime;
 
         foreach (var evt in GetPendingEvents())
         {
@@ -181,6 +211,7 @@ public class EventManager : MonoBehaviour
                 EventTriggerType.TotalCriticalHits => stats.totalCriticalHits >= evt.triggerValue,
                 EventTriggerType.HighestClickDamage => stats.highestClickDamage >= evt.triggerValue,
                 EventTriggerType.PlayTimeReached => stats.totalPlayTimeSeconds >= evt.triggerValue,
+                EventTriggerType.SessionTimeReached => sessionTime >= evt.triggerValue,
                 _ => false
             };
 
@@ -359,7 +390,14 @@ public class EventManager : MonoBehaviour
     public void RestoreTriggeredEvents(List<string> eventIds)
     {
         triggeredEventIds = new HashSet<string>(eventIds ?? new List<string>());
-        Debug.Log($"[EventManager] Restored {triggeredEventIds.Count} triggered events");
+
+        // セーブデータがあれば初回起動ではない
+        if (triggeredEventIds.Count > 0)
+        {
+            IsFirstLaunch = false;
+        }
+
+        Debug.Log($"[EventManager] Restored {triggeredEventIds.Count} triggered events (FirstLaunch: {IsFirstLaunch})");
     }
 
     // ========================================
