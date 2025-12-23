@@ -112,6 +112,103 @@
     -unity-font-style: bold;
 }
 
+/* ========================================= */
+/* Tab Icon Bar                             */
+/* ========================================= */
+
+.tab-icon-bar {
+    flex-direction: row;
+    justify-content: center;
+    margin-bottom: 12px;
+    padding: 8px 0;
+    border-bottom-width: 1px;
+    border-bottom-color: rgba(255, 255, 255, 0.1);
+}
+
+.tab-icon {
+    width: 48px;
+    height: 48px;
+    margin: 0 6px;
+    background-color: rgba(255, 255, 255, 0.05);
+    border-width: 1px;
+    border-color: rgba(255, 255, 255, 0.1);
+    border-radius: 8px;
+    transition-duration: 0.2s;
+    padding: 0;
+}
+
+.tab-icon:hover {
+    background-color: rgba(255, 255, 255, 0.12);
+    border-color: rgba(255, 215, 0, 0.4);
+    scale: 1.05;
+}
+
+.tab-icon.active {
+    background-color: rgba(255, 215, 0, 0.15);
+    border-color: #ffd700;
+    border-width: 2px;
+}
+
+.tab-icon-emoji {
+    font-size: 22px;
+    -unity-text-align: middle-center;
+}
+
+/* ========================================= */
+/* Tab Content Area                         */
+/* ========================================= */
+
+.tab-content-area {
+    margin-bottom: 12px;
+}
+
+.tab-content {
+    background-color: rgba(255, 255, 255, 0.03);
+    border-width: 1px;
+    border-color: rgba(255, 255, 255, 0.1);
+    border-radius: 6px;
+    padding: 12px;
+    margin-bottom: 8px;
+    transition-duration: 0.2s;
+}
+
+.tab-content.hidden {
+    display: none;
+}
+
+.tab-header {
+    flex-direction: row;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 10px;
+    padding-bottom: 8px;
+    border-bottom-width: 1px;
+    border-bottom-color: rgba(255, 255, 255, 0.1);
+}
+
+.tab-header .section-title {
+    margin-bottom: 0;
+}
+
+.btn-tab-close {
+    width: 24px;
+    height: 24px;
+    background-color: rgba(255, 100, 100, 0.1);
+    border-width: 1px;
+    border-color: rgba(255, 100, 100, 0.3);
+    border-radius: 4px;
+    color: #ff6666;
+    font-size: 12px;
+    padding: 0;
+    transition-duration: 0.15s;
+}
+
+.btn-tab-close:hover {
+    background-color: rgba(255, 100, 100, 0.25);
+    border-color: #ff6666;
+    color: #ffffff;
+}
+
 /* スクロール可能コンテンツエリア */
 .side-scroll-content {
     flex-grow: 1;

@@ -19,6 +19,17 @@ public class OperatorUIController : IViewController
     private Button btnOutfitSkin2;
     private Button btnBack;
 
+    // タブUI要素
+    private Button tabIconOutfit;
+    private Button tabIconLens;
+    private Button tabIconGift;
+    private VisualElement tabOutfit;
+    private VisualElement tabLens;
+    private VisualElement tabGift;
+    private Button btnCloseOutfit;
+    private Button btnCloseLens;
+    private Button btnCloseGift;
+
     // ========================================
     // サブコントローラー（分離された責任）
     // ========================================
@@ -51,6 +62,14 @@ public class OperatorUIController : IViewController
     private EventCallback<ClickEvent> callbackOutfit2;
     private EventCallback<ClickEvent> callbackBack;
     private EventCallback<ClickEvent> callbackCharacterClick;
+
+    // タブ用コールバック
+    private EventCallback<ClickEvent> callbackTabOutfit;
+    private EventCallback<ClickEvent> callbackTabLens;
+    private EventCallback<ClickEvent> callbackTabGift;
+    private EventCallback<ClickEvent> callbackCloseOutfit;
+    private EventCallback<ClickEvent> callbackCloseLens;
+    private EventCallback<ClickEvent> callbackCloseGift;
 
     // ========================================
     // イベント
@@ -91,6 +110,17 @@ public class OperatorUIController : IViewController
         btnOutfitSkin1 = root.Q<Button>("btn-outfit-skin1");
         btnOutfitSkin2 = root.Q<Button>("btn-outfit-skin2");
         btnBack = root.Q<Button>("btn-back");
+
+        // タブ要素
+        tabIconOutfit = root.Q<Button>("tab-icon-outfit");
+        tabIconLens = root.Q<Button>("tab-icon-lens");
+        tabIconGift = root.Q<Button>("tab-icon-gift");
+        tabOutfit = root.Q<VisualElement>("tab-outfit");
+        tabLens = root.Q<VisualElement>("tab-lens");
+        tabGift = root.Q<VisualElement>("tab-gift");
+        btnCloseOutfit = root.Q<Button>("btn-close-outfit");
+        btnCloseLens = root.Q<Button>("btn-close-lens");
+        btnCloseGift = root.Q<Button>("btn-close-gift");
     }
 
     private void InitializeSubControllers()
@@ -139,6 +169,21 @@ public class OperatorUIController : IViewController
         btnOutfitSkin2?.RegisterCallback(callbackOutfit2);
         btnBack?.RegisterCallback(callbackBack);
         characterDisplay?.RegisterCallback(callbackCharacterClick);
+
+        // タブ用コールバック
+        callbackTabOutfit = evt => ToggleTab("outfit");
+        callbackTabLens = evt => ToggleTab("lens");
+        callbackTabGift = evt => ToggleTab("gift");
+        callbackCloseOutfit = evt => CloseTab("outfit");
+        callbackCloseLens = evt => CloseTab("lens");
+        callbackCloseGift = evt => CloseTab("gift");
+
+        tabIconOutfit?.RegisterCallback(callbackTabOutfit);
+        tabIconLens?.RegisterCallback(callbackTabLens);
+        tabIconGift?.RegisterCallback(callbackTabGift);
+        btnCloseOutfit?.RegisterCallback(callbackCloseOutfit);
+        btnCloseLens?.RegisterCallback(callbackCloseLens);
+        btnCloseGift?.RegisterCallback(callbackCloseGift);
     }
 
     // ========================================
@@ -445,6 +490,55 @@ public class OperatorUIController : IViewController
     }
 
     // ========================================
+    // タブ操作
+    // ========================================
+
+    private void ToggleTab(string tabName)
+    {
+        var (tab, icon) = GetTabElements(tabName);
+        if (tab == null) return;
+
+        bool isHidden = tab.ClassListContains("hidden");
+        if (isHidden)
+        {
+            OpenTab(tabName);
+        }
+        else
+        {
+            CloseTab(tabName);
+        }
+    }
+
+    private void OpenTab(string tabName)
+    {
+        var (tab, icon) = GetTabElements(tabName);
+        if (tab == null) return;
+
+        tab.RemoveFromClassList("hidden");
+        icon?.AddToClassList("active");
+    }
+
+    private void CloseTab(string tabName)
+    {
+        var (tab, icon) = GetTabElements(tabName);
+        if (tab == null) return;
+
+        tab.AddToClassList("hidden");
+        icon?.RemoveFromClassList("active");
+    }
+
+    private (VisualElement tab, Button icon) GetTabElements(string tabName)
+    {
+        return tabName switch
+        {
+            "outfit" => (tabOutfit, tabIconOutfit),
+            "lens" => (tabLens, tabIconLens),
+            "gift" => (tabGift, tabIconGift),
+            _ => (null, null)
+        };
+    }
+
+    // ========================================
     // レンズ効果
     // ========================================
 
@@ -582,12 +676,26 @@ public class OperatorUIController : IViewController
         if (callbackCharacterClick != null) characterDisplay?.UnregisterCallback(callbackCharacterClick);
         if (callbackLensMouseMove != null) characterDisplay?.UnregisterCallback(callbackLensMouseMove);
 
+        // タブ用コールバック解除
+        if (callbackTabOutfit != null) tabIconOutfit?.UnregisterCallback(callbackTabOutfit);
+        if (callbackTabLens != null) tabIconLens?.UnregisterCallback(callbackTabLens);
+        if (callbackTabGift != null) tabIconGift?.UnregisterCallback(callbackTabGift);
+        if (callbackCloseOutfit != null) btnCloseOutfit?.UnregisterCallback(callbackCloseOutfit);
+        if (callbackCloseLens != null) btnCloseLens?.UnregisterCallback(callbackCloseLens);
+        if (callbackCloseGift != null) btnCloseGift?.UnregisterCallback(callbackCloseGift);
+
         callbackOutfit0 = null;
         callbackOutfit1 = null;
         callbackOutfit2 = null;
         callbackBack = null;
         callbackCharacterClick = null;
         callbackLensMouseMove = null;
+        callbackTabOutfit = null;
+        callbackTabLens = null;
+        callbackTabGift = null;
+        callbackCloseOutfit = null;
+        callbackCloseLens = null;
+        callbackCloseGift = null;
 
         LogUIController.LogSystem("Operator View Disposed.");
     }
