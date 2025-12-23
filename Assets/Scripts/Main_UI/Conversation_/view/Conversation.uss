@@ -1,0 +1,155 @@
+/* === 会話イベントUI スタイル === */
+
+/* オーバーレイ（フルスクリーン） */
+.conversation-overlay {
+    position: absolute;
+    width: 100%;
+    height: 100%;
+    background-color: rgba(0, 0, 0, 0.7);
+    justify-content: flex-end;
+    align-items: center;
+}
+
+/* タップエリア（全画面） */
+.tap-area {
+    position: absolute;
+    width: 100%;
+    height: 100%;
+}
+
+/* キャラクター表示エリア */
+.character-area {
+    position: absolute;
+    width: 100%;
+    height: 70%;
+    bottom: 200px;
+    flex-direction: row;
+    justify-content: space-between;
+    align-items: flex-end;
+    padding: 0 50px;
+}
+
+.character-sprite {
+    width: 400px;
+    height: 600px;
+    -unity-background-scale-mode: scale-to-fit;
+    transition-property: opacity, translate;
+    transition-duration: 0.3s;
+}
+
+.character-sprite.left {
+    translate: 0 0;
+}
+
+.character-sprite.right {
+    translate: 0 0;
+}
+
+.character-sprite.inactive {
+    opacity: 0.5;
+    -unity-background-image-tint-color: #888888;
+}
+
+.character-sprite.speaking {
+    opacity: 1;
+    -unity-background-image-tint-color: #ffffff;
+}
+
+/* ダイアログボックス */
+.dialog-box {
+    width: 90%;
+    max-width: 1200px;
+    min-height: 180px;
+    background-color: rgba(20, 25, 35, 0.95);
+    border-width: 2px;
+    border-color: rgba(100, 150, 200, 0.5);
+    border-radius: 8px;
+    margin-bottom: 40px;
+    padding: 20px 30px;
+    position: relative;
+}
+
+/* 名前プレート */
+.name-plate {
+    position: absolute;
+    top: -20px;
+    left: 30px;
+    background-color: #2a4a6a;
+    border-radius: 4px;
+    padding: 6px 20px;
+    border-width: 1px;
+    border-color: #5a8aba;
+}
+
+.speaker-name {
+    font-size: 18px;
+    color: #ffffff;
+    -unity-font-style: bold;
+    letter-spacing: 2px;
+}
+
+/* テキストエリア */
+.text-area {
+    margin-top: 20px;
+    min-height: 100px;
+}
+
+.dialog-text {
+    font-size: 22px;
+    color: #e0e0e0;
+    white-space: normal;
+    line-height: 1.6;
+    letter-spacing: 1px;
+}
+
+/* 次へインジケーター */
+.next-indicator {
+    position: absolute;
+    bottom: 15px;
+    right: 25px;
+}
+
+.next-arrow {
+    font-size: 16px;
+    color: #88aacc;
+    transition-property: translate;
+    transition-duration: 0.5s;
+}
+
+/* 点滅アニメーション用クラス */
+.next-indicator.blink .next-arrow {
+    translate: 0 5px;
+}
+
+/* スキップボタン */
+.skip-button {
+    position: absolute;
+    top: 30px;
+    right: 30px;
+    background-color: rgba(50, 50, 50, 0.8);
+    border-width: 1px;
+    border-color: rgba(255, 255, 255, 0.3);
+    border-radius: 4px;
+    padding: 10px 25px;
+    color: #aaaaaa;
+    font-size: 14px;
+    letter-spacing: 2px;
+    transition-property: background-color, color;
+    transition-duration: 0.2s;
+}
+
+.skip-button:hover {
+    background-color: rgba(80, 80, 80, 0.9);
+    color: #ffffff;
+}
+
+/* フェードイン/アウト用 */
+.conversation-overlay.fade-in {
+    opacity: 0;
+    transition-property: opacity;
+    transition-duration: 0.3s;
+}
+
+.conversation-overlay.fade-in.visible {
+    opacity: 1;
+}
