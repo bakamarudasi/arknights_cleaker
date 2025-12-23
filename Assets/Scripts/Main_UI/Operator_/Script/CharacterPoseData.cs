@@ -67,6 +67,48 @@ public class CharacterPoseData : ScriptableObject
 
         [Tooltip("カスタムシーンUIのタイプ（空の場合はデフォルト）")]
         public string sceneUIType = "";
+
+        [Header("=== 会話設定 ===")]
+        [Tooltip("このポーズで利用可能な会話リスト")]
+        public List<PoseConversation> conversations = new List<PoseConversation>();
+
+        /// <summary>
+        /// 解放済みの会話を取得
+        /// </summary>
+        public List<PoseConversation> GetUnlockedConversations(int currentAffectionLevel)
+        {
+            return conversations.FindAll(c => c.requiredAffectionLevel <= currentAffectionLevel);
+        }
+
+        /// <summary>
+        /// ランダム雑談用の会話を取得
+        /// </summary>
+        public List<PoseConversation> GetRandomTalks(int currentAffectionLevel)
+        {
+            return conversations.FindAll(c => c.isRandomTalk && c.requiredAffectionLevel <= currentAffectionLevel);
+        }
+    }
+
+    /// <summary>
+    /// ポーズごとの会話データ
+    /// </summary>
+    [System.Serializable]
+    public class PoseConversation
+    {
+        [Tooltip("会話タイトル（UIに表示）")]
+        public string title;
+
+        [Tooltip("会話データ")]
+        public ConversationData conversationData;
+
+        [Tooltip("解放に必要な好感度レベル")]
+        public int requiredAffectionLevel = 0;
+
+        [Tooltip("ランダム雑談として使用するか")]
+        public bool isRandomTalk = false;
+
+        [Tooltip("一度だけ再生する（イベント会話用）")]
+        public bool playOnce = false;
     }
 
     // ========================================
