@@ -16,7 +16,13 @@ public class ProgressData
     
     // --- 統計データ（実績用） ---
     public StatisticsData statistics = new();
-    
+
+    // --- イベント発動状態 ---
+    public List<string> triggeredEventIds = new();
+
+    // --- 解放済みメニュー ---
+    public List<string> unlockedMenus = new();
+
     // ========================================
     // ヘルパーメソッド
     // ========================================
