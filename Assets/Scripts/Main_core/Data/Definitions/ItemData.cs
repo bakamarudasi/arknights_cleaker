@@ -9,9 +9,10 @@ public class ItemData : BaseData
 {
     public enum ItemType
     {
-        KeyItem,    // 重要アイテム（レンズ本体など）
-        Material,   // 素材
-        Consumable  // 消耗品（バッテリー回復など）
+        KeyItem,       // 重要アイテム（レンズ本体など）
+        Material,      // 素材
+        Consumable,    // 消耗品（バッテリー回復など）
+        CostumeUnlock  // 衣装解放アイテム
     }
 
     public enum Rarity
@@ -57,6 +58,14 @@ public class ItemData : BaseData
     [Header("ガチャ被り設定")]
     public ItemData convertToItem;
     public int convertAmount = 1;
+
+    [Header("衣装解放設定 (CostumeUnlock用)")]
+    [Tooltip("解放対象のキャラクターID")]
+    public string targetCharacterId;
+
+    [Tooltip("解放する衣装インデックス (1=skin1, 2=skin2)")]
+    [Range(1, 3)]
+    public int targetCostumeIndex = 1;
 
     [System.Serializable]
     public class LensSpecs

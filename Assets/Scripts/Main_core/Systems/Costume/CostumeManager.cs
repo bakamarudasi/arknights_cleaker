@@ -168,6 +168,21 @@ public class CostumeManager : MonoBehaviour
         return true;
     }
 
+    /// <summary>
+    /// 衣装解放アイテムを使用（ItemDataのtargetCharacterId/targetCostumeIndexを使用）
+    /// </summary>
+    public bool UseCostumeUnlockItem(ItemData item)
+    {
+        if (item == null || item.type != ItemData.ItemType.CostumeUnlock)
+        {
+            Debug.LogWarning("[CostumeManager] Invalid costume unlock item");
+            return false;
+        }
+
+        string costumeId = GetCostumeIdFromIndex(item.targetCostumeIndex);
+        return TryUnlockWithItem(item.targetCharacterId, costumeId, item);
+    }
+
     // ========================================
     // 衣装装備
     // ========================================
