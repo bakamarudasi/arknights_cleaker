@@ -8,6 +8,19 @@ public enum EventTriggerType
     None,
 
     // ========================================
+    // 起動・セッション関連
+    // ========================================
+
+    /// <summary>初回起動時（セーブデータがない状態）</summary>
+    FirstLaunch,
+
+    /// <summary>ゲーム起動時（毎回）</summary>
+    OnGameStart,
+
+    /// <summary>N日ぶりのログイン（triggerValueで日数指定）</summary>
+    ReturnAfterDays,
+
+    // ========================================
     // 通貨関連
     // ========================================
 
