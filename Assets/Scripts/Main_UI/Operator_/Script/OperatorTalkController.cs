@@ -5,7 +5,7 @@ using System.Collections.Generic;
 
 /// <summary>
 /// オペレーター画面での会話機能を制御
-/// CharacterPoseData.PoseEntry.conversationsからリストを生成し、
+/// PoseEntry.conversationsからリストを生成し、
 /// ConversationControllerを使って会話を再生する
 /// </summary>
 public class OperatorTalkController
@@ -17,7 +17,7 @@ public class OperatorTalkController
 
     // 現在の会話リスト
     private List<PoseConversation> currentConversations = new List<PoseConversation>();
-    private CharacterPoseData.PoseEntry currentPose;
+    private PoseEntry currentPose;
     private string currentCharacterId;
 
     // 再生済み会話の追跡（playOnce用）
@@ -53,7 +53,7 @@ public class OperatorTalkController
     /// ポーズが変更されたときに呼ばれる
     /// 会話リストを更新する
     /// </summary>
-    public void UpdateForPose(string characterId, CharacterPoseData.PoseEntry pose)
+    public void UpdateForPose(string characterId, PoseEntry pose)
     {
         currentCharacterId = characterId;
         currentPose = pose;

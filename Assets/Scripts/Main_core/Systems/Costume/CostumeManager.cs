@@ -300,7 +300,7 @@ public class CostumeManager : MonoBehaviour
     }
 
     /// <summary>
-    /// 衣装IDをポーズIDに変換（CharacterPoseData用）
+    /// 衣装IDをポーズIDに変換（CharacterData用）
     /// </summary>
     public static string CostumeIdToPoseId(string costumeId)
     {
