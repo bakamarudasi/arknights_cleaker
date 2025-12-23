@@ -16,7 +16,7 @@ public class OperatorTalkController
     private VisualElement talkListContainer;
 
     // 現在の会話リスト
-    private List<PoseConversation> currentConversations = new List<PoseConversation>();
+    private List<CharacterPoseData.PoseConversation> currentConversations = new List<CharacterPoseData.PoseConversation>();
     private CharacterPoseData.PoseEntry currentPose;
     private string currentCharacterId;
 
@@ -27,7 +27,7 @@ public class OperatorTalkController
     private EventCallback<ClickEvent> callbackRandomTalk;
 
     // イベント
-    public event Action<PoseConversation> OnConversationStarted;
+    public event Action<CharacterPoseData.PoseConversation> OnConversationStarted;
     public event Action OnConversationEnded;
 
     private const string CLS_LOCKED = "locked";
@@ -94,7 +94,7 @@ public class OperatorTalkController
         UpdateRandomTalkButton();
     }
 
-    private void CreateTalkItem(PoseConversation conv, int currentAffection)
+    private void CreateTalkItem(CharacterPoseData.PoseConversation conv, int currentAffection)
     {
         bool isLocked = conv.requiredAffectionLevel > currentAffection;
         bool isPlayed = conv.playOnce && IsConversationPlayed(conv);
@@ -172,12 +172,12 @@ public class OperatorTalkController
         StartConversation(selected);
     }
 
-    private void OnTalkItemClicked(PoseConversation conv)
+    private void OnTalkItemClicked(CharacterPoseData.PoseConversation conv)
     {
         StartConversation(conv);
     }
 
-    private void StartConversation(PoseConversation conv)
+    private void StartConversation(CharacterPoseData.PoseConversation conv)
     {
         if (conv == null || conv.conversationData == null)
         {
@@ -211,7 +211,7 @@ public class OperatorTalkController
         }
     }
 
-    private void OnConversationComplete(PoseConversation conv)
+    private void OnConversationComplete(CharacterPoseData.PoseConversation conv)
     {
         // playOnceの場合は再生済みとしてマーク
         if (conv.playOnce)
@@ -235,17 +235,17 @@ public class OperatorTalkController
     }
 
     // 再生済み会話の管理
-    private string GetConversationKey(PoseConversation conv)
+    private string GetConversationKey(CharacterPoseData.PoseConversation conv)
     {
         return $"{currentCharacterId}_{currentPose?.poseId}_{conv.title}";
     }
 
-    private bool IsConversationPlayed(PoseConversation conv)
+    private bool IsConversationPlayed(CharacterPoseData.PoseConversation conv)
     {
         return playedConversations.Contains(GetConversationKey(conv));
     }
 
-    private void MarkConversationPlayed(PoseConversation conv)
+    private void MarkConversationPlayed(CharacterPoseData.PoseConversation conv)
     {
         playedConversations.Add(GetConversationKey(conv));
         // TODO: 永続化が必要なら SaveManager と連携

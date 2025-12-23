@@ -15,7 +15,7 @@ public class StockEventTrigger
     public string description;
 
     [Tooltip("トリガー条件")]
-    public EventTriggerType triggerType;
+    public StockEventTriggerType triggerType;
 
     [Tooltip("株価への影響 (-0.3 = 30%下落, 0.5 = 50%上昇)")]
     [Range(-0.5f, 1f)]
@@ -36,7 +36,7 @@ public class StockEventTrigger
     public string notificationMessage;
 }
 
-public enum EventTriggerType
+public enum StockEventTriggerType
 {
     RandomDaily,            // 毎日ランダムで発生
     OnGachaResult,          // ガチャでこの企業キャラが出た時
