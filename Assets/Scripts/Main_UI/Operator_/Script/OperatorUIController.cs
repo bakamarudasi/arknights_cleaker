@@ -162,6 +162,12 @@ public class OperatorUIController : IViewController
         {
             OverlayCharacterPresenter.Instance.OnPoseChanged += OnPoseChanged;
         }
+
+        // 衣装解放イベント
+        if (CostumeManager.Instance != null)
+        {
+            CostumeManager.Instance.OnCostumeUnlocked += OnCostumeUnlocked;
+        }
     }
 
     private void UnsubscribeFromEvents()
@@ -181,11 +187,23 @@ public class OperatorUIController : IViewController
         {
             OverlayCharacterPresenter.Instance.OnPoseChanged -= OnPoseChanged;
         }
+
+        // 衣装解放イベント解除
+        if (CostumeManager.Instance != null)
+        {
+            CostumeManager.Instance.OnCostumeUnlocked -= OnCostumeUnlocked;
+        }
     }
 
     private void OnAffectionChanged(string characterId, int newValue, int delta)
     {
         affectionController.UpdateAffectionUI();
+    }
+
+    private void OnCostumeUnlocked(string characterId, string costumeId)
+    {
+        // 衣装が解放されたらボタンの状態を更新
+        UpdateOutfitButtons();
     }
 
     private void OnItemCountChanged(string itemId, int newCount)
@@ -343,18 +361,70 @@ public class OperatorUIController : IViewController
 
     private void SetOutfit(int outfitIndex)
     {
+        var presenter = OverlayCharacterPresenter.Instance;
+        var characterId = presenter?.CurrentCharacterData?.characterId;
+
+        // ロック状態チェック
+        if (CostumeManager.Instance != null && !string.IsNullOrEmpty(characterId))
+        {
+            if (!CostumeManager.Instance.IsCostumeUnlockedByIndex(characterId, outfitIndex))
+            {
+                LogUIController.Msg("この衣装はまだ解放されていません");
+                return;
+            }
+
+            // CostumeManagerに装備を通知
+            CostumeManager.Instance.EquipCostumeByIndex(characterId, outfitIndex);
+        }
+
         currentOutfit = outfitIndex;
         UpdateOutfitButtons();
+
+        // OverlayCharacterPresenterでポーズ切り替え
+        if (presenter != null)
+        {
+            string poseId = CostumeManager.GetCostumeIdFromIndex(outfitIndex);
+            poseId = CostumeManager.CostumeIdToPoseId(poseId);
+            presenter.SetPose(poseId);
+        }
 
         LogUIController.Msg($"Outfit changed to: {GetOutfitName(outfitIndex)}");
     }
 
     private void UpdateOutfitButtons()
     {
+        var presenter = OverlayCharacterPresenter.Instance;
+        var characterId = presenter?.CurrentCharacterData?.characterId;
+        var costumeManager = CostumeManager.Instance;
+
+        // activeクラスを解除
         btnOutfitDefault?.RemoveFromClassList("active");
         btnOutfitSkin1?.RemoveFromClassList("active");
         btnOutfitSkin2?.RemoveFromClassList("active");
 
+        // lockedクラスを解除
+        btnOutfitDefault?.RemoveFromClassList("locked");
+        btnOutfitSkin1?.RemoveFromClassList("locked");
+        btnOutfitSkin2?.RemoveFromClassList("locked");
+
+        // ロック状態をチェックしてボタンを更新
+        if (costumeManager != null && !string.IsNullOrEmpty(characterId))
+        {
+            // デフォルトは常に有効
+            btnOutfitDefault?.SetEnabled(true);
+
+            // Skin1のロック状態
+            bool skin1Unlocked = costumeManager.IsCostumeUnlockedByIndex(characterId, 1);
+            btnOutfitSkin1?.SetEnabled(skin1Unlocked);
+            if (!skin1Unlocked) btnOutfitSkin1?.AddToClassList("locked");
+
+            // Skin2のロック状態
+            bool skin2Unlocked = costumeManager.IsCostumeUnlockedByIndex(characterId, 2);
+            btnOutfitSkin2?.SetEnabled(skin2Unlocked);
+            if (!skin2Unlocked) btnOutfitSkin2?.AddToClassList("locked");
+        }
+
+        // 現在の衣装をアクティブ表示
         switch (currentOutfit)
         {
             case 0: btnOutfitDefault?.AddToClassList("active"); break;
