@@ -134,7 +134,8 @@ public class MarketFacade : IMarketFacade
 
     public bool TryStartTutorial(string sequenceId, VisualElement root)
     {
-        return TutorialManager.Instance?.TryStartTutorial(sequenceId, root) ?? false;
+        // TODO: TutorialManager実装後に有効化
+        return false;
     }
 
     // ========================================
