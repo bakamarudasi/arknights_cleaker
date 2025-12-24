@@ -55,9 +55,46 @@ public class CharacterSceneData : ScriptableObject
     [Tooltip("このシーンで利用可能な会話リスト")]
     public List<SceneConversation> conversations = new List<SceneConversation>();
 
+    [Header("=== シーン専用セリフ（オプション）===")]
+    [Tooltip("シーン専用のセリフ（空の場合はCharacterDataの共通セリフを使用）")]
+    public List<DialogueGroup> dialogueGroups = new List<DialogueGroup>();
+
     // ========================================
     // ヘルパーメソッド
     // ========================================
+
+    /// <summary>
+    /// このシーンに専用セリフがあるか
+    /// </summary>
+    public bool HasCustomDialogues => dialogueGroups != null && dialogueGroups.Count > 0;
+
+    /// <summary>
+    /// シーン専用のセリフを取得（好感度レベル考慮）
+    /// </summary>
+    public List<string> GetDialogues(int affectionLevel, DialogueType type)
+    {
+        var result = new List<string>();
+        if (dialogueGroups == null) return result;
+
+        foreach (var group in dialogueGroups)
+        {
+            if (group.dialogueType == type && group.requiredAffectionLevel <= affectionLevel)
+            {
+                result.AddRange(group.dialogues);
+            }
+        }
+        return result;
+    }
+
+    /// <summary>
+    /// シーン専用のランダムセリフを取得
+    /// </summary>
+    public string GetRandomDialogue(int affectionLevel, DialogueType type)
+    {
+        var dialogues = GetDialogues(affectionLevel, type);
+        if (dialogues.Count == 0) return null;
+        return dialogues[UnityEngine.Random.Range(0, dialogues.Count)];
+    }
 
     /// <summary>
     /// 解放済みの会話を取得

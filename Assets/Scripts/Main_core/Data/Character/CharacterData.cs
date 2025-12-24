@@ -120,7 +120,7 @@ public class CharacterData : ScriptableObject
     }
 
     /// <summary>
-    /// 指定好感度レベルで利用可能なセリフを取得
+    /// 指定好感度レベルで利用可能なセリフを取得（共通セリフ）
     /// </summary>
     public List<string> GetAvailableDialogues(int affection, DialogueType type)
     {
@@ -139,11 +139,40 @@ public class CharacterData : ScriptableObject
     }
 
     /// <summary>
-    /// ランダムなセリフを取得
+    /// シーンを考慮してセリフを取得（シーン専用があれば優先、なければ共通）
+    /// </summary>
+    public List<string> GetDialoguesForScene(CharacterSceneData scene, int affection, DialogueType type)
+    {
+        // シーン専用セリフがあれば優先
+        if (scene != null && scene.HasCustomDialogues)
+        {
+            var sceneDialogues = scene.GetDialogues(affection, type);
+            if (sceneDialogues.Count > 0)
+            {
+                return sceneDialogues;
+            }
+        }
+
+        // なければ共通セリフにフォールバック
+        return GetAvailableDialogues(affection, type);
+    }
+
+    /// <summary>
+    /// ランダムなセリフを取得（共通セリフ）
     /// </summary>
     public string GetRandomDialogue(int affection, DialogueType type)
     {
         var dialogues = GetAvailableDialogues(affection, type);
+        if (dialogues.Count == 0) return null;
+        return dialogues[UnityEngine.Random.Range(0, dialogues.Count)];
+    }
+
+    /// <summary>
+    /// シーンを考慮してランダムセリフを取得
+    /// </summary>
+    public string GetRandomDialogueForScene(CharacterSceneData scene, int affection, DialogueType type)
+    {
+        var dialogues = GetDialoguesForScene(scene, affection, type);
         if (dialogues.Count == 0) return null;
         return dialogues[UnityEngine.Random.Range(0, dialogues.Count)];
     }
