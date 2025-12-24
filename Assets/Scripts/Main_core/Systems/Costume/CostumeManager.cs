@@ -300,11 +300,11 @@ public class CostumeManager : MonoBehaviour
     }
 
     /// <summary>
-    /// 衣装IDをポーズIDに変換（CharacterPoseData用）
+    /// 衣装IDをシーンIDに変換（CharacterSceneData用）
     /// </summary>
-    public static string CostumeIdToPoseId(string costumeId)
+    public static string CostumeIdToSceneId(string costumeId)
     {
-        // 衣装IDとポーズIDが同じ想定
+        // 衣装IDとシーンIDが同じ想定
         // 必要に応じてマッピングを追加
         return costumeId switch
         {
@@ -312,6 +312,11 @@ public class CostumeManager : MonoBehaviour
             _ => costumeId
         };
     }
+
+    /// <summary>
+    /// 後方互換性のためのエイリアス
+    /// </summary>
+    public static string CostumeIdToPoseId(string costumeId) => CostumeIdToSceneId(costumeId);
 
     // ========================================
     // セーブ/ロード

@@ -12,15 +12,10 @@ using System.Collections.Generic;
 /// 2. 専用カメラ作成 (Orthographic, 遠い位置に配置)
 /// 3. このスクリプトにカメラとRTをアサイン
 ///
-/// キャラクター読み込み（推奨）:
+/// キャラクター読み込み:
 /// 1. CharacterData (ScriptableObject) を作成
 /// 2. LoadCharacter(characterData) でキャラ読み込み
 /// 3. SetScene("sceneId") でシーン切り替え
-///
-/// レガシー（CharacterPoseData使用）:
-/// 1. CharacterPoseData (ScriptableObject) を作成
-/// 2. LoadCharacterLegacy(poseData) でキャラ読み込み
-/// 3. SetPose("poseId") でポーズ切り替え
 /// </summary>
 public class OverlayCharacterPresenter : MonoBehaviour
 {
@@ -43,7 +38,7 @@ public class OverlayCharacterPresenter : MonoBehaviour
     [Tooltip("キャラを配置する位置（カメラから離れた場所）")]
     [SerializeField] private Vector3 characterSpawnPosition = new Vector3(1000f, 0f, 0f);
 
-    [Header("=== キャラクターデータ（推奨）===")]
+    [Header("=== キャラクターデータ ===")]
     [Tooltip("キャラクターデータ（ScriptableObject）")]
     [SerializeField] private CharacterData characterData;
 
@@ -51,14 +46,6 @@ public class OverlayCharacterPresenter : MonoBehaviour
     private CharacterData _currentCharacter;
     private CharacterSceneData _currentScene;
     private string _currentSceneId;
-
-    [Header("=== レガシー: ポーズ管理 ===")]
-    [Tooltip("キャラクターポーズデータ（後方互換用）")]
-    [SerializeField] private CharacterPoseData characterPoseData;
-
-    // レガシー: ポーズ管理用内部状態
-    private CharacterPoseData _legacyPoseData;
-    private string _currentPoseId;
 
     [Header("=== カメラ設定 ===")]
     [Tooltip("カメラのOrthographicSize（キャラの大きさ調整）")]
@@ -88,12 +75,6 @@ public class OverlayCharacterPresenter : MonoBehaviour
     /// <summary>キャラクター読み込み時に発火（CharacterData）</summary>
     public event Action<CharacterData> OnCharacterDataLoaded;
 
-    /// <summary>ポーズ変更時に発火（poseId）- レガシー互換</summary>
-    public event Action<string> OnPoseChanged;
-
-    /// <summary>キャラクター読み込み時に発火 - レガシー互換</summary>
-    public event Action<CharacterPoseData> OnCharacterLoaded;
-
     // ========================================
     // プロパティ
     // ========================================
@@ -103,7 +84,7 @@ public class OverlayCharacterPresenter : MonoBehaviour
     public GameObject CurrentInstance => _currentInstance;
     public bool IsShowing => _isShowing;
 
-    /// <summary>現在読み込まれているキャラクターデータ（推奨）</summary>
+    /// <summary>現在読み込まれているキャラクターデータ</summary>
     public CharacterData CurrentCharacter => _currentCharacter;
 
     /// <summary>現在表示中のシーンID</summary>
@@ -111,16 +92,6 @@ public class OverlayCharacterPresenter : MonoBehaviour
 
     /// <summary>現在のシーンデータ</summary>
     public CharacterSceneData CurrentSceneData => _currentScene;
-
-    /// <summary>現在読み込まれているキャラクターデータ - レガシー互換</summary>
-    public CharacterPoseData CurrentCharacterData => _legacyPoseData;
-
-    /// <summary>現在表示中のポーズID - レガシー互換</summary>
-    public string CurrentPoseId => _currentPoseId;
-
-    /// <summary>現在のポーズエントリ - レガシー互換</summary>
-    public CharacterPoseData.PoseEntry CurrentPoseEntry =>
-        _legacyPoseData?.GetPose(_currentPoseId);
 
     /// <summary>現在のレイヤーコントローラー</summary>
     public CharacterLayerController LayerController => _layerController;
@@ -145,15 +116,10 @@ public class OverlayCharacterPresenter : MonoBehaviour
 
         SetupRenderSystem();
 
-        // InspectorでCharacterDataが設定されていれば優先読み込み
+        // InspectorでCharacterDataが設定されていれば読み込み
         if (characterData != null)
         {
             LoadCharacter(characterData, autoShow: false);
-        }
-        // レガシー: CharacterPoseDataが設定されていれば読み込み
-        else if (characterPoseData != null)
-        {
-            LoadCharacterLegacy(characterPoseData, autoShow: false);
         }
     }
 
@@ -392,8 +358,6 @@ public class OverlayCharacterPresenter : MonoBehaviour
 
         Debug.Log($"[Presenter] Loaded character: {data.characterId}, default scene: {_currentSceneId}");
         OnCharacterDataLoaded?.Invoke(data);
-
-        // レガシーイベントも発火（互換性のため）
         OnSceneChanged?.Invoke(_currentSceneId);
 
         if (autoShow)
@@ -504,153 +468,6 @@ public class OverlayCharacterPresenter : MonoBehaviour
         if (scene == null) return false;
 
         return scene.IsUnlocked(currentAffectionLevel);
-    }
-
-    // ========================================
-    // レガシー: ポーズ管理（CharacterPoseData用）
-    // ========================================
-
-    /// <summary>
-    /// キャラクターデータを読み込み（デフォルトポーズで表示）- レガシー
-    /// </summary>
-    /// <param name="data">CharacterPoseData (ScriptableObject)</param>
-    /// <param name="autoShow">読み込み後に自動表示するか</param>
-    public void LoadCharacterLegacy(CharacterPoseData data, bool autoShow = true)
-    {
-        if (data == null)
-        {
-            Debug.LogWarning("[Presenter] CharacterPoseData is null!");
-            return;
-        }
-
-        _legacyPoseData = data;
-        _currentPoseId = data.defaultPoseId;
-
-        var defaultPose = data.GetDefaultPose();
-        if (defaultPose == null)
-        {
-            Debug.LogWarning($"[Presenter] No poses found in CharacterPoseData: {data.characterId}");
-            return;
-        }
-
-        characterPrefab = defaultPose.prefab;
-
-        Debug.Log($"[Presenter] [Legacy] Loaded character: {data.characterId}, default pose: {_currentPoseId}");
-        OnCharacterLoaded?.Invoke(data);
-
-        if (autoShow)
-        {
-            Show();
-        }
-    }
-
-    /// <summary>
-    /// ポーズを切り替え - レガシー
-    /// </summary>
-    /// <param name="poseId">ポーズID</param>
-    /// <returns>成功したか</returns>
-    public bool SetPose(string poseId)
-    {
-        // 新しいCharacterDataが読み込まれている場合はシーン切り替えにフォールバック
-        if (_currentCharacter != null)
-        {
-            return SetScene(poseId);
-        }
-
-        if (_legacyPoseData == null)
-        {
-            Debug.LogWarning("[Presenter] No character loaded. Call LoadCharacter() first.");
-            return false;
-        }
-
-        var poseEntry = _legacyPoseData.GetPose(poseId);
-        if (poseEntry == null)
-        {
-            Debug.LogWarning($"[Presenter] Pose not found: {poseId}");
-            return false;
-        }
-
-        if (poseEntry.prefab == null)
-        {
-            Debug.LogWarning($"[Presenter] Pose prefab is null: {poseId}");
-            return false;
-        }
-
-        // 同じポーズなら何もしない
-        if (_currentPoseId == poseId && _currentInstance != null)
-        {
-            Debug.Log($"[Presenter] Already showing pose: {poseId}");
-            return true;
-        }
-
-        string previousPoseId = _currentPoseId;
-        _currentPoseId = poseId;
-
-        // 現在のインスタンスを破棄
-        if (_currentInstance != null)
-        {
-            Destroy(_currentInstance);
-            _currentInstance = null;
-        }
-
-        // 新しいプレハブを設定して表示
-        characterPrefab = poseEntry.prefab;
-
-        // 推奨カメラサイズがあれば設定
-        if (poseEntry.recommendedCameraSize > 0)
-        {
-            cameraOrthoSize = poseEntry.recommendedCameraSize;
-        }
-
-        // 表示中なら新しいポーズで再表示
-        if (_isShowing)
-        {
-            Show();
-        }
-
-        Debug.Log($"[Presenter] [Legacy] Pose changed: {previousPoseId} → {poseId}");
-        OnPoseChanged?.Invoke(poseId);
-
-        return true;
-    }
-
-    /// <summary>
-    /// 利用可能なポーズ一覧を取得（UI用）- レガシー
-    /// </summary>
-    /// <param name="currentAffectionLevel">現在の好感度レベル（アンロック判定用）</param>
-    /// <returns>ポーズエントリのリスト</returns>
-    public List<CharacterPoseData.PoseEntry> GetAvailablePoses(int currentAffectionLevel = 999)
-    {
-        if (_legacyPoseData == null)
-        {
-            return new List<CharacterPoseData.PoseEntry>();
-        }
-        return _legacyPoseData.GetUnlockedPoses(currentAffectionLevel);
-    }
-
-    /// <summary>
-    /// 全ポーズ一覧を取得（ロック状態含む）- レガシー
-    /// </summary>
-    public List<CharacterPoseData.PoseEntry> GetAllPoses()
-    {
-        if (_legacyPoseData == null)
-        {
-            return new List<CharacterPoseData.PoseEntry>();
-        }
-        return _legacyPoseData.poses;
-    }
-
-    /// <summary>
-    /// 指定ポーズがアンロック済みか確認 - レガシー
-    /// </summary>
-    public bool IsPoseUnlocked(string poseId, int currentAffectionLevel = 999)
-    {
-        if (_legacyPoseData == null) return false;
-
-        var pose = _legacyPoseData.GetPose(poseId);
-        if (pose == null) return false;
-
-        return !pose.isLocked || pose.requiredAffectionLevel <= currentAffectionLevel;
     }
 
     // ========================================
