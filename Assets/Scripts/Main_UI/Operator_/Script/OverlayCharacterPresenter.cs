@@ -12,10 +12,10 @@ using System.Collections.Generic;
 /// 2. 専用カメラ作成 (Orthographic, 遠い位置に配置)
 /// 3. このスクリプトにカメラとRTをアサイン
 ///
-/// ポーズ切り替え:
-/// 1. CharacterPoseData (ScriptableObject) を作成
-/// 2. LoadCharacter(poseData) でキャラ読み込み
-/// 3. SetPose("poseId") でポーズ切り替え
+/// キャラクター読み込み:
+/// 1. CharacterData (ScriptableObject) を作成
+/// 2. LoadCharacter(characterData) でキャラ読み込み
+/// 3. SetScene("sceneId") でシーン切り替え
 /// </summary>
 public class OverlayCharacterPresenter : MonoBehaviour
 {
@@ -38,13 +38,14 @@ public class OverlayCharacterPresenter : MonoBehaviour
     [Tooltip("キャラを配置する位置（カメラから離れた場所）")]
     [SerializeField] private Vector3 characterSpawnPosition = new Vector3(1000f, 0f, 0f);
 
-    [Header("=== ポーズ管理 ===")]
-    [Tooltip("キャラクターポーズデータ（ScriptableObject）")]
-    [SerializeField] private CharacterPoseData characterPoseData;
+    [Header("=== キャラクターデータ ===")]
+    [Tooltip("キャラクターデータ（ScriptableObject）")]
+    [SerializeField] private CharacterData characterData;
 
-    // ポーズ管理用内部状態
-    private CharacterPoseData _currentCharacterData;
-    private string _currentPoseId;
+    // キャラクター管理用内部状態
+    private CharacterData _currentCharacter;
+    private CharacterSceneData _currentScene;
+    private string _currentSceneId;
 
     [Header("=== カメラ設定 ===")]
     [Tooltip("カメラのOrthographicSize（キャラの大きさ調整）")]
@@ -68,11 +69,11 @@ public class OverlayCharacterPresenter : MonoBehaviour
     public event Action<CharacterInteractionZone.ZoneType, int> OnZoneTouched;
 #pragma warning restore CS0067
 
-    /// <summary>ポーズ変更時に発火（poseId）</summary>
-    public event Action<string> OnPoseChanged;
+    /// <summary>シーン変更時に発火（sceneId）</summary>
+    public event Action<string> OnSceneChanged;
 
-    /// <summary>キャラクター読み込み時に発火</summary>
-    public event Action<CharacterPoseData> OnCharacterLoaded;
+    /// <summary>キャラクター読み込み時に発火（CharacterData）</summary>
+    public event Action<CharacterData> OnCharacterDataLoaded;
 
     // ========================================
     // プロパティ
@@ -84,14 +85,13 @@ public class OverlayCharacterPresenter : MonoBehaviour
     public bool IsShowing => _isShowing;
 
     /// <summary>現在読み込まれているキャラクターデータ</summary>
-    public CharacterPoseData CurrentCharacterData => _currentCharacterData;
+    public CharacterData CurrentCharacter => _currentCharacter;
 
-    /// <summary>現在表示中のポーズID</summary>
-    public string CurrentPoseId => _currentPoseId;
+    /// <summary>現在表示中のシーンID</summary>
+    public string CurrentSceneId => _currentSceneId;
 
-    /// <summary>現在のポーズエントリ</summary>
-    public CharacterPoseData.PoseEntry CurrentPoseEntry =>
-        _currentCharacterData?.GetPose(_currentPoseId);
+    /// <summary>現在のシーンデータ</summary>
+    public CharacterSceneData CurrentSceneData => _currentScene;
 
     /// <summary>現在のレイヤーコントローラー</summary>
     public CharacterLayerController LayerController => _layerController;
@@ -116,10 +116,10 @@ public class OverlayCharacterPresenter : MonoBehaviour
 
         SetupRenderSystem();
 
-        // InspectorでCharacterPoseDataが設定されていれば自動読み込み
-        if (characterPoseData != null)
+        // InspectorでCharacterDataが設定されていれば読み込み
+        if (characterData != null)
         {
-            LoadCharacter(characterPoseData, autoShow: false);
+            LoadCharacter(characterData, autoShow: false);
         }
     }
 
@@ -327,36 +327,38 @@ public class OverlayCharacterPresenter : MonoBehaviour
     }
 
     // ========================================
-    // ポーズ管理
+    // シーン管理（推奨）
     // ========================================
 
     /// <summary>
-    /// キャラクターデータを読み込み（デフォルトポーズで表示）
+    /// キャラクターデータを読み込み（デフォルトシーンで表示）
     /// </summary>
-    /// <param name="data">CharacterPoseData (ScriptableObject)</param>
+    /// <param name="data">CharacterData (ScriptableObject)</param>
     /// <param name="autoShow">読み込み後に自動表示するか</param>
-    public void LoadCharacter(CharacterPoseData data, bool autoShow = true)
+    public void LoadCharacter(CharacterData data, bool autoShow = true)
     {
         if (data == null)
         {
-            Debug.LogWarning("[Presenter] CharacterPoseData is null!");
+            Debug.LogWarning("[Presenter] CharacterData is null!");
             return;
         }
 
-        _currentCharacterData = data;
-        _currentPoseId = data.defaultPoseId;
+        _currentCharacter = data;
+        _currentSceneId = data.defaultSceneId;
 
-        var defaultPose = data.GetDefaultPose();
-        if (defaultPose == null)
+        var defaultScene = data.GetDefaultScene();
+        if (defaultScene == null)
         {
-            Debug.LogWarning($"[Presenter] No poses found in CharacterPoseData: {data.characterId}");
+            Debug.LogWarning($"[Presenter] No scenes found in CharacterData: {data.characterId}");
             return;
         }
 
-        characterPrefab = defaultPose.prefab;
+        _currentScene = defaultScene;
+        characterPrefab = defaultScene.prefab;
 
-        Debug.Log($"[Presenter] Loaded character: {data.characterId}, default pose: {_currentPoseId}");
-        OnCharacterLoaded?.Invoke(data);
+        Debug.Log($"[Presenter] Loaded character: {data.characterId}, default scene: {_currentSceneId}");
+        OnCharacterDataLoaded?.Invoke(data);
+        OnSceneChanged?.Invoke(_currentSceneId);
 
         if (autoShow)
         {
@@ -365,40 +367,41 @@ public class OverlayCharacterPresenter : MonoBehaviour
     }
 
     /// <summary>
-    /// ポーズを切り替え
+    /// シーンを切り替え
     /// </summary>
-    /// <param name="poseId">ポーズID</param>
+    /// <param name="sceneId">シーンID</param>
     /// <returns>成功したか</returns>
-    public bool SetPose(string poseId)
+    public bool SetScene(string sceneId)
     {
-        if (_currentCharacterData == null)
+        if (_currentCharacter == null)
         {
-            Debug.LogWarning("[Presenter] No character loaded. Call LoadCharacter() first.");
+            Debug.LogWarning("[Presenter] No character loaded. Call LoadCharacter(CharacterData) first.");
             return false;
         }
 
-        var poseEntry = _currentCharacterData.GetPose(poseId);
-        if (poseEntry == null)
+        var sceneData = _currentCharacter.GetScene(sceneId);
+        if (sceneData == null)
         {
-            Debug.LogWarning($"[Presenter] Pose not found: {poseId}");
+            Debug.LogWarning($"[Presenter] Scene not found: {sceneId}");
             return false;
         }
 
-        if (poseEntry.prefab == null)
+        if (sceneData.prefab == null)
         {
-            Debug.LogWarning($"[Presenter] Pose prefab is null: {poseId}");
+            Debug.LogWarning($"[Presenter] Scene prefab is null: {sceneId}");
             return false;
         }
 
-        // 同じポーズなら何もしない
-        if (_currentPoseId == poseId && _currentInstance != null)
+        // 同じシーンなら何もしない
+        if (_currentSceneId == sceneId && _currentInstance != null)
         {
-            Debug.Log($"[Presenter] Already showing pose: {poseId}");
+            Debug.Log($"[Presenter] Already showing scene: {sceneId}");
             return true;
         }
 
-        string previousPoseId = _currentPoseId;
-        _currentPoseId = poseId;
+        string previousSceneId = _currentSceneId;
+        _currentSceneId = sceneId;
+        _currentScene = sceneData;
 
         // 現在のインスタンスを破棄
         if (_currentInstance != null)
@@ -408,63 +411,63 @@ public class OverlayCharacterPresenter : MonoBehaviour
         }
 
         // 新しいプレハブを設定して表示
-        characterPrefab = poseEntry.prefab;
+        characterPrefab = sceneData.prefab;
 
         // 推奨カメラサイズがあれば設定
-        if (poseEntry.recommendedCameraSize > 0)
+        if (sceneData.recommendedCameraSize > 0)
         {
-            cameraOrthoSize = poseEntry.recommendedCameraSize;
+            cameraOrthoSize = sceneData.recommendedCameraSize;
         }
 
-        // 表示中なら新しいポーズで再表示
+        // 表示中なら新しいシーンで再表示
         if (_isShowing)
         {
             Show();
         }
 
-        Debug.Log($"[Presenter] Pose changed: {previousPoseId} → {poseId}");
-        OnPoseChanged?.Invoke(poseId);
+        Debug.Log($"[Presenter] Scene changed: {previousSceneId} → {sceneId}");
+        OnSceneChanged?.Invoke(sceneId);
 
         return true;
     }
 
     /// <summary>
-    /// 利用可能なポーズ一覧を取得（UI用）
+    /// 利用可能なシーン一覧を取得（UI用）
     /// </summary>
     /// <param name="currentAffectionLevel">現在の好感度レベル（アンロック判定用）</param>
-    /// <returns>ポーズエントリのリスト</returns>
-    public List<CharacterPoseData.PoseEntry> GetAvailablePoses(int currentAffectionLevel = 999)
+    /// <returns>シーンデータのリスト</returns>
+    public List<CharacterSceneData> GetAvailableScenes(int currentAffectionLevel = 999)
     {
-        if (_currentCharacterData == null)
+        if (_currentCharacter == null)
         {
-            return new List<CharacterPoseData.PoseEntry>();
+            return new List<CharacterSceneData>();
         }
-        return _currentCharacterData.GetUnlockedPoses(currentAffectionLevel);
+        return _currentCharacter.GetUnlockedScenes(currentAffectionLevel);
     }
 
     /// <summary>
-    /// 全ポーズ一覧を取得（ロック状態含む）
+    /// 全シーン一覧を取得（ロック状態含む）
     /// </summary>
-    public List<CharacterPoseData.PoseEntry> GetAllPoses()
+    public List<CharacterSceneData> GetAllScenes()
     {
-        if (_currentCharacterData == null)
+        if (_currentCharacter == null)
         {
-            return new List<CharacterPoseData.PoseEntry>();
+            return new List<CharacterSceneData>();
         }
-        return _currentCharacterData.poses;
+        return _currentCharacter.scenes;
     }
 
     /// <summary>
-    /// 指定ポーズがアンロック済みか確認
+    /// 指定シーンがアンロック済みか確認
     /// </summary>
-    public bool IsPoseUnlocked(string poseId, int currentAffectionLevel = 999)
+    public bool IsSceneUnlocked(string sceneId, int currentAffectionLevel = 999)
     {
-        if (_currentCharacterData == null) return false;
+        if (_currentCharacter == null) return false;
 
-        var pose = _currentCharacterData.GetPose(poseId);
-        if (pose == null) return false;
+        var scene = _currentCharacter.GetScene(sceneId);
+        if (scene == null) return false;
 
-        return !pose.isLocked || pose.requiredAffectionLevel <= currentAffectionLevel;
+        return scene.IsUnlocked(currentAffectionLevel);
     }
 
     // ========================================

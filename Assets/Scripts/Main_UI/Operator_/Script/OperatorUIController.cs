@@ -104,10 +104,10 @@ public class OperatorUIController : IViewController
         UpdateOutfitButtons();
 
         // 初期シーンUIを表示
-        ApplyCurrentPoseUI();
+        ApplyCurrentSceneUI();
 
         // 会話リストの初期化
-        UpdateTalkControllerForCurrentPose();
+        UpdateTalkControllerForCurrentScene();
 
         LogUIController.LogSystem("Operator View Initialized.");
     }
@@ -224,10 +224,10 @@ public class OperatorUIController : IViewController
             InventoryManager.Instance.OnItemCountChanged += OnItemCountChanged;
         }
 
-        // Presenterのポーズ変更イベント
+        // Presenterのシーン変更イベント
         if (OverlayCharacterPresenter.Instance != null)
         {
-            OverlayCharacterPresenter.Instance.OnPoseChanged += OnPoseChanged;
+            OverlayCharacterPresenter.Instance.OnSceneChanged += OnSceneChanged;
         }
 
         // 衣装解放イベント
@@ -249,10 +249,10 @@ public class OperatorUIController : IViewController
             InventoryManager.Instance.OnItemCountChanged -= OnItemCountChanged;
         }
 
-        // Presenterのポーズ変更イベント解除
+        // Presenterのシーン変更イベント解除
         if (OverlayCharacterPresenter.Instance != null)
         {
-            OverlayCharacterPresenter.Instance.OnPoseChanged -= OnPoseChanged;
+            OverlayCharacterPresenter.Instance.OnSceneChanged -= OnSceneChanged;
         }
 
         // 衣装解放イベント解除
@@ -289,7 +289,7 @@ public class OperatorUIController : IViewController
         affectionController.UpdateAffectionUI();
     }
 
-    private void OnConversationStarted(CharacterPoseData.PoseConversation conv)
+    private void OnConversationStarted(SceneConversation conv)
     {
         Debug.Log($"[OperatorUI] Conversation started: {conv.title}");
     }
@@ -317,42 +317,42 @@ public class OperatorUIController : IViewController
     // シーンUI切り替え
     // ========================================
 
-    private void OnPoseChanged(string poseId)
+    private void OnSceneChanged(string sceneId)
     {
-        ApplyCurrentPoseUI();
-        UpdateTalkControllerForCurrentPose();
+        ApplyCurrentSceneUI();
+        UpdateTalkControllerForCurrentScene();
     }
 
-    private void UpdateTalkControllerForCurrentPose()
+    private void UpdateTalkControllerForCurrentScene()
     {
         if (talkController == null) return;
 
         var presenter = OverlayCharacterPresenter.Instance;
         if (presenter == null) return;
 
-        var characterId = presenter.CurrentCharacterData?.characterId;
-        var poseEntry = presenter.CurrentPoseEntry;
+        var characterId = presenter.CurrentCharacter?.characterId;
+        var sceneData = presenter.CurrentSceneData;
 
-        talkController.UpdateForPose(characterId, poseEntry);
+        talkController.UpdateForScene(characterId, sceneData);
     }
 
     /// <summary>
-    /// 現在のポーズに応じたUIを適用
+    /// 現在のシーンに応じたUIを適用
     /// </summary>
-    private void ApplyCurrentPoseUI()
+    private void ApplyCurrentSceneUI()
     {
         var presenter = OverlayCharacterPresenter.Instance;
         if (presenter == null) return;
 
-        var poseEntry = presenter.CurrentPoseEntry;
+        var sceneData = presenter.CurrentSceneData;
 
         // 現在のシーンUIを非表示
         _currentSceneUI?.Hide();
 
-        // ポーズ設定に応じてシーンUIを選択
-        if (poseEntry != null && poseEntry.hideSidePanel)
+        // シーン設定に応じてシーンUIを選択
+        if (sceneData != null && sceneData.hideSidePanel)
         {
-            _fullscreenSceneUI.SetHideBackButton(poseEntry.hideBackButton);
+            _fullscreenSceneUI.SetHideBackButton(sceneData.hideBackButton);
             _currentSceneUI = _fullscreenSceneUI;
         }
         else
@@ -455,7 +455,7 @@ public class OperatorUIController : IViewController
     private void SetOutfit(int outfitIndex)
     {
         var presenter = OverlayCharacterPresenter.Instance;
-        var characterId = presenter?.CurrentCharacterData?.characterId;
+        var characterId = presenter?.CurrentCharacter?.characterId;
 
         // ロック状態チェック
         if (CostumeManager.Instance != null && !string.IsNullOrEmpty(characterId))
@@ -473,12 +473,12 @@ public class OperatorUIController : IViewController
         currentOutfit = outfitIndex;
         UpdateOutfitButtons();
 
-        // OverlayCharacterPresenterでポーズ切り替え
+        // OverlayCharacterPresenterでシーン切り替え
         if (presenter != null)
         {
-            string poseId = CostumeManager.GetCostumeIdFromIndex(outfitIndex);
-            poseId = CostumeManager.CostumeIdToPoseId(poseId);
-            presenter.SetPose(poseId);
+            string sceneId = CostumeManager.GetCostumeIdFromIndex(outfitIndex);
+            sceneId = CostumeManager.CostumeIdToSceneId(sceneId);
+            presenter.SetScene(sceneId);
         }
 
         LogUIController.Msg($"Outfit changed to: {GetOutfitName(outfitIndex)}");
@@ -487,7 +487,7 @@ public class OperatorUIController : IViewController
     private void UpdateOutfitButtons()
     {
         var presenter = OverlayCharacterPresenter.Instance;
-        var characterId = presenter?.CurrentCharacterData?.characterId;
+        var characterId = presenter?.CurrentCharacter?.characterId;
         var costumeManager = CostumeManager.Instance;
 
         // activeクラスを解除

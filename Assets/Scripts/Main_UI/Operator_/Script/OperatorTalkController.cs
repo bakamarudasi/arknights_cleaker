@@ -5,7 +5,7 @@ using System.Collections.Generic;
 
 /// <summary>
 /// オペレーター画面での会話機能を制御
-/// CharacterPoseData.PoseEntry.conversationsからリストを生成し、
+/// CharacterSceneData.conversationsからリストを生成し、
 /// ConversationControllerを使って会話を再生する
 /// </summary>
 public class OperatorTalkController
@@ -16,8 +16,8 @@ public class OperatorTalkController
     private VisualElement talkListContainer;
 
     // 現在の会話リスト
-    private List<CharacterPoseData.PoseConversation> currentConversations = new List<CharacterPoseData.PoseConversation>();
-    private CharacterPoseData.PoseEntry currentPose;
+    private List<SceneConversation> currentConversations = new List<SceneConversation>();
+    private CharacterSceneData currentScene;
     private string currentCharacterId;
 
     // 再生済み会話の追跡（playOnce用）
@@ -27,7 +27,7 @@ public class OperatorTalkController
     private EventCallback<ClickEvent> callbackRandomTalk;
 
     // イベント
-    public event Action<CharacterPoseData.PoseConversation> OnConversationStarted;
+    public event Action<SceneConversation> OnConversationStarted;
     public event Action OnConversationEnded;
 
     private const string CLS_LOCKED = "locked";
@@ -50,13 +50,13 @@ public class OperatorTalkController
     }
 
     /// <summary>
-    /// ポーズが変更されたときに呼ばれる
+    /// シーンが変更されたときに呼ばれる
     /// 会話リストを更新する
     /// </summary>
-    public void UpdateForPose(string characterId, CharacterPoseData.PoseEntry pose)
+    public void UpdateForScene(string characterId, CharacterSceneData scene)
     {
         currentCharacterId = characterId;
-        currentPose = pose;
+        currentScene = scene;
 
         RefreshConversationList();
     }
@@ -71,16 +71,16 @@ public class OperatorTalkController
         talkListContainer.Clear();
         currentConversations.Clear();
 
-        if (currentPose == null || currentPose.conversations == null)
+        int currentAffection = GetCurrentAffectionLevel();
+
+        if (currentScene == null || currentScene.conversations == null)
         {
             ShowEmptyMessage();
             UpdateRandomTalkButton();
             return;
         }
 
-        int currentAffection = GetCurrentAffectionLevel();
-
-        foreach (var conv in currentPose.conversations)
+        foreach (var conv in currentScene.conversations)
         {
             currentConversations.Add(conv);
             CreateTalkItem(conv, currentAffection);
@@ -94,7 +94,7 @@ public class OperatorTalkController
         UpdateRandomTalkButton();
     }
 
-    private void CreateTalkItem(CharacterPoseData.PoseConversation conv, int currentAffection)
+    private void CreateTalkItem(SceneConversation conv, int currentAffection)
     {
         bool isLocked = conv.requiredAffectionLevel > currentAffection;
         bool isPlayed = conv.playOnce && IsConversationPlayed(conv);
@@ -147,19 +147,19 @@ public class OperatorTalkController
         if (btnRandomTalk == null) return;
 
         int currentAffection = GetCurrentAffectionLevel();
-        var randomTalks = currentPose?.GetRandomTalks(currentAffection);
-
+        var randomTalks = currentScene?.GetRandomTalks(currentAffection);
         bool hasRandomTalks = randomTalks != null && randomTalks.Count > 0;
+
         btnRandomTalk.SetEnabled(hasRandomTalks);
         btnRandomTalk.style.opacity = hasRandomTalks ? 1f : 0.5f;
     }
 
     private void OnRandomTalkClicked(ClickEvent evt)
     {
-        if (currentPose == null) return;
+        if (currentScene == null) return;
 
         int currentAffection = GetCurrentAffectionLevel();
-        var randomTalks = currentPose.GetRandomTalks(currentAffection);
+        var randomTalks = currentScene.GetRandomTalks(currentAffection);
 
         if (randomTalks == null || randomTalks.Count == 0)
         {
@@ -167,17 +167,16 @@ public class OperatorTalkController
             return;
         }
 
-        // ランダムに選択
         var selected = randomTalks[UnityEngine.Random.Range(0, randomTalks.Count)];
         StartConversation(selected);
     }
 
-    private void OnTalkItemClicked(CharacterPoseData.PoseConversation conv)
+    private void OnTalkItemClicked(SceneConversation conv)
     {
         StartConversation(conv);
     }
 
-    private void StartConversation(CharacterPoseData.PoseConversation conv)
+    private void StartConversation(SceneConversation conv)
     {
         if (conv == null || conv.conversationData == null)
         {
@@ -185,7 +184,6 @@ public class OperatorTalkController
             return;
         }
 
-        // playOnceで既に再生済み
         if (conv.playOnce && IsConversationPlayed(conv))
         {
             LogUIController.Msg("この会話は既に見ました");
@@ -194,7 +192,6 @@ public class OperatorTalkController
 
         OnConversationStarted?.Invoke(conv);
 
-        // シーン内のConversationControllerを探す
         var conversationController = UnityEngine.Object.FindAnyObjectByType<ConversationController>();
         if (conversationController != null)
         {
@@ -205,15 +202,13 @@ public class OperatorTalkController
         }
         else
         {
-            // ConversationControllerがない場合はログを出す
             Debug.LogWarning("[OperatorTalk] No ConversationController found in scene");
             OnConversationComplete(conv);
         }
     }
 
-    private void OnConversationComplete(CharacterPoseData.PoseConversation conv)
+    private void OnConversationComplete(SceneConversation conv)
     {
-        // playOnceの場合は再生済みとしてマーク
         if (conv.playOnce)
         {
             MarkConversationPlayed(conv);
@@ -235,17 +230,17 @@ public class OperatorTalkController
     }
 
     // 再生済み会話の管理
-    private string GetConversationKey(CharacterPoseData.PoseConversation conv)
+    private string GetConversationKey(SceneConversation conv)
     {
-        return $"{currentCharacterId}_{currentPose?.poseId}_{conv.title}";
+        return $"{currentCharacterId}_{currentScene?.sceneId}_{conv.title}";
     }
 
-    private bool IsConversationPlayed(CharacterPoseData.PoseConversation conv)
+    private bool IsConversationPlayed(SceneConversation conv)
     {
         return playedConversations.Contains(GetConversationKey(conv));
     }
 
-    private void MarkConversationPlayed(CharacterPoseData.PoseConversation conv)
+    private void MarkConversationPlayed(SceneConversation conv)
     {
         playedConversations.Add(GetConversationKey(conv));
         // TODO: 永続化が必要なら SaveManager と連携
