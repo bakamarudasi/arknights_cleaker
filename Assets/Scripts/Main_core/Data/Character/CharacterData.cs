@@ -4,32 +4,99 @@ using System.Collections.Generic;
 
 /// <summary>
 /// キャラクターデータ（ScriptableObject）
-/// 好感度、セリフ、立ち絵などを管理
+/// キャラクターの全情報を統合管理する主データ
+///
+/// 構成:
+/// - 基本情報（ID, 名前, 説明）
+/// - シーン一覧（衣装別・イベント別のプレハブとUI設定）
+/// - 好感度設定
+/// - セリフ設定（共通）
+/// - プレゼント好み
 /// </summary>
 [CreateAssetMenu(fileName = "NewCharacter", menuName = "Arknights/Character Data")]
 public class CharacterData : ScriptableObject
 {
-    [Header("基本情報")]
+    [Header("=== 基本情報 ===")]
     public string characterId;
     public string displayName;
     [TextArea(2, 4)]
     public string description;
+    public Sprite thumbnail;
 
-    [Header("Prefab")]
-    public GameObject psbPrefab;
+    [Header("=== シーン設定 ===")]
+    [Tooltip("利用可能なシーン一覧（衣装別・イベント別）")]
+    public List<CharacterSceneData> scenes = new();
 
-    [Header("好感度設定")]
+    [Tooltip("デフォルトで表示するシーンID")]
+    public string defaultSceneId = "default";
+
+    [Header("=== 好感度設定 ===")]
     public int maxAffection = 200;
     public List<AffectionLevel> affectionLevels = new();
 
-    [Header("セリフ設定")]
+    [Header("=== セリフ設定（共通）===")]
     public List<DialogueGroup> dialogueGroups = new();
 
-    [Header("プレゼントアイテム")]
+    [Header("=== プレゼント設定 ===")]
     public List<GiftPreference> giftPreferences = new();
 
     // ========================================
-    // ヘルパーメソッド
+    // シーン関連ヘルパーメソッド
+    // ========================================
+
+    /// <summary>
+    /// シーンIDからシーンデータを取得
+    /// </summary>
+    public CharacterSceneData GetScene(string sceneId)
+    {
+        return scenes.Find(s => s != null && s.sceneId == sceneId);
+    }
+
+    /// <summary>
+    /// デフォルトシーンを取得
+    /// </summary>
+    public CharacterSceneData GetDefaultScene()
+    {
+        var scene = GetScene(defaultSceneId);
+        if (scene == null && scenes.Count > 0)
+        {
+            scene = scenes[0];
+        }
+        return scene;
+    }
+
+    /// <summary>
+    /// 利用可能（アンロック済み）なシーン一覧を取得
+    /// </summary>
+    public List<CharacterSceneData> GetUnlockedScenes(int currentAffectionLevel, Func<string, bool> hasItem = null)
+    {
+        return scenes.FindAll(s => s != null && s.IsUnlocked(currentAffectionLevel, hasItem));
+    }
+
+    /// <summary>
+    /// シーンが存在するか確認
+    /// </summary>
+    public bool HasScene(string sceneId)
+    {
+        return scenes.Exists(s => s != null && s.sceneId == sceneId);
+    }
+
+    /// <summary>
+    /// シーン数を取得
+    /// </summary>
+    public int SceneCount => scenes.Count;
+
+    /// <summary>
+    /// インデックスからシーンを取得（衣装ボタン互換用）
+    /// </summary>
+    public CharacterSceneData GetSceneByIndex(int index)
+    {
+        if (index < 0 || index >= scenes.Count) return null;
+        return scenes[index];
+    }
+
+    // ========================================
+    // 好感度関連ヘルパーメソッド
     // ========================================
 
     /// <summary>

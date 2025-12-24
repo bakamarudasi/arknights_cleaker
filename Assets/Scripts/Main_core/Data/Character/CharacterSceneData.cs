@@ -1,0 +1,121 @@
+using UnityEngine;
+using System;
+using System.Collections.Generic;
+
+/// <summary>
+/// キャラクターシーンデータ（ScriptableObject）
+/// 衣装別・イベント別のシーン情報を管理
+///
+/// 使い方:
+/// 1. Project右クリック → Create → Arknights/Character Scene
+/// 2. sceneId, displayName, prefab を設定
+/// 3. CharacterData.scenes に追加
+/// </summary>
+[CreateAssetMenu(fileName = "NewCharacterScene", menuName = "Arknights/Character Scene")]
+public class CharacterSceneData : ScriptableObject
+{
+    [Header("=== 基本情報 ===")]
+    [Tooltip("シーン識別ID（例: default, swimsuit, event_summer）")]
+    public string sceneId;
+
+    [Tooltip("UI表示名（例: 通常, 水着, 夏イベント）")]
+    public string displayName;
+
+    [Tooltip("このシーン用のPSBプレハブ")]
+    public GameObject prefab;
+
+    [Tooltip("シーン選択UI用のサムネイル")]
+    public Sprite thumbnail;
+
+    [Header("=== カメラ設定 ===")]
+    [Tooltip("推奨カメラサイズ（0で自動調整）")]
+    public float recommendedCameraSize = 0f;
+
+    [Header("=== 解放条件 ===")]
+    [Tooltip("初期状態でロックされているか")]
+    public bool isLocked = false;
+
+    [Tooltip("解放に必要な好感度レベル（0 = 条件なし）")]
+    public int requiredAffectionLevel = 0;
+
+    [Tooltip("解放に必要なアイテムID（空 = 条件なし）")]
+    public string requiredItemId;
+
+    [Header("=== UI設定 ===")]
+    [Tooltip("サイドパネルを非表示にする（フルスクリーンモード）")]
+    public bool hideSidePanel = false;
+
+    [Tooltip("戻るボタンを非表示にする")]
+    public bool hideBackButton = false;
+
+    [Tooltip("カスタムシーンUIのタイプ（空の場合はデフォルト）")]
+    public string sceneUIType = "";
+
+    [Header("=== シーン専用会話 ===")]
+    [Tooltip("このシーンで利用可能な会話リスト")]
+    public List<SceneConversation> conversations = new List<SceneConversation>();
+
+    // ========================================
+    // ヘルパーメソッド
+    // ========================================
+
+    /// <summary>
+    /// 解放済みの会話を取得
+    /// </summary>
+    public List<SceneConversation> GetUnlockedConversations(int currentAffectionLevel)
+    {
+        return conversations.FindAll(c => c.requiredAffectionLevel <= currentAffectionLevel);
+    }
+
+    /// <summary>
+    /// ランダム雑談用の会話を取得
+    /// </summary>
+    public List<SceneConversation> GetRandomTalks(int currentAffectionLevel)
+    {
+        return conversations.FindAll(c => c.isRandomTalk && c.requiredAffectionLevel <= currentAffectionLevel);
+    }
+
+    /// <summary>
+    /// このシーンがアンロック済みかチェック
+    /// </summary>
+    public bool IsUnlocked(int currentAffectionLevel, Func<string, bool> hasItem = null)
+    {
+        if (!isLocked) return true;
+
+        // 好感度レベル条件
+        if (requiredAffectionLevel > 0 && currentAffectionLevel < requiredAffectionLevel)
+        {
+            return false;
+        }
+
+        // アイテム条件
+        if (!string.IsNullOrEmpty(requiredItemId) && hasItem != null)
+        {
+            if (!hasItem(requiredItemId)) return false;
+        }
+
+        return true;
+    }
+}
+
+/// <summary>
+/// シーンごとの会話データ
+/// </summary>
+[Serializable]
+public class SceneConversation
+{
+    [Tooltip("会話タイトル（UIに表示）")]
+    public string title;
+
+    [Tooltip("会話データ")]
+    public ConversationData conversationData;
+
+    [Tooltip("解放に必要な好感度レベル")]
+    public int requiredAffectionLevel = 0;
+
+    [Tooltip("ランダム雑談として使用するか")]
+    public bool isRandomTalk = false;
+
+    [Tooltip("一度だけ再生する（イベント会話用）")]
+    public bool playOnce = false;
+}

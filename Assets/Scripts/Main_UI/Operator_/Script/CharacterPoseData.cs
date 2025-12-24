@@ -1,17 +1,28 @@
 using UnityEngine;
+using System;
 using System.Collections.Generic;
 
 /// <summary>
-/// キャラクターのポーズデータ (ScriptableObject)
+/// [レガシー] キャラクターのポーズデータ (ScriptableObject)
 ///
-/// 使い方:
+/// ※ 新規作成時は CharacterData + CharacterSceneData を使用してください。
+/// このクラスは後方互換性のために残されています。
+///
+/// 新しい方式:
+/// 1. CharacterData を作成（キャラクターの基本情報、好感度、セリフ）
+/// 2. CharacterSceneData を作成（シーンごとのプレハブ、UI設定、会話）
+/// 3. CharacterData.scenes に CharacterSceneData を追加
+/// 4. OverlayCharacterPresenter.LoadCharacter(characterData) で読み込み
+///
+/// レガシー使い方:
 /// 1. Project右クリック → Create → Character → PoseData
 /// 2. キャラID、名前を設定
 /// 3. posesにポーズを追加（poseId, displayName, prefab, thumbnail）
 /// 4. defaultPoseIdを設定
-/// 5. OverlayCharacterPresenter.LoadCharacter(poseData) で読み込み
+/// 5. OverlayCharacterPresenter.LoadCharacterLegacy(poseData) で読み込み
 /// </summary>
-[CreateAssetMenu(fileName = "NewCharacterPoseData", menuName = "Character/PoseData")]
+[Obsolete("CharacterData + CharacterSceneData を使用してください。このクラスは後方互換性のために残されています。")]
+[CreateAssetMenu(fileName = "NewCharacterPoseData", menuName = "Character/PoseData (Legacy)")]
 public class CharacterPoseData : ScriptableObject
 {
     [Header("=== キャラクター基本情報 ===")]
