@@ -20,6 +20,9 @@ public class ProgressData
     // --- イベント発動状態 ---
     public List<string> triggeredEventIds = new();
 
+    // --- 再生済み会話（playOnce用） ---
+    public List<string> playedConversationIds = new();
+
     // --- 解放済みメニュー ---
     public List<string> unlockedMenus = new();
 

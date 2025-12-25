@@ -20,8 +20,8 @@ public class OperatorTalkController
     private CharacterSceneData currentScene;
     private string currentCharacterId;
 
-    // 再生済み会話の追跡（playOnce用）
-    private HashSet<string> playedConversations = new HashSet<string>();
+    // 再生済み会話の追跡（playOnce用）- staticでインスタンス間で共有
+    private static HashSet<string> s_playedConversations = new HashSet<string>();
 
     // コールバック参照
     private EventCallback<ClickEvent> callbackRandomTalk;
@@ -237,13 +237,39 @@ public class OperatorTalkController
 
     private bool IsConversationPlayed(SceneConversation conv)
     {
-        return playedConversations.Contains(GetConversationKey(conv));
+        return s_playedConversations.Contains(GetConversationKey(conv));
     }
 
     private void MarkConversationPlayed(SceneConversation conv)
     {
-        playedConversations.Add(GetConversationKey(conv));
-        // TODO: 永続化が必要なら SaveManager と連携
+        s_playedConversations.Add(GetConversationKey(conv));
+    }
+
+    // ========================================
+    // セーブ/ロード（static）
+    // ========================================
+
+    /// <summary>
+    /// 再生済み会話IDのリストを取得（セーブ用）
+    /// </summary>
+    public static List<string> GetSaveData()
+    {
+        return new List<string>(s_playedConversations);
+    }
+
+    /// <summary>
+    /// 再生済み会話を復元（ロード用）
+    /// </summary>
+    public static void LoadSaveData(List<string> conversationIds)
+    {
+        s_playedConversations.Clear();
+        if (conversationIds != null)
+        {
+            foreach (var id in conversationIds)
+            {
+                s_playedConversations.Add(id);
+            }
+        }
     }
 
     public void Dispose()

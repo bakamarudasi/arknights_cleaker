@@ -683,6 +683,26 @@ public class OperatorUIController : IViewController
     }
 
     // ========================================
+    // セーブ/ロード
+    // ========================================
+
+    /// <summary>
+    /// 会話の再生済み状態を取得（セーブ用）
+    /// </summary>
+    public static System.Collections.Generic.List<string> GetPlayedConversations()
+    {
+        return OperatorTalkController.GetSaveData();
+    }
+
+    /// <summary>
+    /// 会話の再生済み状態を復元（ロード用）
+    /// </summary>
+    public static void LoadPlayedConversations(System.Collections.Generic.List<string> conversationIds)
+    {
+        OperatorTalkController.LoadSaveData(conversationIds);
+    }
+
+    // ========================================
     // クリーンアップ
     // ========================================
 
