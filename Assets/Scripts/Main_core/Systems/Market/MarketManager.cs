@@ -15,6 +15,8 @@ public class MarketManager : MonoBehaviour
     // ========================================
     public static MarketManager Instance { get; private set; }
 
+    private const string LOG_TAG = "[MarketManager]";
+
     // ========================================
     // 設定
     // ========================================
@@ -97,48 +99,76 @@ public class MarketManager : MonoBehaviour
     {
         if (stockDatabase == null)
         {
-            Debug.LogWarning("[MarketManager] StockDatabase not assigned!");
+            Debug.LogWarning($"{LOG_TAG} StockDatabase not assigned!");
             return;
         }
 
-        foreach (var stock in stockDatabase.stocks)
+        if (stockDatabase.stocks == null || stockDatabase.stocks.Count == 0)
         {
-            var runtimeData = new StockRuntimeData
-            {
-                stockId = stock.stockId,
-                currentPrice = stock.initialPrice,
-                previousPrice = stock.initialPrice,
-                openPrice = stock.initialPrice,
-                highPrice = stock.initialPrice,
-                lowPrice = stock.initialPrice,
-                priceHistory = new Queue<double>(priceHistoryLength)
-            };
-
-            // 初期履歴を生成（チャート表示用）
-            var initialHistory = StockPriceEngine.GeneratePriceHistory(
-                stock.initialPrice,
-                stock.drift,
-                stock.volatility,
-                tickInterval,
-                priceHistoryLength / 2, // 半分だけ事前生成
-                stock.jumpProbability,
-                stock.jumpIntensity,
-                stock.minPrice,
-                stock.maxPrice
-            );
-
-            foreach (var price in initialHistory)
-            {
-                runtimeData.priceHistory.Enqueue(price);
-            }
-            runtimeData.currentPrice = initialHistory.Length > 0
-                ? initialHistory[^1]
-                : stock.initialPrice;
-
-            stockStates[stock.stockId] = runtimeData;
+            Debug.LogWarning($"{LOG_TAG} StockDatabase has no stocks!");
+            return;
         }
 
-        Debug.Log($"[MarketManager] Initialized {stockStates.Count} stocks");
+        int successCount = 0;
+        int failCount = 0;
+
+        foreach (var stock in stockDatabase.stocks)
+        {
+            if (stock == null || string.IsNullOrEmpty(stock.stockId))
+            {
+                Debug.LogWarning($"{LOG_TAG} Skipping invalid stock entry");
+                failCount++;
+                continue;
+            }
+
+            try
+            {
+                var runtimeData = new StockRuntimeData
+                {
+                    stockId = stock.stockId,
+                    currentPrice = stock.initialPrice,
+                    previousPrice = stock.initialPrice,
+                    openPrice = stock.initialPrice,
+                    highPrice = stock.initialPrice,
+                    lowPrice = stock.initialPrice,
+                    priceHistory = new Queue<double>(priceHistoryLength)
+                };
+
+                // 初期履歴を生成（チャート表示用）
+                var initialHistory = StockPriceEngine.GeneratePriceHistory(
+                    stock.initialPrice,
+                    stock.drift,
+                    stock.volatility,
+                    tickInterval,
+                    priceHistoryLength / 2, // 半分だけ事前生成
+                    stock.jumpProbability,
+                    stock.jumpIntensity,
+                    stock.minPrice,
+                    stock.maxPrice
+                );
+
+                if (initialHistory != null)
+                {
+                    foreach (var price in initialHistory)
+                    {
+                        runtimeData.priceHistory.Enqueue(price);
+                    }
+                    runtimeData.currentPrice = initialHistory.Length > 0
+                        ? initialHistory[^1]
+                        : stock.initialPrice;
+                }
+
+                stockStates[stock.stockId] = runtimeData;
+                successCount++;
+            }
+            catch (Exception ex)
+            {
+                Debug.LogError($"{LOG_TAG} Failed to initialize stock '{stock.stockId}': {ex.Message}");
+                failCount++;
+            }
+        }
+
+        Debug.Log($"{LOG_TAG} Initialized {successCount} stocks ({failCount} failed)");
     }
 
     // ========================================
@@ -160,36 +190,55 @@ public class MarketManager : MonoBehaviour
 
     private void UpdateStockPrice(StockData stock, StockRuntimeData state)
     {
-        state.previousPrice = state.currentPrice;
+        if (stock == null || state == null) return;
 
-        // 新しい株価を計算
-        double newPrice = StockPriceEngine.CalculateNextPrice(
-            state.currentPrice,
-            stock.drift,
-            stock.volatility,
-            tickInterval,
-            stock.jumpProbability,
-            stock.jumpIntensity,
-            stock.minPrice,
-            stock.maxPrice
-        );
-
-        state.currentPrice = newPrice;
-
-        // 履歴に追加
-        if (state.priceHistory.Count >= priceHistoryLength)
+        try
         {
-            state.priceHistory.Dequeue();
+            state.previousPrice = state.currentPrice;
+
+            // 新しい株価を計算
+            double newPrice = StockPriceEngine.CalculateNextPrice(
+                state.currentPrice,
+                stock.drift,
+                stock.volatility,
+                tickInterval,
+                stock.jumpProbability,
+                stock.jumpIntensity,
+                stock.minPrice,
+                stock.maxPrice
+            );
+
+            state.currentPrice = newPrice;
+
+            // 履歴に追加
+            if (state.priceHistory != null)
+            {
+                if (state.priceHistory.Count >= priceHistoryLength)
+                {
+                    state.priceHistory.Dequeue();
+                }
+                state.priceHistory.Enqueue(newPrice);
+            }
+
+            // 高値・安値を更新
+            if (newPrice > state.highPrice) state.highPrice = newPrice;
+            if (newPrice < state.lowPrice) state.lowPrice = newPrice;
+
+            // イベント発火
+            try
+            {
+                var snapshot = new StockPriceSnapshot(stock.stockId, newPrice, state.previousPrice);
+                MarketEventBus.PublishPriceUpdated(snapshot);
+            }
+            catch (Exception ex)
+            {
+                Debug.LogError($"{LOG_TAG} MarketEventBus.PublishPriceUpdated threw exception: {ex.Message}");
+            }
         }
-        state.priceHistory.Enqueue(newPrice);
-
-        // 高値・安値を更新
-        if (newPrice > state.highPrice) state.highPrice = newPrice;
-        if (newPrice < state.lowPrice) state.lowPrice = newPrice;
-
-        // イベント発火
-        var snapshot = new StockPriceSnapshot(stock.stockId, newPrice, state.previousPrice);
-        MarketEventBus.PublishPriceUpdated(snapshot);
+        catch (Exception ex)
+        {
+            Debug.LogError($"{LOG_TAG} UpdateStockPrice failed for '{stock.stockId}': {ex.Message}");
+        }
     }
 
     // ========================================
@@ -250,23 +299,31 @@ public class MarketManager : MonoBehaviour
     /// </summary>
     public void ApplyExternalEvent(string stockId, float impactStrength, bool isPositive)
     {
+        if (string.IsNullOrEmpty(stockId)) return;
         if (!stockStates.TryGetValue(stockId, out var state)) return;
         if (stockDatabase == null) return;
 
         var stock = stockDatabase.GetByStockId(stockId);
         if (stock == null) return;
 
-        state.previousPrice = state.currentPrice;
-        state.currentPrice = StockPriceEngine.ApplyEventImpact(
-            state.currentPrice,
-            impactStrength,
-            isPositive,
-            stock.minPrice,
-            stock.maxPrice
-        );
+        try
+        {
+            state.previousPrice = state.currentPrice;
+            state.currentPrice = StockPriceEngine.ApplyEventImpact(
+                state.currentPrice,
+                impactStrength,
+                isPositive,
+                stock.minPrice,
+                stock.maxPrice
+            );
 
-        var snapshot = new StockPriceSnapshot(stockId, state.currentPrice, state.previousPrice);
-        MarketEventBus.PublishPriceUpdated(snapshot);
+            var snapshot = new StockPriceSnapshot(stockId, state.currentPrice, state.previousPrice);
+            MarketEventBus.PublishPriceUpdated(snapshot);
+        }
+        catch (Exception ex)
+        {
+            Debug.LogError($"{LOG_TAG} ApplyExternalEvent failed for '{stockId}': {ex.Message}");
+        }
     }
 
     /// <summary>
@@ -299,16 +356,23 @@ public class MarketManager : MonoBehaviour
     {
         if (newsDatabase == null) return;
 
-        var news = newsDatabase.GetRandomNews();
-        if (string.IsNullOrEmpty(news.text)) return;
-
-        // ニュースに関連する銘柄があれば株価に影響
-        if (!string.IsNullOrEmpty(news.relatedStockId) && Mathf.Abs(news.priceImpact) > 0.01f)
+        try
         {
-            ApplyExternalEvent(news.relatedStockId, Mathf.Abs(news.priceImpact), news.priceImpact > 0);
-        }
+            var news = newsDatabase.GetRandomNews();
+            if (string.IsNullOrEmpty(news.text)) return;
 
-        MarketEventBus.PublishNewsGenerated(news);
+            // ニュースに関連する銘柄があれば株価に影響
+            if (!string.IsNullOrEmpty(news.relatedStockId) && Mathf.Abs(news.priceImpact) > 0.01f)
+            {
+                ApplyExternalEvent(news.relatedStockId, Mathf.Abs(news.priceImpact), news.priceImpact > 0);
+            }
+
+            MarketEventBus.PublishNewsGenerated(news);
+        }
+        catch (Exception ex)
+        {
+            Debug.LogError($"{LOG_TAG} GenerateRandomNews failed: {ex.Message}");
+        }
     }
 
     /// <summary>

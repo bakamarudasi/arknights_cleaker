@@ -9,6 +9,8 @@ public class GachaManager : MonoBehaviour
 {
     public static GachaManager Instance { get; private set; }
 
+    private const string LOG_TAG = "[GachaManager]";
+
     // ========================================
     // データベース
     // ========================================
@@ -63,6 +65,36 @@ public class GachaManager : MonoBehaviour
     }
 
     // ========================================
+    // 安全なイベント発火ヘルパー
+    // ========================================
+
+    private void SafeInvoke<T>(Action<T> action, T arg, string eventName)
+    {
+        if (action == null) return;
+        try
+        {
+            action.Invoke(arg);
+        }
+        catch (Exception ex)
+        {
+            Debug.LogError($"{LOG_TAG} Event '{eventName}' handler threw exception: {ex.Message}\n{ex.StackTrace}");
+        }
+    }
+
+    private void SafeInvoke<T1, T2>(Action<T1, T2> action, T1 arg1, T2 arg2, string eventName)
+    {
+        if (action == null) return;
+        try
+        {
+            action.Invoke(arg1, arg2);
+        }
+        catch (Exception ex)
+        {
+            Debug.LogError($"{LOG_TAG} Event '{eventName}' handler threw exception: {ex.Message}\n{ex.StackTrace}");
+        }
+    }
+
+    // ========================================
     // ガチャ実行
     // ========================================
 
@@ -91,8 +123,8 @@ public class GachaManager : MonoBehaviour
             }
         }
 
-        OnGachaPulled?.Invoke(banner, results);
-        OnGachaCountIncremented?.Invoke(count);
+        SafeInvoke(OnGachaPulled, banner, results, nameof(OnGachaPulled));
+        SafeInvoke(OnGachaCountIncremented, count, nameof(OnGachaCountIncremented));
 
         return results;
     }
@@ -121,7 +153,7 @@ public class GachaManager : MonoBehaviour
             // 天井到達 → 最高レアを確定排出
             selectedEntry = GetHighestRarityEntry(banner);
             ResetPityCount(banner.bannerId);
-            OnPityReached?.Invoke(banner);
+            SafeInvoke(OnPityReached, banner, nameof(OnPityReached));
         }
         else
         {
@@ -156,7 +188,7 @@ public class GachaManager : MonoBehaviour
         // 高レア通知
         if (selectedEntry.Rarity >= 5)
         {
-            OnHighRarityPulled?.Invoke(result, selectedEntry.Rarity);
+            SafeInvoke(OnHighRarityPulled, result, selectedEntry.Rarity, nameof(OnHighRarityPulled));
         }
 
         return result;
@@ -280,8 +312,15 @@ public class GachaManager : MonoBehaviour
     private bool CheckIsNew(ItemData item)
     {
         if (item == null) return false;
-        // InventoryManager経由で所持チェック
-        return !GameController.Instance.Inventory.Has(item.id);
+
+        var inventory = GameController.Instance?.Inventory;
+        if (inventory == null)
+        {
+            Debug.LogWarning($"{LOG_TAG} CheckIsNew: InventoryManager not available, assuming item is new");
+            return true;
+        }
+
+        return !inventory.Has(item.id);
     }
 
     // ========================================
@@ -436,10 +475,17 @@ public class GachaManager : MonoBehaviour
         if (banner == null) return false;
         if (!banner.startsLocked) return true;
 
+        var inventory = GameController.Instance?.Inventory;
+        if (inventory == null)
+        {
+            Debug.LogWarning($"{LOG_TAG} IsBannerUnlocked: InventoryManager not available, treating banner as locked");
+            return false;
+        }
+
         // アイテムで解放
         if (banner.requiredUnlockItem != null)
         {
-            if (GameController.Instance.Inventory.Has(banner.requiredUnlockItem.id))
+            if (inventory.Has(banner.requiredUnlockItem.id))
                 return true;
         }
 
@@ -461,10 +507,17 @@ public class GachaManager : MonoBehaviour
         if (banner == null || banner.pool == null || banner.pool.Count == 0)
             return false;
 
+        var inventory = GameController.Instance?.Inventory;
+        if (inventory == null)
+        {
+            Debug.LogWarning($"{LOG_TAG} IsAllPoolItemsOwned: InventoryManager not available");
+            return false;
+        }
+
         foreach (var entry in banner.pool)
         {
             if (entry.item == null) continue;
-            if (!GameController.Instance.Inventory.Has(entry.item.id))
+            if (!inventory.Has(entry.item.id))
                 return false;
         }
         return true;
@@ -478,6 +531,13 @@ public class GachaManager : MonoBehaviour
         if (banner == null || banner.pool == null)
             return (0, 0);
 
+        var inventory = GameController.Instance?.Inventory;
+        if (inventory == null)
+        {
+            Debug.LogWarning($"{LOG_TAG} GetPoolProgress: InventoryManager not available");
+            return (0, 0);
+        }
+
         int owned = 0;
         int total = 0;
 
@@ -485,7 +545,7 @@ public class GachaManager : MonoBehaviour
         {
             if (entry.item == null) continue;
             total++;
-            if (GameController.Instance.Inventory.Has(entry.item.id))
+            if (inventory.Has(entry.item.id))
                 owned++;
         }
 
@@ -501,17 +561,49 @@ public class GachaManager : MonoBehaviour
     /// </summary>
     public List<GachaResultItem> PullGacha(GachaBannerData banner, int count = 1)
     {
-        if (banner == null) return new List<GachaResultItem>();
+        if (banner == null)
+        {
+            Debug.LogWarning($"{LOG_TAG} PullGacha: banner is null");
+            return new List<GachaResultItem>();
+        }
+
+        var gc = GameController.Instance;
+        if (gc == null)
+        {
+            Debug.LogError($"{LOG_TAG} PullGacha: GameController.Instance is null");
+            return new List<GachaResultItem>();
+        }
+
+        var wallet = gc.Wallet;
+        var inventory = gc.Inventory;
+
+        if (wallet == null)
+        {
+            Debug.LogError($"{LOG_TAG} PullGacha: WalletManager is null");
+            return new List<GachaResultItem>();
+        }
+
+        if (inventory == null)
+        {
+            Debug.LogError($"{LOG_TAG} PullGacha: InventoryManager is null");
+            return new List<GachaResultItem>();
+        }
 
         double cost = banner.GetCost(count);
 
         // 通貨チェック
-        if (!GameController.Instance.Wallet.CanAfford(cost, banner.currencyType))
+        if (!wallet.CanAfford(cost, banner.currencyType))
+        {
+            Debug.Log($"{LOG_TAG} PullGacha: Insufficient funds for {count} pulls (cost: {cost})");
             return new List<GachaResultItem>();
+        }
 
         // 通貨消費
-        if (!GameController.Instance.Wallet.Spend(cost, banner.currencyType))
+        if (!wallet.Spend(cost, banner.currencyType))
+        {
+            Debug.LogWarning($"{LOG_TAG} PullGacha: Failed to spend currency");
             return new List<GachaResultItem>();
+        }
 
         // ガチャ実行
         var results = Pull(banner, count);
@@ -521,7 +613,7 @@ public class GachaManager : MonoBehaviour
         {
             if (!string.IsNullOrEmpty(item.itemId))
             {
-                GameController.Instance.Inventory.Add(item.itemId, 1);
+                inventory.Add(item.itemId, 1);
             }
         }
 

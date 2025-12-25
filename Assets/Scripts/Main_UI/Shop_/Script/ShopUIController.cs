@@ -1,5 +1,6 @@
 using UnityEngine;
 using UnityEngine.UIElements;
+using System;
 using System.Collections.Generic;
 
 /// <summary>
@@ -8,6 +9,7 @@ using System.Collections.Generic;
 /// </summary>
 public class ShopUIController : IViewController
 {
+    private const string LOG_TAG = "[ShopUIController]";
     // ========================================
     // UI要素
     // ========================================
@@ -45,41 +47,90 @@ public class ShopUIController : IViewController
 
     public void Initialize(VisualElement root)
     {
-        this.root = root;
-        var database = GameController.Instance?.Upgrade?.Database;
-
-        if (database == null)
+        if (root == null)
         {
-            Debug.LogWarning("[ShopUIController] UpgradeDatabase not found in UpgradeManager!");
+            Debug.LogError($"{LOG_TAG} Initialize: root VisualElement is null");
             return;
         }
-        this.database = database;
 
-        // ビジネスロジック層の初期化
-        var gc = GameController.Instance;
-        shopService = new ShopService(gc);
-        shopService.OnPurchaseSuccess += OnPurchaseSuccess;
+        this.root = root;
 
-        // UI要素取得
-        QueryElements();
+        try
+        {
+            var database = GameController.Instance?.Upgrade?.Database;
 
-        // サブコントローラーの初期化
-        InitializeSubControllers();
+            if (database == null)
+            {
+                Debug.LogWarning($"{LOG_TAG} UpgradeDatabase not found in UpgradeManager!");
+                return;
+            }
+            this.database = database;
 
-        // ListView設定
-        SetupListView();
+            // ビジネスロジック層の初期化
+            var gc = GameController.Instance;
+            if (gc == null)
+            {
+                Debug.LogError($"{LOG_TAG} GameController.Instance is null");
+                return;
+            }
 
-        // イベント登録
-        BindEvents();
+            shopService = new ShopService(gc);
+            shopService.OnPurchaseSuccess += OnPurchaseSuccess;
 
-        // 初期表示
-        tabController.SwitchCategory(UpgradeData.UpgradeCategory.Click);
+            // UI要素取得
+            QueryElements();
 
-        // 初期カテゴリのリストを読み込む
-        // ※ SwitchCategoryは同一カテゴリへの切り替えを無視するため、
-        //    初期値がClickの場合はOnCategoryChangedが発火しない。
-        //    そのため明示的にRefreshListを呼び出す必要がある。
-        RefreshList();
+            // UI要素検証
+            if (!ValidateUIElements())
+            {
+                Debug.LogWarning($"{LOG_TAG} Some UI elements are missing, shop may not function correctly");
+            }
+
+            // サブコントローラーの初期化
+            InitializeSubControllers();
+
+            // ListView設定
+            SetupListView();
+
+            // イベント登録
+            BindEvents();
+
+            // 初期表示
+            tabController?.SwitchCategory(UpgradeData.UpgradeCategory.Click);
+
+            // 初期カテゴリのリストを読み込む
+            // ※ SwitchCategoryは同一カテゴリへの切り替えを無視するため、
+            //    初期値がClickの場合はOnCategoryChangedが発火しない。
+            //    そのため明示的にRefreshListを呼び出す必要がある。
+            RefreshList();
+        }
+        catch (Exception ex)
+        {
+            Debug.LogError($"{LOG_TAG} Initialize failed: {ex.Message}\n{ex.StackTrace}");
+        }
+    }
+
+    private bool ValidateUIElements()
+    {
+        bool isValid = true;
+
+        if (moneyLabel == null)
+        {
+            Debug.LogWarning($"{LOG_TAG} UI element 'money-label' not found");
+            isValid = false;
+        }
+        if (certLabel == null)
+        {
+            Debug.LogWarning($"{LOG_TAG} UI element 'cert-label' not found");
+            isValid = false;
+        }
+        if (upgradeListView == null)
+        {
+            Debug.LogWarning($"{LOG_TAG} UI element 'upgrade-list' not found");
+            isValid = false;
+        }
+
+        return isValid;
     }
 
     private void QueryElements()
@@ -137,10 +188,22 @@ public class ShopUIController : IViewController
     private void BindItem(VisualElement element, int index)
     {
         if (index < 0 || index >= currentList.Count) return;
+        if (element == null) return;
 
-        if (element.userData is ShopItemView itemView)
+        try
         {
-            itemView.Bind(currentList[index]);
+            if (element.userData is ShopItemView itemView)
+            {
+                var upgrade = currentList[index];
+                if (upgrade != null)
+                {
+                    itemView.Bind(upgrade);
+                }
+            }
+        }
+        catch (Exception ex)
+        {
+            Debug.LogError($"{LOG_TAG} BindItem failed at index {index}: {ex.Message}");
         }
     }
 
@@ -259,27 +322,46 @@ public class ShopUIController : IViewController
     {
         currentList.Clear();
 
-        var gc = GameController.Instance;
-        var currentCategory = tabController.CurrentCategory;
-        var allItems = database.GetSorted(currentCategory);
-
-        foreach (var item in allItems)
+        try
         {
-            if (gc.Upgrade.GetState(item) != UpgradeState.Locked)
+            var gc = GameController.Instance;
+            if (gc == null || gc.Upgrade == null || database == null || tabController == null)
             {
-                currentList.Add(item);
+                Debug.LogWarning($"{LOG_TAG} RefreshList: Required dependencies not available");
+                return;
+            }
+
+            var currentCategory = tabController.CurrentCategory;
+            var allItems = database.GetSorted(currentCategory);
+
+            if (allItems == null)
+            {
+                Debug.LogWarning($"{LOG_TAG} RefreshList: No items found for category {currentCategory}");
+                return;
+            }
+
+            foreach (var item in allItems)
+            {
+                if (item != null && gc.Upgrade.GetState(item) != UpgradeState.Locked)
+                {
+                    currentList.Add(item);
+                }
+            }
+
+            if (listCountLabel != null)
+            {
+                listCountLabel.text = $"{currentList.Count} items";
+            }
+
+            if (upgradeListView != null)
+            {
+                upgradeListView.ClearSelection();
+                upgradeListView.Rebuild();
             }
         }
-
-        if (listCountLabel != null)
+        catch (Exception ex)
         {
-            listCountLabel.text = $"{currentList.Count} items";
-        }
-
-        if (upgradeListView != null)
-        {
-            upgradeListView.ClearSelection();
-            upgradeListView.Rebuild();
+            Debug.LogError($"{LOG_TAG} RefreshList failed: {ex.Message}");
         }
     }
 

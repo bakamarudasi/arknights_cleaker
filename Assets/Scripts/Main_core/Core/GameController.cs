@@ -3,6 +3,7 @@ using UnityEngine.Events;
 using TMPro;
 using System;
 using System.Collections.Generic;
+
 /// <summary>
 /// ゲーム全体の司令塔（超スリム版）
 /// 各Managerの統括・イベント中継のみを担当
@@ -10,6 +11,8 @@ using System.Collections.Generic;
 public class GameController : MonoBehaviour
 {
     public static GameController Instance { get; private set; }
+
+    private const string LOG_TAG = "[GameController]";
 
     // ========================================
     // マネージャー参照
@@ -120,23 +123,85 @@ public class GameController : MonoBehaviour
 
     void Start()
     {
-        FetchManagers();
-        BindEvents();
-        RecalculateStats();
-        Income.StartIncome();
-        InvokeRepeating(nameof(TrackPlayTime), 1f, 1f);
+        try
+        {
+            FetchManagers();
+
+            if (!ValidateManagers())
+            {
+                Debug.LogError($"{LOG_TAG} Critical managers are not initialized. Game may not function correctly.");
+                return;
+            }
+
+            BindEvents();
+            RecalculateStats();
+            Income?.StartIncome();
+            InvokeRepeating(nameof(TrackPlayTime), 1f, 1f);
+        }
+        catch (Exception ex)
+        {
+            Debug.LogError($"{LOG_TAG} Failed to initialize: {ex.Message}\n{ex.StackTrace}");
+        }
+    }
+
+    private bool ValidateManagers()
+    {
+        bool isValid = true;
+
+        if (Wallet == null)
+        {
+            Debug.LogError($"{LOG_TAG} WalletManager is null after initialization");
+            isValid = false;
+        }
+        if (Inventory == null)
+        {
+            Debug.LogError($"{LOG_TAG} InventoryManager is null after initialization");
+            isValid = false;
+        }
+        if (Upgrade == null)
+        {
+            Debug.LogError($"{LOG_TAG} UpgradeManager is null after initialization");
+            isValid = false;
+        }
+        if (Income == null)
+        {
+            Debug.LogError($"{LOG_TAG} IncomeManager is null after initialization");
+            isValid = false;
+        }
+        if (SP == null)
+        {
+            Debug.LogError($"{LOG_TAG} SPManager is null after initialization");
+            isValid = false;
+        }
+
+        return isValid;
     }
 
     private void FetchManagers()
     {
         // Inspectorで未設定なら自動追加
-        Wallet ??= GetOrAddManager<WalletManager>();
-        Inventory ??= GetOrAddManager<InventoryManager>();
-        Upgrade ??= GetOrAddManager<UpgradeManager>();
-        Income ??= GetOrAddManager<IncomeManager>();
-        SP ??= GetOrAddManager<SPManager>();
-        Gacha ??= GetOrAddManager<GachaManager>();
-        Upgrade.Initialize(Wallet, Inventory);
+        try
+        {
+            Wallet ??= GetOrAddManager<WalletManager>();
+            Inventory ??= GetOrAddManager<InventoryManager>();
+            Upgrade ??= GetOrAddManager<UpgradeManager>();
+            Income ??= GetOrAddManager<IncomeManager>();
+            SP ??= GetOrAddManager<SPManager>();
+            Gacha ??= GetOrAddManager<GachaManager>();
+
+            if (Upgrade != null && Wallet != null && Inventory != null)
+            {
+                Upgrade.Initialize(Wallet, Inventory);
+            }
+            else
+            {
+                Debug.LogError($"{LOG_TAG} Cannot initialize UpgradeManager: required dependencies are null");
+            }
+        }
+        catch (Exception ex)
+        {
+            Debug.LogError($"{LOG_TAG} Failed to fetch managers: {ex.Message}\n{ex.StackTrace}");
+        }
     }
 
     /// <summary>
@@ -180,39 +245,60 @@ public class GameController : MonoBehaviour
 
     public void ClickMainButton()
     {
-        SP.ChargeSP();
-
-        var ctx = new ClickStatsContext
+        if (SP == null || Wallet == null)
         {
-            BaseClickValue = _finalClickValue,
-            CriticalChance = _finalCritChance,
-            CriticalMultiplier = _finalCritMultiplier,
-            FeverMultiplier = SP.FinalFeverMultiplier,
-            IsFeverActive = SP.IsFeverActive,
-            SpChargeAmount = SP.FinalChargeAmount,
-            SlotTriggerChance = slotTriggerChance
-        };
-
-        var result = ClickManager.Calculate(ctx);
-
-        Wallet.AddMoney(result.EarnedAmount);
-
-        // スロット発動時はルーレットで倍率を決定してボーナス報酬を追加
-        if (result.TriggeredSlot)
-        {
-            int slotMultiplier = RollSlotMultiplier();
-            double slotBonus = result.EarnedAmount * slotMultiplier;
-            Wallet.AddMoney(slotBonus);
-            OnSlotTriggered?.Invoke(slotMultiplier);
+            Debug.LogError($"{LOG_TAG} ClickMainButton: Required managers (SP or Wallet) are null");
+            return;
         }
 
-        // 統計
-        stats.totalClicks++;
-        if (result.WasCritical) stats.totalCriticalHits++;
-        if (result.EarnedAmount > stats.highestClickDamage)
-            stats.highestClickDamage = result.EarnedAmount;
+        try
+        {
+            SP.ChargeSP();
 
-        FloatingTextManager.Instance?.Spawn(result.EarnedAmount, Input.mousePosition, result.WasCritical);
+            var ctx = new ClickStatsContext
+            {
+                BaseClickValue = _finalClickValue,
+                CriticalChance = _finalCritChance,
+                CriticalMultiplier = _finalCritMultiplier,
+                FeverMultiplier = SP.FinalFeverMultiplier,
+                IsFeverActive = SP.IsFeverActive,
+                SpChargeAmount = SP.FinalChargeAmount,
+                SlotTriggerChance = slotTriggerChance
+            };
+
+            var result = ClickManager.Calculate(ctx);
+
+            Wallet.AddMoney(result.EarnedAmount);
+
+            // スロット発動時はルーレットで倍率を決定してボーナス報酬を追加
+            if (result.TriggeredSlot)
+            {
+                int slotMultiplier = RollSlotMultiplier();
+                double slotBonus = result.EarnedAmount * slotMultiplier;
+                Wallet.AddMoney(slotBonus);
+
+                try
+                {
+                    OnSlotTriggered?.Invoke(slotMultiplier);
+                }
+                catch (Exception ex)
+                {
+                    Debug.LogError($"{LOG_TAG} OnSlotTriggered event handler threw exception: {ex.Message}");
+                }
+            }
+
+            // 統計
+            stats.totalClicks++;
+            if (result.WasCritical) stats.totalCriticalHits++;
+            if (result.EarnedAmount > stats.highestClickDamage)
+                stats.highestClickDamage = result.EarnedAmount;
+
+            FloatingTextManager.Instance?.Spawn(result.EarnedAmount, Input.mousePosition, result.WasCritical);
+        }
+        catch (Exception ex)
+        {
+            Debug.LogError($"{LOG_TAG} ClickMainButton failed: {ex.Message}\n{ex.StackTrace}");
+        }
     }
 
     // ========================================
@@ -221,34 +307,47 @@ public class GameController : MonoBehaviour
 
     private void OnUpgradePurchased(UpgradeData data, int newLevel)
     {
-        switch (data.upgradeType)
+        if (data == null)
         {
-            case UpgradeData.UpgradeType.Click_FlatAdd:
-                clickFlatBonus += data.effectValue;
-                break;
-            case UpgradeData.UpgradeType.Click_PercentAdd:
-                clickPercentBonus += data.effectValue;
-                break;
-            case UpgradeData.UpgradeType.Income_FlatAdd:
-                Income.AddFlatBonus(data.effectValue);
-                break;
-            case UpgradeData.UpgradeType.Income_PercentAdd:
-                Income.AddPercentBonus(data.effectValue);
-                break;
-            case UpgradeData.UpgradeType.Critical_ChanceAdd:
-                criticalChanceBonus += data.effectValue;
-                break;
-            case UpgradeData.UpgradeType.Critical_PowerAdd:
-                criticalPowerBonus += data.effectValue;
-                break;
-            case UpgradeData.UpgradeType.SP_ChargeAdd:
-                SP.AddChargeBonus((float)data.effectValue);
-                break;
-            case UpgradeData.UpgradeType.Fever_PowerAdd:
-                SP.AddFeverPowerBonus((float)data.effectValue);
-                break;
+            Debug.LogWarning($"{LOG_TAG} OnUpgradePurchased: data is null");
+            return;
         }
-        RecalculateStats();
+
+        try
+        {
+            switch (data.upgradeType)
+            {
+                case UpgradeData.UpgradeType.Click_FlatAdd:
+                    clickFlatBonus += data.effectValue;
+                    break;
+                case UpgradeData.UpgradeType.Click_PercentAdd:
+                    clickPercentBonus += data.effectValue;
+                    break;
+                case UpgradeData.UpgradeType.Income_FlatAdd:
+                    Income?.AddFlatBonus(data.effectValue);
+                    break;
+                case UpgradeData.UpgradeType.Income_PercentAdd:
+                    Income?.AddPercentBonus(data.effectValue);
+                    break;
+                case UpgradeData.UpgradeType.Critical_ChanceAdd:
+                    criticalChanceBonus += data.effectValue;
+                    break;
+                case UpgradeData.UpgradeType.Critical_PowerAdd:
+                    criticalPowerBonus += data.effectValue;
+                    break;
+                case UpgradeData.UpgradeType.SP_ChargeAdd:
+                    SP?.AddChargeBonus((float)data.effectValue);
+                    break;
+                case UpgradeData.UpgradeType.Fever_PowerAdd:
+                    SP?.AddFeverPowerBonus((float)data.effectValue);
+                    break;
+            }
+            RecalculateStats();
+        }
+        catch (Exception ex)
+        {
+            Debug.LogError($"{LOG_TAG} OnUpgradePurchased failed for '{data.displayName}': {ex.Message}");
+        }
     }
 
     // ========================================
@@ -265,7 +364,14 @@ public class GameController : MonoBehaviour
         _finalCritMultiplier = baseCriticalMultiplier + criticalPowerBonus;
 
         // 再計算完了を通知（バフシステム等で利用可能）
-        OnStatsRecalculated?.Invoke();
+        try
+        {
+            OnStatsRecalculated?.Invoke();
+        }
+        catch (Exception ex)
+        {
+            Debug.LogError($"{LOG_TAG} OnStatsRecalculated event handler threw exception: {ex.Message}");
+        }
     }
 
     /// <summary>
