@@ -279,6 +279,59 @@ public class SpineLayerController : MonoBehaviour, ILayerController
     }
 
     // ========================================
+    // ボーン位置取得（吹き出し配置用）
+    // ========================================
+
+    [Header("=== 吹き出しアンカー設定 ===")]
+    [Tooltip("ボーン名が見つからない場合のデフォルト位置（ローカル座標）")]
+    [SerializeField]
+    private Vector3 defaultBubbleOffset = new Vector3(0, 2f, 0);
+
+    /// <summary>
+    /// 指定ボーン名のワールド座標を取得
+    /// </summary>
+    /// <param name="boneName">Spineボーン名（head, mouth など）</param>
+    /// <returns>ワールド座標</returns>
+    public Vector3 GetBoneWorldPosition(string boneName)
+    {
+        if (string.IsNullOrEmpty(boneName) || layers.Count == 0)
+        {
+            return transform.position + defaultBubbleOffset;
+        }
+
+        // spine-unity導入後に実装:
+        // var skeleton = layers[0].skeletonObject?.GetComponent<SkeletonAnimation>();
+        // if (skeleton != null)
+        // {
+        //     var bone = skeleton.Skeleton.FindBone(boneName);
+        //     if (bone != null)
+        //     {
+        //         return new Vector3(bone.WorldX, bone.WorldY, 0) + transform.position;
+        //     }
+        // }
+
+        // 仮実装: 固定位置を返す
+        // ボーン名に応じてオフセットを調整
+        Vector3 offset = boneName.ToLower() switch
+        {
+            "head" => new Vector3(0, 2.5f, 0),
+            "mouth" => new Vector3(0, 2.0f, 0),
+            "top" => new Vector3(0, 3.0f, 0),
+            _ => defaultBubbleOffset
+        };
+
+        return transform.position + offset;
+    }
+
+    /// <summary>
+    /// 吹き出し表示用のデフォルト位置を取得
+    /// </summary>
+    public Vector3 GetDefaultBubblePosition()
+    {
+        return GetBoneWorldPosition("head");
+    }
+
+    // ========================================
     // ユーティリティ
     // ========================================
 

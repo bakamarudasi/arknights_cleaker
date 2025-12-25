@@ -6,6 +6,10 @@ using System.Collections;
 /// <summary>
 /// 会話イベントUIのコントローラー
 /// IEventDisplayを実装し、EventManagerから呼び出される
+///
+/// 表示モード:
+/// - OverlayUI: 従来の全画面会話UI
+/// - SpeechBubble: 立ち絵画面 + 吹き出し
 /// </summary>
 public class ConversationController : MonoBehaviour, IEventDisplay
 {
@@ -16,7 +20,7 @@ public class ConversationController : MonoBehaviour, IEventDisplay
     [Header("会話データ")]
     [SerializeField] private ConversationData conversationData;
 
-    // UI要素
+    // UI要素（OverlayUIモード用）
     private VisualElement root;
     private VisualElement overlay;
     private VisualElement tapArea;
@@ -33,13 +37,27 @@ public class ConversationController : MonoBehaviour, IEventDisplay
     private bool canAdvance = false;
     private string fullText = "";
     private Coroutine typewriterCoroutine;
+    private Coroutine speechBubbleCoroutine;
     private Action onCompleteCallback;
+
+    // 現在の表示モード
+    private ConversationDisplayMode currentDisplayMode;
+    private bool isOverlayUIActive = false;
+
+    // 外部参照（SpeechBubbleモード用）
+    private CharacterSpeechBubble speechBubble;
+    private SpineLayerController spineController;
+    private OverlayCharacterPresenter characterPresenter;
 
     // 定数
     private const string CLS_INACTIVE = "inactive";
     private const string CLS_SPEAKING = "speaking";
     private const string CLS_VISIBLE = "visible";
     private const string CLS_FADE_IN = "fade-in";
+
+    // イベント
+    public event Action<string> OnSceneChangeRequested;
+    public event Action<string> OnAnimationChangeRequested;
 
     void Awake()
     {
@@ -63,12 +81,6 @@ public class ConversationController : MonoBehaviour, IEventDisplay
     {
         onCompleteCallback = onComplete;
 
-        // GameEventDataからConversationDataを取得する方法はいくつかある
-        // 1. eventDataにConversationDataへの参照を持たせる（拡張が必要）
-        // 2. eventIdからResourcesで検索する
-        // 3. 直接ConversationDataをこのコンポーネントに設定しておく
-
-        // 今はシンプルに、このGameObjectにアタッチされたConversationDataを使う
         if (conversationData != null)
         {
             Initialize(conversationData, onComplete);
@@ -88,12 +100,49 @@ public class ConversationController : MonoBehaviour, IEventDisplay
         conversationData = data;
         onCompleteCallback = onComplete;
         currentLineIndex = 0;
+        currentDisplayMode = data.defaultDisplayMode;
 
-        SetupUI();
+        // 外部参照を取得
+        FindExternalReferences();
+
+        // 最初の行の表示モードを確認
+        if (data.lines.Count > 0)
+        {
+            currentDisplayMode = data.lines[0].GetDisplayMode(data.defaultDisplayMode);
+        }
+
+        // 表示モードに応じて初期化
+        if (currentDisplayMode == ConversationDisplayMode.OverlayUI)
+        {
+            SetupOverlayUI();
+        }
+
         ShowCurrentLine();
     }
 
-    private void SetupUI()
+    /// <summary>
+    /// 外部参照を取得
+    /// </summary>
+    private void FindExternalReferences()
+    {
+        if (speechBubble == null)
+            speechBubble = CharacterSpeechBubble.Instance;
+
+        if (characterPresenter == null)
+            characterPresenter = FindAnyObjectByType<OverlayCharacterPresenter>();
+
+        // SpineLayerControllerはキャラプレハブから取得
+        if (characterPresenter?.CurrentInstance != null)
+        {
+            spineController = characterPresenter.CurrentInstance.GetComponent<SpineLayerController>();
+        }
+    }
+
+    // ========================================
+    // OverlayUI モード
+    // ========================================
+
+    private void SetupOverlayUI()
     {
         if (uiDocument == null) return;
 
@@ -127,27 +176,28 @@ public class ConversationController : MonoBehaviour, IEventDisplay
 
         // 次へインジケーターの点滅
         StartBlinkAnimation();
+
+        isOverlayUIActive = true;
     }
 
-    private void OnTapAreaClicked(ClickEvent evt)
+    private void HideOverlayUI()
     {
-        if (isTyping)
-        {
-            // タイプライター中ならスキップして全文表示
-            CompleteTyping();
-        }
-        else if (canAdvance)
-        {
-            // 次の行へ
-            AdvanceToNextLine();
-        }
+        if (!isOverlayUIActive) return;
+
+        overlay?.RemoveFromClassList(CLS_VISIBLE);
+        isOverlayUIActive = false;
     }
 
-    private void OnSkipClicked(ClickEvent evt)
+    private void ShowOverlayUI()
     {
-        // 会話をスキップして終了
-        EndConversation();
+        if (isOverlayUIActive) return;
+
+        SetupOverlayUI();
     }
+
+    // ========================================
+    // 行の表示
+    // ========================================
 
     private void ShowCurrentLine()
     {
@@ -158,7 +208,61 @@ public class ConversationController : MonoBehaviour, IEventDisplay
         }
 
         var line = conversationData.lines[currentLineIndex];
+        var lineDisplayMode = line.GetDisplayMode(conversationData.defaultDisplayMode);
 
+        // シーン切り替えがあれば実行
+        if (!string.IsNullOrEmpty(line.changeToSceneId))
+        {
+            RequestSceneChange(line.changeToSceneId);
+        }
+
+        // アニメーション切り替えがあれば実行
+        if (!string.IsNullOrEmpty(line.animationTrigger))
+        {
+            RequestAnimationChange(line.animationTrigger);
+        }
+
+        // 表示モードが変わったら切り替え
+        if (lineDisplayMode != currentDisplayMode)
+        {
+            SwitchDisplayMode(lineDisplayMode);
+        }
+
+        // 表示モードに応じて行を表示
+        if (currentDisplayMode == ConversationDisplayMode.OverlayUI)
+        {
+            ShowLineOverlayUI(line);
+        }
+        else
+        {
+            ShowLineSpeechBubble(line);
+        }
+    }
+
+    private void SwitchDisplayMode(ConversationDisplayMode newMode)
+    {
+        // 現在のモードを終了
+        if (currentDisplayMode == ConversationDisplayMode.OverlayUI)
+        {
+            HideOverlayUI();
+        }
+
+        // 新しいモードを開始
+        if (newMode == ConversationDisplayMode.OverlayUI)
+        {
+            ShowOverlayUI();
+        }
+
+        currentDisplayMode = newMode;
+        Debug.Log($"[Conversation] Display mode changed to: {newMode}");
+    }
+
+    // ========================================
+    // OverlayUI モードでの行表示
+    // ========================================
+
+    private void ShowLineOverlayUI(DialogLine line)
+    {
         // 話者名を設定
         if (speakerNameLabel != null)
         {
@@ -175,10 +279,7 @@ public class ConversationController : MonoBehaviour, IEventDisplay
         typewriterCoroutine = StartCoroutine(TypewriterEffect());
 
         // SE再生
-        if (line.soundEffect != null)
-        {
-            AudioSource.PlayClipAtPoint(line.soundEffect, Camera.main.transform.position);
-        }
+        PlaySoundEffect(line.soundEffect);
     }
 
     private void UpdateCharacterSprites(DialogLine line)
@@ -207,7 +308,6 @@ public class ConversationController : MonoBehaviour, IEventDisplay
                 break;
 
             case SpeakerPosition.Center:
-                // センターは左側を使用
                 activeCharacter = characterLeft;
                 if (line.characterSprite != null && characterLeft != null)
                     characterLeft.style.backgroundImage = new StyleBackground(line.characterSprite);
@@ -249,7 +349,8 @@ public class ConversationController : MonoBehaviour, IEventDisplay
             typewriterCoroutine = null;
         }
 
-        dialogTextLabel.text = fullText;
+        if (dialogTextLabel != null)
+            dialogTextLabel.text = fullText;
         isTyping = false;
         canAdvance = true;
 
@@ -258,6 +359,122 @@ public class ConversationController : MonoBehaviour, IEventDisplay
         {
             StartCoroutine(AutoAdvanceAfterDelay());
         }
+    }
+
+    // ========================================
+    // SpeechBubble モードでの行表示
+    // ========================================
+
+    private void ShowLineSpeechBubble(DialogLine line)
+    {
+        if (speechBubble == null)
+        {
+            Debug.LogWarning("[Conversation] SpeechBubble not found, falling back to OverlayUI");
+            SwitchDisplayMode(ConversationDisplayMode.OverlayUI);
+            ShowLineOverlayUI(line);
+            return;
+        }
+
+        // SE再生
+        PlaySoundEffect(line.soundEffect);
+
+        // 吹き出し位置を取得
+        Vector3 bubblePosition = GetBubblePosition(line.bubbleAnchor);
+
+        // 吹き出しで表示（タップ待ち）
+        speechBubble.ShowDialogueAtWithCallback(bubblePosition, line.text, OnSpeechBubbleComplete);
+    }
+
+    private Vector3 GetBubblePosition(string anchorName)
+    {
+        // SpineLayerControllerがあればボーン位置を取得
+        if (spineController != null)
+        {
+            return spineController.GetBoneWorldPosition(anchorName);
+        }
+
+        // CharacterPresenterから位置を取得（PSBの場合）
+        if (characterPresenter?.CurrentInstance != null)
+        {
+            // デフォルトはキャラの上方
+            return characterPresenter.CurrentInstance.transform.position + new Vector3(0, 2.5f, 0);
+        }
+
+        // フォールバック
+        return Vector3.zero;
+    }
+
+    private void OnSpeechBubbleComplete()
+    {
+        AdvanceToNextLine();
+    }
+
+    // ========================================
+    // シーン・アニメーション切り替え
+    // ========================================
+
+    private void RequestSceneChange(string sceneId)
+    {
+        Debug.Log($"[Conversation] Scene change requested: {sceneId}");
+
+        // イベントで通知
+        OnSceneChangeRequested?.Invoke(sceneId);
+
+        // CharacterPresenterがあれば直接切り替え
+        if (characterPresenter != null)
+        {
+            // OverlayCharacterPresenter経由でシーン切り替え
+            // 注: SetScene メソッドがあれば呼び出す
+            var sceneManager = characterPresenter.GetType().GetProperty("CurrentSceneId");
+            // 実際の実装はOverlayCharacterPresenterのAPIに依存
+        }
+    }
+
+    private void RequestAnimationChange(string animationName)
+    {
+        Debug.Log($"[Conversation] Animation change requested: {animationName}");
+
+        // イベントで通知
+        OnAnimationChangeRequested?.Invoke(animationName);
+
+        // SpineLayerControllerがあれば直接再生
+        if (spineController != null)
+        {
+            spineController.PlayAnimation(animationName, true);
+        }
+    }
+
+    // ========================================
+    // ユーティリティ
+    // ========================================
+
+    private void PlaySoundEffect(AudioClip clip)
+    {
+        if (clip != null && Camera.main != null)
+        {
+            AudioSource.PlayClipAtPoint(clip, Camera.main.transform.position);
+        }
+    }
+
+    // ========================================
+    // 入力処理
+    // ========================================
+
+    private void OnTapAreaClicked(ClickEvent evt)
+    {
+        if (isTyping)
+        {
+            CompleteTyping();
+        }
+        else if (canAdvance)
+        {
+            AdvanceToNextLine();
+        }
+    }
+
+    private void OnSkipClicked(ClickEvent evt)
+    {
+        EndConversation();
     }
 
     private IEnumerator AutoAdvanceAfterDelay()
@@ -286,21 +503,29 @@ public class ConversationController : MonoBehaviour, IEventDisplay
 
     private void EndConversation()
     {
-        // フェードアウト
-        overlay?.RemoveFromClassList(CLS_VISIBLE);
+        // OverlayUIを非表示
+        if (isOverlayUIActive)
+        {
+            overlay?.RemoveFromClassList(CLS_VISIBLE);
+        }
+
+        // 吹き出しを非表示
+        speechBubble?.Hide();
 
         // 少し待ってからコールバック
-        root?.schedule.Execute(() =>
-        {
-            onCompleteCallback?.Invoke();
-        }).ExecuteLater(300);
+        StartCoroutine(EndConversationAfterDelay());
+    }
+
+    private IEnumerator EndConversationAfterDelay()
+    {
+        yield return new WaitForSecondsRealtime(0.3f);
+        onCompleteCallback?.Invoke();
     }
 
     private void StartBlinkAnimation()
     {
-        if (nextIndicator == null) return;
+        if (nextIndicator == null || root == null) return;
 
-        // UI Toolkitのスケジューラーで点滅
         var scheduler = root.schedule;
         scheduler.Execute(() =>
         {
@@ -313,7 +538,6 @@ public class ConversationController : MonoBehaviour, IEventDisplay
         if (typewriterCoroutine != null)
             StopCoroutine(typewriterCoroutine);
 
-        // イベント解除
         tapArea?.UnregisterCallback<ClickEvent>(OnTapAreaClicked);
         skipButton?.UnregisterCallback<ClickEvent>(OnSkipClicked);
     }
