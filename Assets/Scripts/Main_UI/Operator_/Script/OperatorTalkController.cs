@@ -23,6 +23,9 @@ public class OperatorTalkController
     // 再生済み会話の追跡（playOnce用）
     private HashSet<string> playedConversations = new HashSet<string>();
 
+    // PlayerPrefs保存用キー
+    private const string PREF_PLAYED_CONVERSATIONS = "OperatorTalk_PlayedConversations";
+
     // コールバック参照
     private EventCallback<ClickEvent> callbackRandomTalk;
 
@@ -35,6 +38,7 @@ public class OperatorTalkController
     public void Initialize(VisualElement rootElement)
     {
         root = rootElement;
+        LoadPlayedConversations();
         SetupUI();
     }
 
@@ -243,7 +247,75 @@ public class OperatorTalkController
     private void MarkConversationPlayed(SceneConversation conv)
     {
         playedConversations.Add(GetConversationKey(conv));
-        // TODO: 永続化が必要なら SaveManager と連携
+        SavePlayedConversations();
+    }
+
+    // ========================================
+    // セーブ/ロード（PlayerPrefs）
+    // ========================================
+
+    /// <summary>
+    /// 再生済み会話をPlayerPrefsから読み込み
+    /// </summary>
+    private void LoadPlayedConversations()
+    {
+        playedConversations.Clear();
+
+        string saved = PlayerPrefs.GetString(PREF_PLAYED_CONVERSATIONS, "");
+        if (string.IsNullOrEmpty(saved)) return;
+
+        // カンマ区切りで保存されたキーを復元
+        string[] keys = saved.Split(new[] { ',' }, StringSplitOptions.RemoveEmptyEntries);
+        foreach (var key in keys)
+        {
+            playedConversations.Add(key);
+        }
+    }
+
+    /// <summary>
+    /// 再生済み会話をPlayerPrefsに保存
+    /// </summary>
+    private void SavePlayedConversations()
+    {
+        // カンマ区切りで結合して保存
+        string data = string.Join(",", playedConversations);
+        PlayerPrefs.SetString(PREF_PLAYED_CONVERSATIONS, data);
+        PlayerPrefs.Save();
+    }
+
+    /// <summary>
+    /// 再生済み会話データをクリア（デバッグ/リセット用）
+    /// </summary>
+    public void ClearPlayedConversations()
+    {
+        playedConversations.Clear();
+        PlayerPrefs.DeleteKey(PREF_PLAYED_CONVERSATIONS);
+        PlayerPrefs.Save();
+        RefreshConversationList();
+    }
+
+    /// <summary>
+    /// セーブデータを取得（外部セーブシステム連携用）
+    /// </summary>
+    public List<string> GetSaveData()
+    {
+        return new List<string>(playedConversations);
+    }
+
+    /// <summary>
+    /// セーブデータを読み込み（外部セーブシステム連携用）
+    /// </summary>
+    public void LoadSaveData(List<string> data)
+    {
+        playedConversations.Clear();
+        if (data != null)
+        {
+            foreach (var key in data)
+            {
+                playedConversations.Add(key);
+            }
+        }
+        SavePlayedConversations();
     }
 
     public void Dispose()
