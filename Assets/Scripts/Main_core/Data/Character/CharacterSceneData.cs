@@ -59,6 +59,10 @@ public class CharacterSceneData : ScriptableObject
     [Tooltip("シーン専用のセリフ（空の場合はCharacterDataの共通セリフを使用）")]
     public List<DialogueGroup> dialogueGroups = new List<DialogueGroup>();
 
+    [Header("=== ズームアップ設定 ===")]
+    [Tooltip("ゾーンタッチ時のズームアップ窓設定")]
+    public List<ZoomTargetConfig> zoomTargets = new List<ZoomTargetConfig>();
+
     // ========================================
     // ヘルパーメソッド
     // ========================================
@@ -67,6 +71,20 @@ public class CharacterSceneData : ScriptableObject
     /// このシーンに専用セリフがあるか
     /// </summary>
     public bool HasCustomDialogues => dialogueGroups != null && dialogueGroups.Count > 0;
+
+    /// <summary>
+    /// ズームターゲット設定があるか
+    /// </summary>
+    public bool HasZoomTargets => zoomTargets != null && zoomTargets.Count > 0;
+
+    /// <summary>
+    /// 指定ゾーンのズーム設定を取得
+    /// </summary>
+    public ZoomTargetConfig GetZoomConfig(CharacterInteractionZone.ZoneType zone)
+    {
+        if (zoomTargets == null) return null;
+        return zoomTargets.Find(z => z.triggerZone == zone);
+    }
 
     /// <summary>
     /// シーン専用のセリフを取得（好感度レベル考慮）
