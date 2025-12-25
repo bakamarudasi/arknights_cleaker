@@ -58,7 +58,6 @@ public class OperatorUIController : IViewController
 
     private OperatorLensController _lensController;
     private OperatorGiftController _giftController;
-    private OperatorAffectionController _affectionController;
     private OperatorTalkController _talkController;
     private MessageWindowController _messageController;
 
@@ -173,10 +172,6 @@ public class OperatorUIController : IViewController
         _giftController = new OperatorGiftController();
         _giftController.Initialize(_root);
         _giftController.OnGiftGiven += _ => UpdateStatusUI();
-
-        // 好感度
-        _affectionController = new OperatorAffectionController();
-        _affectionController.Initialize(_root);
 
         // 会話
         _talkController = new OperatorTalkController();
@@ -756,7 +751,6 @@ public class OperatorUIController : IViewController
         // サブコントローラー解放
         _lensController?.Dispose();
         _giftController?.Dispose();
-        _affectionController?.Dispose();
         _talkController?.Dispose();
         _messageController?.Dispose();
 
