@@ -61,6 +61,10 @@ public class OperatorUIController : IViewController
     private OperatorGiftController _giftController;
     private OperatorTalkController _talkController;
     private MessageWindowController _messageController;
+    private ZoomWindowManager _zoomWindowManager;
+
+    // ズーム窓コンテナ
+    private VisualElement _zoomContainer;
 
     // ========================================
     // シーンUI
@@ -159,6 +163,9 @@ public class OperatorUIController : IViewController
         _btnOutfitDefault = _root.Q<Button>("btn-outfit-default");
         _btnOutfitSkin1 = _root.Q<Button>("btn-outfit-skin1");
         _btnOutfitSkin2 = _root.Q<Button>("btn-outfit-skin2");
+
+        // ズーム窓コンテナ
+        _zoomContainer = _root.Q<VisualElement>("zoom-container");
     }
 
     private void InitializeSubControllers()
@@ -183,6 +190,31 @@ public class OperatorUIController : IViewController
         // メッセージウィンドウ
         _messageController = new MessageWindowController();
         _messageController.Initialize(_root);
+
+        // ズーム窓マネージャー
+        InitializeZoomWindowManager();
+    }
+
+    private void InitializeZoomWindowManager()
+    {
+        // 既存のマネージャーを使用、なければ作成
+        _zoomWindowManager = ZoomWindowManager.Instance;
+        if (_zoomWindowManager == null)
+        {
+            var go = new GameObject("ZoomWindowManager");
+            _zoomWindowManager = go.AddComponent<ZoomWindowManager>();
+        }
+
+        // 現在のシーンデータで初期化
+        var presenter = OverlayCharacterPresenter.Instance;
+        if (presenter != null && _zoomContainer != null)
+        {
+            _zoomWindowManager.Initialize(_zoomContainer, presenter.CurrentSceneData);
+        }
+
+        // イベント購読
+        _zoomWindowManager.OnZoomWindowOpened += OnZoomWindowOpened;
+        _zoomWindowManager.OnAllWindowsClosed += OnAllZoomWindowsClosed;
     }
 
     private void InitializeSceneUIs()
@@ -415,6 +447,13 @@ public class OperatorUIController : IViewController
         ApplyCurrentSceneUI();
         UpdateTalkControllerForCurrentScene();
         UpdateCharacterNameDisplay();
+
+        // ズーム窓マネージャーにシーン変更を通知
+        var presenter = OverlayCharacterPresenter.Instance;
+        if (presenter != null && _zoomWindowManager != null)
+        {
+            _zoomWindowManager.OnSceneChanged(presenter.CurrentSceneData);
+        }
     }
 
     // ========================================
@@ -604,17 +643,35 @@ public class OperatorUIController : IViewController
     {
         UpdateStatusUI();
 
-        // ゾーンに応じたセリフ表示
-        string dialogue = GetZoneDialogue(zoneType, comboCount);
-        if (!string.IsNullOrEmpty(dialogue))
+        // ズーム窓マネージャーに通知
+        _zoomWindowManager?.OnZoneTouched(zoneType, comboCount);
+
+        // ズーム窓がアクティブでない場合のみセリフ表示
+        if (_zoomWindowManager == null || !_zoomWindowManager.HasActiveWindows)
         {
-            _messageController?.ShowMessage(dialogue, GetCurrentCharacterName(), 2.5f);
+            string dialogue = GetZoneDialogue(zoneType, comboCount);
+            if (!string.IsNullOrEmpty(dialogue))
+            {
+                _messageController?.ShowMessage(dialogue, GetCurrentCharacterName(), 2.5f);
+            }
         }
 
         if (zoneType == CharacterInteractionZone.ZoneType.Head && comboCount >= 5)
         {
             LogUIController.Msg("<color=#FF69B4>...</color>");
         }
+    }
+
+    private void OnZoomWindowOpened(CharacterInteractionZone.ZoneType zoneType)
+    {
+        // ズーム窓が開いた時の処理
+        Debug.Log($"[OperatorUI] Zoom window opened for zone: {zoneType}");
+    }
+
+    private void OnAllZoomWindowsClosed()
+    {
+        // 全ズーム窓が閉じた時の処理
+        Debug.Log("[OperatorUI] All zoom windows closed");
     }
 
     private string GetZoneDialogue(CharacterInteractionZone.ZoneType zoneType, int comboCount)
@@ -795,6 +852,13 @@ public class OperatorUIController : IViewController
         _giftController?.Dispose();
         _talkController?.Dispose();
         _messageController?.Dispose();
+
+        // ズーム窓マネージャーのイベント解除
+        if (_zoomWindowManager != null)
+        {
+            _zoomWindowManager.OnZoomWindowOpened -= OnZoomWindowOpened;
+            _zoomWindowManager.OnAllWindowsClosed -= OnAllZoomWindowsClosed;
+        }
 
         // シーンUI解放
         _currentSceneUI?.Hide();

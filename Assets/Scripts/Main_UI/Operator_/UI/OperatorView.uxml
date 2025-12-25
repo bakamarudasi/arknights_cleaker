@@ -100,6 +100,9 @@
             <ui:Label name="msg-text" text="......なにか用？" class="msg-text" />
         </ui:VisualElement>
 
+        <!-- ズームアップ窓コンテナ -->
+        <ui:VisualElement name="zoom-container" class="zoom-container" />
+
         <!-- モーダルパネル（タブ展開時に表示） -->
         <ui:VisualElement name="modal-overlay" class="modal-overlay hidden">
 
