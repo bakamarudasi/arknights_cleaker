@@ -10,6 +10,9 @@
         <!-- 画面端の赤らみエフェクト -->
         <ui:VisualElement name="vignette" class="vignette" />
 
+        <!-- レベルアップフラッシュ -->
+        <ui:VisualElement name="levelup-flash" class="levelup-flash" />
+
         <!-- メインキャラクター表示エリア（フルスクリーン） -->
         <ui:VisualElement name="character-area" class="character-area-fullscreen">
             <ui:VisualElement name="character-display" class="character-display-fullscreen">

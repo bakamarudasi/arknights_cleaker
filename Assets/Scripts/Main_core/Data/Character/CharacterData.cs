@@ -105,17 +105,29 @@ public class CharacterData : ScriptableObject
     public AffectionLevel GetAffectionLevel(int affection)
     {
         AffectionLevel current = null;
-        foreach (var level in affectionLevels)
+        AffectionLevel next = null;
+
+        for (int i = 0; i < affectionLevels.Count; i++)
         {
+            var level = affectionLevels[i];
             if (affection >= level.requiredAffection)
             {
                 current = level;
+                // 次のレベルがあればそのしきい値を設定
+                next = (i + 1 < affectionLevels.Count) ? affectionLevels[i + 1] : null;
             }
             else
             {
                 break;
             }
         }
+
+        // nextThresholdを設定
+        if (current != null)
+        {
+            current.nextThreshold = next?.requiredAffection ?? maxAffection;
+        }
+
         return current;
     }
 
@@ -203,10 +215,26 @@ public class AffectionLevel
     public string levelName; // "知り合い", "友人", "親友", etc.
     public int requiredAffection;
 
+    [Header("レベルアップ演出")]
+    [TextArea(1, 3)]
+    [Tooltip("レベルアップ時に表示するメッセージ（空ならデフォルト）")]
+    public string levelUpMessage;
+
     [Header("解放要素")]
     public bool unlocksNewOutfit;
     public int outfitIndex;
     public bool unlocksSpecialDialogue;
+
+    // ========================================
+    // プロパティ（UI用）
+    // ========================================
+
+    /// <summary>このレベルの開始しきい値</summary>
+    public int threshold => requiredAffection;
+
+    /// <summary>次レベルへのしきい値（設定用フィールド）</summary>
+    [HideInInspector]
+    public int nextThreshold;
 }
 
 /// <summary>

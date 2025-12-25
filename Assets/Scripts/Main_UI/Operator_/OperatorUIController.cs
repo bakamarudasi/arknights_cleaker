@@ -18,6 +18,7 @@ public class OperatorUIController : IViewController
     // 背景エフェクト
     private VisualElement _bgCanvas;
     private VisualElement _vignette;
+    private VisualElement _levelupFlash;
 
     // 左サイドバー
     private Button _navOutfit;
@@ -124,6 +125,7 @@ public class OperatorUIController : IViewController
         // 背景エフェクト
         _bgCanvas = _root.Q<VisualElement>("bg-canvas");
         _vignette = _root.Q<VisualElement>("vignette");
+        _levelupFlash = _root.Q<VisualElement>("levelup-flash");
 
         // 左サイドバー
         _navOutfit = _root.Q<Button>("nav-outfit");
@@ -302,6 +304,7 @@ public class OperatorUIController : IViewController
         {
             AffectionManager.Instance.OnAffectionChanged += OnAffectionChanged;
             AffectionManager.Instance.OnDialogueRequested += OnDialogueRequested;
+            AffectionManager.Instance.OnAffectionLevelUp += OnAffectionLevelUp;
         }
 
         if (ExcitementManager.Instance != null)
@@ -326,6 +329,7 @@ public class OperatorUIController : IViewController
         {
             AffectionManager.Instance.OnAffectionChanged -= OnAffectionChanged;
             AffectionManager.Instance.OnDialogueRequested -= OnDialogueRequested;
+            AffectionManager.Instance.OnAffectionLevelUp -= OnAffectionLevelUp;
         }
 
         if (ExcitementManager.Instance != null)
@@ -357,6 +361,44 @@ public class OperatorUIController : IViewController
     private void OnDialogueRequested(string dialogue)
     {
         _messageController?.ShowMessage(dialogue, GetCurrentCharacterName(), 3f);
+    }
+
+    private void OnAffectionLevelUp(string characterId, AffectionLevel newLevel)
+    {
+        // フラッシュエフェクト
+        PlayLevelUpFlash();
+
+        // レベルアップメッセージ
+        string message = !string.IsNullOrEmpty(newLevel.levelUpMessage)
+            ? newLevel.levelUpMessage
+            : $"好感度が上がったわ！ (Lv.{newLevel.level} {newLevel.levelName})";
+
+        _messageController?.ShowMessage(message, GetCurrentCharacterName(), 4f);
+
+        // UI更新
+        UpdateStatusUI();
+    }
+
+    private void PlayLevelUpFlash()
+    {
+        if (_levelupFlash == null) return;
+
+        // フラッシュ開始
+        _levelupFlash.RemoveFromClassList("fade-out");
+        _levelupFlash.AddToClassList("active");
+
+        // 少し待ってからフェードアウト
+        _levelupFlash.schedule.Execute(() =>
+        {
+            _levelupFlash.RemoveFromClassList("active");
+            _levelupFlash.AddToClassList("fade-out");
+        }).StartingIn(150);
+
+        // フェードアウト完了後にクラスをクリア
+        _levelupFlash.schedule.Execute(() =>
+        {
+            _levelupFlash.RemoveFromClassList("fade-out");
+        }).StartingIn(1000);
     }
 
     private void OnCostumeUnlocked(string characterId, string costumeId)
