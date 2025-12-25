@@ -9,6 +9,25 @@ public class WalletManager : MonoBehaviour
 {
     public static WalletManager Instance { get; private set; }
 
+    private const string LOG_TAG = "[WalletManager]";
+
+    // ========================================
+    // 安全なイベント発火ヘルパー
+    // ========================================
+
+    private void SafeInvoke<T>(Action<T> action, T arg, string eventName)
+    {
+        if (action == null) return;
+        try
+        {
+            action.Invoke(arg);
+        }
+        catch (Exception ex)
+        {
+            Debug.LogError($"{LOG_TAG} Event '{eventName}' handler threw exception: {ex.Message}\n{ex.StackTrace}");
+        }
+    }
+
     // ========================================
     // 通貨残高
     // ========================================
@@ -71,8 +90,8 @@ public class WalletManager : MonoBehaviour
         if (amount <= 0) return;
 
         _money += amount;
-        OnMoneyChanged?.Invoke(_money);
-        OnMoneyEarned?.Invoke(amount);
+        SafeInvoke(OnMoneyChanged, _money, nameof(OnMoneyChanged));
+        SafeInvoke(OnMoneyEarned, amount, nameof(OnMoneyEarned));
     }
 
     /// <summary>
@@ -82,7 +101,7 @@ public class WalletManager : MonoBehaviour
     {
         _money -= amount;
         if (_money < 0) _money = 0;
-        OnMoneyChanged?.Invoke(_money);
+        SafeInvoke(OnMoneyChanged, _money, nameof(OnMoneyChanged));
     }
 
     /// <summary>
@@ -94,7 +113,7 @@ public class WalletManager : MonoBehaviour
         if (!CanAffordMoney(amount)) return false;
 
         SubtractMoney(amount);
-        OnMoneySpent?.Invoke(amount);
+        SafeInvoke(OnMoneySpent, amount, nameof(OnMoneySpent));
         return true;
     }
 
@@ -118,8 +137,8 @@ public class WalletManager : MonoBehaviour
         if (amount <= 0) return;
 
         _certificates += amount;
-        OnCertificateChanged?.Invoke(_certificates);
-        Debug.Log($"[Wallet] 資格証を入手: +{amount}");
+        SafeInvoke(OnCertificateChanged, _certificates, nameof(OnCertificateChanged));
+        Debug.Log($"{LOG_TAG} 資格証を入手: +{amount}");
     }
 
     /// <summary>
@@ -131,7 +150,7 @@ public class WalletManager : MonoBehaviour
 
         _certificates -= amount;
         if (_certificates < 0) _certificates = 0;
-        OnCertificateChanged?.Invoke(_certificates);
+        SafeInvoke(OnCertificateChanged, _certificates, nameof(OnCertificateChanged));
         return true;
     }
 
@@ -213,8 +232,8 @@ public class WalletManager : MonoBehaviour
     {
         _money = money;
         _certificates = certificates;
-        OnMoneyChanged?.Invoke(_money);
-        OnCertificateChanged?.Invoke(_certificates);
+        SafeInvoke(OnMoneyChanged, _money, nameof(OnMoneyChanged));
+        SafeInvoke(OnCertificateChanged, _certificates, nameof(OnCertificateChanged));
     }
 
     /// <summary>
@@ -224,8 +243,8 @@ public class WalletManager : MonoBehaviour
     {
         _money = 0;
         _certificates = 0;
-        OnMoneyChanged?.Invoke(_money);
-        OnCertificateChanged?.Invoke(_certificates);
+        SafeInvoke(OnMoneyChanged, _money, nameof(OnMoneyChanged));
+        SafeInvoke(OnCertificateChanged, _certificates, nameof(OnCertificateChanged));
     }
 }
 

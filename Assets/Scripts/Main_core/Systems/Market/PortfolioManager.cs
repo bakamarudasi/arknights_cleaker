@@ -14,6 +14,38 @@ public class PortfolioManager : MonoBehaviour
     // ========================================
     public static PortfolioManager Instance { get; private set; }
 
+    private const string LOG_TAG = "[PortfolioManager]";
+
+    // ========================================
+    // 安全なイベント発火ヘルパー
+    // ========================================
+
+    private void SafeInvoke<T>(Action<T> action, T arg, string eventName)
+    {
+        if (action == null) return;
+        try
+        {
+            action.Invoke(arg);
+        }
+        catch (Exception ex)
+        {
+            Debug.LogError($"{LOG_TAG} Event '{eventName}' handler threw exception: {ex.Message}\n{ex.StackTrace}");
+        }
+    }
+
+    private void SafeInvoke(Action action, string eventName)
+    {
+        if (action == null) return;
+        try
+        {
+            action.Invoke();
+        }
+        catch (Exception ex)
+        {
+            Debug.LogError($"{LOG_TAG} Event '{eventName}' handler threw exception: {ex.Message}\n{ex.StackTrace}");
+        }
+    }
+
     // ========================================
     // 依存関係（Inspector注入）
     // ========================================
@@ -149,11 +181,19 @@ public class PortfolioManager : MonoBehaviour
         holding.averageCost = holding.quantity > 0 ? newTotalCost / holding.quantity : 0;
 
         // イベント発火
-        MarketEventBus.PublishStockBought(stockId, quantity, totalCost);
-        OnHoldingChanged?.Invoke(stockId);
-        OnPortfolioUpdated?.Invoke();
+        try
+        {
+            MarketEventBus.PublishStockBought(stockId, quantity, totalCost);
+        }
+        catch (Exception ex)
+        {
+            Debug.LogError($"{LOG_TAG} MarketEventBus.PublishStockBought threw exception: {ex.Message}");
+        }
 
-        Debug.Log($"[Portfolio] Bought {quantity} {stockId} @ {currentPrice:F2} (Total: {totalCost:F0} LMD)");
+        SafeInvoke(OnHoldingChanged, stockId, nameof(OnHoldingChanged));
+        SafeInvoke(OnPortfolioUpdated, nameof(OnPortfolioUpdated));
+
+        Debug.Log($"{LOG_TAG} Bought {quantity} {stockId} @ {currentPrice:F2} (Total: {totalCost:F0} LMD)");
         return true;
     }
 
@@ -169,12 +209,24 @@ public class PortfolioManager : MonoBehaviour
 
         if (!holdings.TryGetValue(stockId, out var holding) || holding.quantity < quantity)
         {
-            Debug.LogWarning($"[Portfolio] Insufficient holdings: {stockId}");
+            Debug.LogWarning($"{LOG_TAG} Insufficient holdings: {stockId}");
             return false;
         }
 
         var stock = stockDatabase?.GetByStockId(stockId);
-        if (stock == null) return false;
+        if (stock == null)
+        {
+            Debug.LogError($"{LOG_TAG} TrySellStock: Stock data not found for '{stockId}'");
+            return false;
+        }
+
+        // WalletManagerの存在チェック（売却前に確認）
+        var wallet = WalletManager.Instance;
+        if (wallet == null)
+        {
+            Debug.LogError($"{LOG_TAG} TrySellStock: WalletManager is null, cannot complete sale for '{stockId}'");
+            return false;
+        }
 
         // 現在価格を取得
         double currentPrice = MarketManager.Instance?.GetCurrentPrice(stockId) ?? stock.initialPrice;
@@ -184,8 +236,8 @@ public class PortfolioManager : MonoBehaviour
         double costBasis = holding.averageCost * quantity;
         double profitLoss = totalReturn - costBasis;
 
-        // 売却実行
-        WalletManager.Instance?.AddMoney(totalReturn);
+        // 売却実行（確実にお金を追加）
+        wallet.AddMoney(totalReturn);
 
         holding.quantity -= quantity;
         if (holding.quantity <= 0)
@@ -194,12 +246,20 @@ public class PortfolioManager : MonoBehaviour
         }
 
         // イベント発火
-        MarketEventBus.PublishStockSold(stockId, quantity, totalReturn, profitLoss);
-        OnHoldingChanged?.Invoke(stockId);
-        OnPortfolioUpdated?.Invoke();
+        try
+        {
+            MarketEventBus.PublishStockSold(stockId, quantity, totalReturn, profitLoss);
+        }
+        catch (Exception ex)
+        {
+            Debug.LogError($"{LOG_TAG} MarketEventBus.PublishStockSold threw exception: {ex.Message}");
+        }
 
-        string resultText = profitLoss >= 0 ? $"+{profitLoss:F0} 利確 🚀" : $"{profitLoss:F0} 損切り 💀";
-        Debug.Log($"[Portfolio] Sold {quantity} {stockId} @ {currentPrice:F2} ({resultText})");
+        SafeInvoke(OnHoldingChanged, stockId, nameof(OnHoldingChanged));
+        SafeInvoke(OnPortfolioUpdated, nameof(OnPortfolioUpdated));
+
+        string resultText = profitLoss >= 0 ? $"+{profitLoss:F0} 利確" : $"{profitLoss:F0} 損切り";
+        Debug.Log($"{LOG_TAG} Sold {quantity} {stockId} @ {currentPrice:F2} ({resultText})");
 
         return true;
     }
@@ -350,10 +410,17 @@ public class PortfolioManager : MonoBehaviour
         {
             foreach (var holding in data.holdings)
             {
-                holdings[holding.stockId] = holding;
+                if (holding != null && !string.IsNullOrEmpty(holding.stockId))
+                {
+                    holdings[holding.stockId] = holding;
+                }
+                else
+                {
+                    Debug.LogWarning($"{LOG_TAG} LoadSaveData: Skipping invalid holding entry");
+                }
             }
         }
-        OnPortfolioUpdated?.Invoke();
+        SafeInvoke(OnPortfolioUpdated, nameof(OnPortfolioUpdated));
     }
 }
 

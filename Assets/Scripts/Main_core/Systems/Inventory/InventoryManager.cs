@@ -9,6 +9,38 @@ public class InventoryManager : MonoBehaviour
 {
     public static InventoryManager Instance { get; private set; }
 
+    private const string LOG_TAG = "[InventoryManager]";
+
+    // ========================================
+    // 安全なイベント発火ヘルパー
+    // ========================================
+
+    private void SafeInvoke<T1, T2>(Action<T1, T2> action, T1 arg1, T2 arg2, string eventName)
+    {
+        if (action == null) return;
+        try
+        {
+            action.Invoke(arg1, arg2);
+        }
+        catch (Exception ex)
+        {
+            Debug.LogError($"{LOG_TAG} Event '{eventName}' handler threw exception: {ex.Message}\n{ex.StackTrace}");
+        }
+    }
+
+    private void SafeInvoke<T>(Action<T> action, T arg, string eventName)
+    {
+        if (action == null) return;
+        try
+        {
+            action.Invoke(arg);
+        }
+        catch (Exception ex)
+        {
+            Debug.LogError($"{LOG_TAG} Event '{eventName}' handler threw exception: {ex.Message}\n{ex.StackTrace}");
+        }
+    }
+
     // ========================================
     // 在庫データ（ID → 個数）
     // ========================================
@@ -68,7 +100,7 @@ public class InventoryManager : MonoBehaviour
 
         int newCount = GetCount(id) + amount;
         _inventory[id] = newCount;
-        OnItemCountChanged?.Invoke(id, newCount);
+        SafeInvoke(OnItemCountChanged, id, newCount, nameof(OnItemCountChanged));
     }
 
     /// <summary>
@@ -81,8 +113,8 @@ public class InventoryManager : MonoBehaviour
 
         int newCount = GetCount(id) - amount;
         _inventory[id] = newCount;
-        OnItemCountChanged?.Invoke(id, newCount);
-        OnMaterialsUsed?.Invoke(amount);
+        SafeInvoke(OnItemCountChanged, id, newCount, nameof(OnItemCountChanged));
+        SafeInvoke(OnMaterialsUsed, amount, nameof(OnMaterialsUsed));
         return true;
     }
 
@@ -101,7 +133,7 @@ public class InventoryManager : MonoBehaviour
     {
         if (string.IsNullOrEmpty(id)) return;
         _inventory[id] = Mathf.Max(0, count);
-        OnItemCountChanged?.Invoke(id, _inventory[id]);
+        SafeInvoke(OnItemCountChanged, id, _inventory[id], nameof(OnItemCountChanged));
     }
 
     // ========================================
@@ -183,7 +215,7 @@ public class InventoryManager : MonoBehaviour
         _inventory.Clear();
         foreach (var id in ids)
         {
-            OnItemCountChanged?.Invoke(id, 0);
+            SafeInvoke(OnItemCountChanged, id, 0, nameof(OnItemCountChanged));
         }
     }
 
@@ -209,8 +241,15 @@ public class InventoryManager : MonoBehaviour
         {
             foreach (var kvp in data)
             {
-                _inventory[kvp.Key] = kvp.Value;
-                OnItemCountChanged?.Invoke(kvp.Key, kvp.Value);
+                if (!string.IsNullOrEmpty(kvp.Key))
+                {
+                    _inventory[kvp.Key] = kvp.Value;
+                    SafeInvoke(OnItemCountChanged, kvp.Key, kvp.Value, nameof(OnItemCountChanged));
+                }
+                else
+                {
+                    Debug.LogWarning($"{LOG_TAG} SetInventoryData: Skipping entry with null or empty key");
+                }
             }
         }
     }
