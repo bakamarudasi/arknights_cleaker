@@ -42,7 +42,7 @@ public class OverlayCharacterPresenter : MonoBehaviour
     // ========================================
 
     private GameObject _currentInstance;
-    private CharacterLayerController _layerController;
+    private ILayerController _layerController;
     private VisualElement _displayElement;
     private bool _isShowing;
     private Action<float> _onUpdateCallback;
@@ -70,7 +70,7 @@ public class OverlayCharacterPresenter : MonoBehaviour
     public CharacterData CurrentCharacter => _sceneManager?.CurrentCharacter;
     public string CurrentSceneId => _sceneManager?.CurrentSceneId;
     public CharacterSceneData CurrentSceneData => _sceneManager?.CurrentScene;
-    public CharacterLayerController LayerController => _layerController;
+    public ILayerController LayerController => _layerController;
     public LensMaskController LensMask => _lensAdapter?.LensMask;
 
     // ========================================
@@ -179,7 +179,8 @@ public class OverlayCharacterPresenter : MonoBehaviour
         SetupInteractionZones();
 
         // レイヤーコントローラーを取得してレンズアダプターに設定
-        _layerController = _currentInstance.GetComponent<CharacterLayerController>();
+        // PSB: CharacterLayerController, Spine: SpineLayerController
+        _layerController = _currentInstance.GetComponent<ILayerController>();
         _lensAdapter.SetLayerController(_layerController);
 
         _cameraController.AdjustToCharacter(_currentInstance);
