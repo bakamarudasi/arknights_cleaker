@@ -4,159 +4,167 @@
 
     <ui:VisualElement name="operator-root" class="root">
 
-        <!-- 背景 -->
-        <ui:VisualElement class="background-pattern" />
+        <!-- 背景（興奮度で変化） -->
+        <ui:VisualElement name="bg-canvas" class="bg-canvas" />
 
-        <!-- メイン画面 (左右分割) -->
-        <ui:VisualElement name="main-screen" class="main-screen-layout">
+        <!-- 画面端の赤らみエフェクト -->
+        <ui:VisualElement name="vignette" class="vignette" />
 
-            <!-- 左側：キャラクター表示エリア -->
-            <ui:VisualElement name="character-area" class="character-area">
+        <!-- メインキャラクター表示エリア（フルスクリーン） -->
+        <ui:VisualElement name="character-area" class="character-area-fullscreen">
+            <ui:VisualElement name="character-display" class="character-display-fullscreen">
+                <ui:VisualElement name="layer-base" class="character-layer" />
+                <ui:VisualElement name="layer-clothes" class="character-layer" />
+            </ui:VisualElement>
+        </ui:VisualElement>
 
-                <!-- キャラクター画像 (2レイヤー方式) -->
-                <!-- インタラクションゾーン（頭なで等）はキャラクタープレハブ内のCharacterInteractionZoneで定義 -->
-                <ui:VisualElement name="character-display" class="character-display">
-                    <ui:VisualElement name="layer-base" class="character-layer" />
-                    <ui:VisualElement name="layer-clothes" class="character-layer" />
-                </ui:VisualElement>
+        <!-- 左サイドバー（アイコン） -->
+        <ui:VisualElement name="left-sidebar" class="left-sidebar">
 
-                <!-- キャラ名 -->
-                <ui:VisualElement class="character-name-area">
-                    <ui:Label name="character-name" text="SHU" class="character-name" />
-                    <ui:Label name="character-class" text="CASTER" class="character-class" />
-                </ui:VisualElement>
-
+            <!-- 好感度レベル表示 -->
+            <ui:VisualElement class="info-card">
+                <ui:Label text="AFFECTION" class="info-card-label" />
+                <ui:Label name="lv-display" text="Lv.1" class="info-card-value" />
             </ui:VisualElement>
 
-            <!-- 右側：操作パネル -->
-            <ui:VisualElement name="side-panel" class="side-panel">
+            <!-- ナビゲーションアイコン -->
+            <ui:Button name="nav-outfit" class="nav-item" tooltip="着せ替え">
+                <ui:Label text="🧥" class="nav-icon" />
+                <ui:Label text="COSTUME" class="nav-label" />
+            </ui:Button>
 
-                <!-- ヘッダー（固定） -->
-                <ui:VisualElement class="side-header">
-                    <ui:Label text="OPERATOR FILE" class="header-title" />
+            <ui:Button name="nav-gift" class="nav-item" tooltip="プレゼント">
+                <ui:Label text="🎁" class="nav-icon" />
+                <ui:Label text="PRESENT" class="nav-label" />
+            </ui:Button>
+
+            <ui:Button name="nav-talk" class="nav-item" tooltip="会話">
+                <ui:Label text="💬" class="nav-icon" />
+                <ui:Label text="TALK" class="nav-label" />
+            </ui:Button>
+
+            <ui:Button name="nav-lens" class="nav-item" tooltip="レンズ">
+                <ui:Label text="🔍" class="nav-icon" />
+                <ui:Label text="LENS" class="nav-label" />
+            </ui:Button>
+
+            <!-- スペーサー -->
+            <ui:VisualElement class="nav-spacer" />
+
+            <!-- 設定・戻るボタン -->
+            <ui:Button name="btn-back" class="nav-item nav-item-bottom" tooltip="戻る">
+                <ui:Label text="←" class="nav-icon" />
+            </ui:Button>
+
+        </ui:VisualElement>
+
+        <!-- 右上ステータスゲージ -->
+        <ui:VisualElement name="status-container" class="status-container">
+
+            <!-- 好感度EXPゲージ -->
+            <ui:VisualElement class="gauge-box gauge-affection">
+                <ui:VisualElement class="gauge-label-row">
+                    <ui:Label text="AFFECTION EXP" class="gauge-label" />
+                    <ui:Label name="txt-aff" text="0 / 100" class="gauge-value" />
+                </ui:VisualElement>
+                <ui:VisualElement class="gauge-bar-bg">
+                    <ui:VisualElement name="bar-aff" class="gauge-fill gauge-fill-affection" />
+                </ui:VisualElement>
+            </ui:VisualElement>
+
+            <!-- 興奮度ゲージ -->
+            <ui:VisualElement class="gauge-box gauge-excitement">
+                <ui:VisualElement class="gauge-label-row">
+                    <ui:Label text="EXCITEMENT" class="gauge-label" />
+                    <ui:Label name="txt-exc" text="0%" class="gauge-value" />
+                </ui:VisualElement>
+                <ui:VisualElement class="gauge-bar-bg">
+                    <ui:VisualElement name="bar-exc" class="gauge-fill gauge-fill-excitement" />
+                </ui:VisualElement>
+            </ui:VisualElement>
+
+        </ui:VisualElement>
+
+        <!-- キャラクター名（左下） -->
+        <ui:VisualElement class="character-name-area">
+            <ui:Label name="character-name" text="SHU" class="character-name" />
+            <ui:Label name="character-class" text="CASTER" class="character-class" />
+        </ui:VisualElement>
+
+        <!-- メッセージウィンドウ（下部） -->
+        <ui:VisualElement name="msg-window" class="msg-window">
+            <ui:Label name="msg-speaker" text="SHU" class="msg-speaker" />
+            <ui:Label name="msg-text" text="......なにか用？" class="msg-text" />
+        </ui:VisualElement>
+
+        <!-- モーダルパネル（タブ展開時に表示） -->
+        <ui:VisualElement name="modal-overlay" class="modal-overlay hidden">
+
+            <ui:VisualElement name="modal-panel" class="modal-panel">
+
+                <ui:VisualElement class="modal-header">
+                    <ui:Label name="modal-title" text="COSTUME" class="modal-title" />
+                    <ui:Button name="btn-modal-close" text="✕" class="btn-modal-close" />
                 </ui:VisualElement>
 
-                <!-- タブアイコンバー -->
-                <ui:VisualElement class="tab-icon-bar">
-                    <ui:Button name="tab-icon-outfit" class="tab-icon" tooltip="着せ替え">
-                        <ui:Label text="👕" class="tab-icon-emoji" />
-                    </ui:Button>
-                    <ui:Button name="tab-icon-lens" class="tab-icon" tooltip="レンズ">
-                        <ui:Label text="🔍" class="tab-icon-emoji" />
-                    </ui:Button>
-                    <ui:Button name="tab-icon-gift" class="tab-icon" tooltip="プレゼント">
-                        <ui:Label text="🎁" class="tab-icon-emoji" />
-                    </ui:Button>
-                    <ui:Button name="tab-icon-talk" class="tab-icon" tooltip="会話">
-                        <ui:Label text="💬" class="tab-icon-emoji" />
-                    </ui:Button>
-                </ui:VisualElement>
+                <ui:ScrollView class="modal-scroll" horizontal-scroller-visibility="Hidden">
 
-                <!-- スクロール可能なコンテンツエリア -->
-                <ui:ScrollView class="side-scroll-content" vertical-scroller-visibility="Auto" horizontal-scroller-visibility="Hidden">
-
-                    <!-- タブコンテンツ（動的に開閉） -->
-                    <ui:VisualElement name="tab-content-area" class="tab-content-area">
-
-                        <!-- 着せ替えタブ -->
-                        <ui:VisualElement name="tab-outfit" class="tab-content hidden">
-                            <ui:VisualElement class="tab-header">
-                                <ui:Label text="OUTFIT" class="section-title" />
-                                <ui:Button name="btn-close-outfit" text="✕" class="btn-tab-close" />
-                            </ui:VisualElement>
-                            <ui:VisualElement class="outfit-buttons">
-                                <ui:Button name="btn-outfit-default" text="DEFAULT" class="btn-outfit active" />
-                                <ui:Button name="btn-outfit-skin1" text="SKIN 1" class="btn-outfit" />
-                                <ui:Button name="btn-outfit-skin2" text="SKIN 2" class="btn-outfit" />
-                            </ui:VisualElement>
+                    <!-- 着せ替えコンテンツ -->
+                    <ui:VisualElement name="content-outfit" class="modal-content hidden">
+                        <ui:VisualElement class="outfit-buttons">
+                            <ui:Button name="btn-outfit-default" text="DEFAULT" class="btn-outfit active" />
+                            <ui:Button name="btn-outfit-skin1" text="SKIN 1" class="btn-outfit" />
+                            <ui:Button name="btn-outfit-skin2" text="SKIN 2" class="btn-outfit" />
                         </ui:VisualElement>
-
-                        <!-- レンズタブ -->
-                        <ui:VisualElement name="tab-lens" class="tab-content hidden">
-                            <ui:VisualElement class="tab-header">
-                                <ui:Label text="LENS" class="section-title" />
-                                <ui:Button name="btn-close-lens" text="✕" class="btn-tab-close" />
-                            </ui:VisualElement>
-
-                            <!-- 所持レンズアイテム -->
-                            <ui:ScrollView class="lens-items-scroll" horizontal-scroller-visibility="Hidden">
-                                <ui:VisualElement name="lens-items-container" class="lens-items-container">
-                                </ui:VisualElement>
-                            </ui:ScrollView>
-
-                            <!-- バッテリー -->
-                            <ui:VisualElement class="battery-section">
-                                <ui:Label name="lens-battery-label" text="BATTERY: --" class="battery-label" />
-                                <ui:VisualElement class="battery-bar-bg">
-                                    <ui:VisualElement name="lens-battery-fill" class="battery-bar-fill" />
-                                </ui:VisualElement>
-                            </ui:VisualElement>
-
-                            <!-- VIEW MODE -->
-                            <ui:Label text="VIEW MODE" class="section-title-small" />
-                            <ui:VisualElement class="lens-buttons">
-                                <ui:Button name="btn-lens-normal" text="NORMAL" class="btn-lens active" />
-                                <ui:Button name="btn-lens-clothes" text="X-RAY" class="btn-lens" />
-                            </ui:VisualElement>
-
-                            <!-- レンズ設定（形状とサイズを横並び） -->
-                            <ui:VisualElement class="lens-config-row">
-                                <ui:VisualElement class="lens-shape-group">
-                                    <ui:Button name="btn-lens-circle" text="●" class="btn-lens-shape active" />
-                                    <ui:Button name="btn-lens-rect" text="■" class="btn-lens-shape" />
-                                </ui:VisualElement>
-                                <ui:Slider name="lens-size-slider" low-value="1" high-value="5" value="2" class="lens-size-slider" />
-                            </ui:VisualElement>
-                        </ui:VisualElement>
-
-                        <!-- プレゼントタブ -->
-                        <ui:VisualElement name="tab-gift" class="tab-content hidden">
-                            <ui:VisualElement class="tab-header">
-                                <ui:Label text="GIFT" class="section-title" />
-                                <ui:Button name="btn-close-gift" text="✕" class="btn-tab-close" />
-                            </ui:VisualElement>
-                            <ui:ScrollView class="gift-scroll" horizontal-scroller-visibility="Hidden">
-                                <ui:VisualElement name="gift-container" class="gift-container">
-                                </ui:VisualElement>
-                            </ui:ScrollView>
-                        </ui:VisualElement>
-
-                        <!-- 会話タブ -->
-                        <ui:VisualElement name="tab-talk" class="tab-content hidden">
-                            <ui:VisualElement class="tab-header">
-                                <ui:Label text="TALK" class="section-title" />
-                                <ui:Button name="btn-close-talk" text="✕" class="btn-tab-close" />
-                            </ui:VisualElement>
-
-                            <!-- ランダム雑談ボタン -->
-                            <ui:Button name="btn-random-talk" text="RANDOM TALK" class="btn-random-talk" />
-
-                            <!-- 会話リスト -->
-                            <ui:Label text="CONVERSATIONS" class="section-title-small" />
-                            <ui:ScrollView class="talk-scroll" horizontal-scroller-visibility="Hidden">
-                                <ui:VisualElement name="talk-list-container" class="talk-list-container">
-                                </ui:VisualElement>
-                            </ui:ScrollView>
-                        </ui:VisualElement>
-
                     </ui:VisualElement>
 
-                    <!-- 好感度セクション（常に表示） -->
-                    <ui:VisualElement class="affection-section">
-                        <ui:Label text="AFFECTION" class="section-title" />
-                        <ui:VisualElement class="affection-display">
-                            <ui:Label name="affection-level" text="Lv.1 知り合い" class="affection-level" />
-                            <ui:VisualElement class="affection-bar-bg">
-                                <ui:VisualElement name="affection-bar-fill" class="affection-bar-fill" />
+                    <!-- プレゼントコンテンツ -->
+                    <ui:VisualElement name="content-gift" class="modal-content hidden">
+                        <ui:VisualElement name="gift-container" class="gift-container">
+                        </ui:VisualElement>
+                        <ui:VisualElement class="gift-empty">
+                            <ui:Label text="プレゼントがありません" class="gift-empty-text" />
+                        </ui:VisualElement>
+                    </ui:VisualElement>
+
+                    <!-- 会話コンテンツ -->
+                    <ui:VisualElement name="content-talk" class="modal-content hidden">
+                        <ui:Button name="btn-random-talk" text="RANDOM TALK" class="btn-random-talk" />
+                        <ui:Label text="CONVERSATIONS" class="section-title-small" />
+                        <ui:VisualElement name="talk-list-container" class="talk-list-container">
+                        </ui:VisualElement>
+                    </ui:VisualElement>
+
+                    <!-- レンズコンテンツ -->
+                    <ui:VisualElement name="content-lens" class="modal-content hidden">
+                        <ui:ScrollView class="lens-items-scroll" horizontal-scroller-visibility="Hidden">
+                            <ui:VisualElement name="lens-items-container" class="lens-items-container">
                             </ui:VisualElement>
-                            <ui:Label name="affection-value" text="0/50" class="affection-value" />
+                        </ui:ScrollView>
+
+                        <ui:VisualElement class="battery-section">
+                            <ui:Label name="lens-battery-label" text="BATTERY: --" class="battery-label" />
+                            <ui:VisualElement class="battery-bar-bg">
+                                <ui:VisualElement name="lens-battery-fill" class="battery-bar-fill" />
+                            </ui:VisualElement>
+                        </ui:VisualElement>
+
+                        <ui:Label text="VIEW MODE" class="section-title-small" />
+                        <ui:VisualElement class="lens-buttons">
+                            <ui:Button name="btn-lens-normal" text="NORMAL" class="btn-lens active" />
+                            <ui:Button name="btn-lens-clothes" text="X-RAY" class="btn-lens" />
+                        </ui:VisualElement>
+
+                        <ui:VisualElement class="lens-config-row">
+                            <ui:VisualElement class="lens-shape-group">
+                                <ui:Button name="btn-lens-circle" text="●" class="btn-lens-shape active" />
+                                <ui:Button name="btn-lens-rect" text="■" class="btn-lens-shape" />
+                            </ui:VisualElement>
+                            <ui:Slider name="lens-size-slider" low-value="1" high-value="5" value="2" class="lens-size-slider" />
                         </ui:VisualElement>
                     </ui:VisualElement>
 
                 </ui:ScrollView>
-
-                <!-- 戻るボタン（固定） -->
-                <ui:Button name="btn-back" text="BACK" class="btn-back" />
 
             </ui:VisualElement>
 

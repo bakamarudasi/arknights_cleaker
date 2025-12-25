@@ -98,6 +98,12 @@ public class CharacterInteractionZone : MonoBehaviour
             AffectionManager.Instance.OnHeadPetted(bonus);
         }
 
+        // 興奮度処理
+        if (ExcitementManager.Instance != null)
+        {
+            ExcitementManager.Instance.OnZoneTouched(zoneType, comboCount);
+        }
+
         // 演出
         PlayEffects();
 

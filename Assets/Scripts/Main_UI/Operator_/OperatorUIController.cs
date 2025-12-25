@@ -3,7 +3,7 @@ using UnityEngine.UIElements;
 using System;
 
 /// <summary>
-/// オペレーター画面のUIファサード
+/// オペレーター画面のUIファサード（フルスクリーンレイアウト版）
 /// 各サブコントローラーの統合と画面全体のライフサイクル管理
 /// </summary>
 public class OperatorUIController : IViewController
@@ -14,10 +14,43 @@ public class OperatorUIController : IViewController
 
     private VisualElement _root;
     private VisualElement _characterDisplay;
+
+    // 背景エフェクト
+    private VisualElement _bgCanvas;
+    private VisualElement _vignette;
+
+    // 左サイドバー
+    private Button _navOutfit;
+    private Button _navGift;
+    private Button _navTalk;
+    private Button _navLens;
+    private Button _btnBack;
+    private Label _lvDisplay;
+
+    // ステータスゲージ
+    private VisualElement _barAff;
+    private Label _txtAff;
+    private VisualElement _barExc;
+    private Label _txtExc;
+
+    // キャラクター名
+    private Label _characterName;
+    private Label _characterClass;
+
+    // モーダル
+    private VisualElement _modalOverlay;
+    private VisualElement _modalPanel;
+    private Label _modalTitle;
+    private Button _btnModalClose;
+    private VisualElement _contentOutfit;
+    private VisualElement _contentGift;
+    private VisualElement _contentTalk;
+    private VisualElement _contentLens;
+
+    // 衣装ボタン
     private Button _btnOutfitDefault;
     private Button _btnOutfitSkin1;
     private Button _btnOutfitSkin2;
-    private Button _btnBack;
 
     // ========================================
     // サブコントローラー
@@ -27,7 +60,7 @@ public class OperatorUIController : IViewController
     private OperatorGiftController _giftController;
     private OperatorAffectionController _affectionController;
     private OperatorTalkController _talkController;
-    private OperatorTabController _tabController;
+    private MessageWindowController _messageController;
 
     // ========================================
     // シーンUI
@@ -50,6 +83,7 @@ public class OperatorUIController : IViewController
 
     private int _currentOutfit;
     private CharacterInteractionZone[] _subscribedZones;
+    private string _currentModalTab;
 
     // ========================================
     // イベント
@@ -75,22 +109,60 @@ public class OperatorUIController : IViewController
         UpdateOutfitButtons();
         ApplyCurrentSceneUI();
         UpdateTalkControllerForCurrentScene();
+        UpdateStatusUI();
+        UpdateExcitementEffects(0);
 
-        LogUIController.LogSystem("Operator View Initialized.");
+        // 初期メッセージ
+        _messageController?.ShowMessage("......やっと来た。待ちくたびれたわよ？", GetCurrentCharacterName(), 3f);
+
+        LogUIController.LogSystem("Operator View Initialized (Fullscreen Layout).");
     }
 
     private void QueryElements()
     {
         _characterDisplay = _root.Q<VisualElement>("character-display");
+
+        // 背景エフェクト
+        _bgCanvas = _root.Q<VisualElement>("bg-canvas");
+        _vignette = _root.Q<VisualElement>("vignette");
+
+        // 左サイドバー
+        _navOutfit = _root.Q<Button>("nav-outfit");
+        _navGift = _root.Q<Button>("nav-gift");
+        _navTalk = _root.Q<Button>("nav-talk");
+        _navLens = _root.Q<Button>("nav-lens");
+        _btnBack = _root.Q<Button>("btn-back");
+        _lvDisplay = _root.Q<Label>("lv-display");
+
+        // ステータスゲージ
+        _barAff = _root.Q<VisualElement>("bar-aff");
+        _txtAff = _root.Q<Label>("txt-aff");
+        _barExc = _root.Q<VisualElement>("bar-exc");
+        _txtExc = _root.Q<Label>("txt-exc");
+
+        // キャラクター名
+        _characterName = _root.Q<Label>("character-name");
+        _characterClass = _root.Q<Label>("character-class");
+
+        // モーダル
+        _modalOverlay = _root.Q<VisualElement>("modal-overlay");
+        _modalPanel = _root.Q<VisualElement>("modal-panel");
+        _modalTitle = _root.Q<Label>("modal-title");
+        _btnModalClose = _root.Q<Button>("btn-modal-close");
+        _contentOutfit = _root.Q<VisualElement>("content-outfit");
+        _contentGift = _root.Q<VisualElement>("content-gift");
+        _contentTalk = _root.Q<VisualElement>("content-talk");
+        _contentLens = _root.Q<VisualElement>("content-lens");
+
+        // 衣装ボタン
         _btnOutfitDefault = _root.Q<Button>("btn-outfit-default");
         _btnOutfitSkin1 = _root.Q<Button>("btn-outfit-skin1");
         _btnOutfitSkin2 = _root.Q<Button>("btn-outfit-skin2");
-        _btnBack = _root.Q<Button>("btn-back");
     }
 
     private void InitializeSubControllers()
     {
-        // レンズ
+        // レンズ（モーダル内）
         _lensController = new OperatorLensController();
         _lensController.Initialize(_root);
         _lensController.OnLensModeChanged += OnLensModeChanged;
@@ -100,7 +172,7 @@ public class OperatorUIController : IViewController
         // ギフト
         _giftController = new OperatorGiftController();
         _giftController.Initialize(_root);
-        _giftController.OnGiftGiven += _ => _affectionController?.UpdateAffectionUI();
+        _giftController.OnGiftGiven += _ => UpdateStatusUI();
 
         // 好感度
         _affectionController = new OperatorAffectionController();
@@ -109,11 +181,11 @@ public class OperatorUIController : IViewController
         // 会話
         _talkController = new OperatorTalkController();
         _talkController.Initialize(_root);
-        _talkController.OnConversationEnded += () => _affectionController?.UpdateAffectionUI();
+        _talkController.OnConversationEnded += () => UpdateStatusUI();
 
-        // タブ（自動登録）
-        _tabController = new OperatorTabController();
-        _tabController.AutoRegister(_root, "outfit", "lens", "gift", "talk");
+        // メッセージウィンドウ
+        _messageController = new MessageWindowController();
+        _messageController.Initialize(_root);
     }
 
     private void InitializeSceneUIs()
@@ -129,16 +201,100 @@ public class OperatorUIController : IViewController
 
     private void SetupCallbacks()
     {
+        // 左サイドバーナビゲーション
+        _callbacks.RegisterClick(_navOutfit, () => OpenModal("outfit", "COSTUME"));
+        _callbacks.RegisterClick(_navGift, () => OpenModal("gift", "PRESENT"));
+        _callbacks.RegisterClick(_navTalk, () => OpenModal("talk", "TALK"));
+        _callbacks.RegisterClick(_navLens, () => OpenModal("lens", "LENS"));
+
+        // 戻るボタン
+        _callbacks.RegisterClick(_btnBack, () => OnBackRequested?.Invoke());
+
+        // モーダル閉じる
+        _callbacks.RegisterClick(_btnModalClose, CloseModal);
+        _callbacks.RegisterClick(_modalOverlay, evt =>
+        {
+            // パネル外クリックで閉じる
+            if (evt.target == _modalOverlay)
+                CloseModal();
+        });
+
         // 衣装ボタン
         _callbacks.RegisterClick(_btnOutfitDefault, () => SetOutfit(0));
         _callbacks.RegisterClick(_btnOutfitSkin1, () => SetOutfit(1));
         _callbacks.RegisterClick(_btnOutfitSkin2, () => SetOutfit(2));
 
-        // 戻るボタン
-        _callbacks.RegisterClick(_btnBack, () => OnBackRequested?.Invoke());
-
         // キャラクタークリック
         _callbacks.RegisterClick(_characterDisplay, OnCharacterClicked);
+    }
+
+    // ========================================
+    // モーダル制御
+    // ========================================
+
+    private void OpenModal(string tabId, string title)
+    {
+        _currentModalTab = tabId;
+
+        // タイトル設定
+        if (_modalTitle != null)
+            _modalTitle.text = title;
+
+        // 全コンテンツを非表示
+        _contentOutfit?.AddToClassList("hidden");
+        _contentGift?.AddToClassList("hidden");
+        _contentTalk?.AddToClassList("hidden");
+        _contentLens?.AddToClassList("hidden");
+
+        // 対象コンテンツを表示
+        var content = tabId switch
+        {
+            "outfit" => _contentOutfit,
+            "gift" => _contentGift,
+            "talk" => _contentTalk,
+            "lens" => _contentLens,
+            _ => null
+        };
+        content?.RemoveFromClassList("hidden");
+
+        // ナビゲーションのアクティブ状態更新
+        UpdateNavActiveState(tabId);
+
+        // モーダル表示
+        _modalOverlay?.RemoveFromClassList("hidden");
+    }
+
+    private void CloseModal()
+    {
+        _modalOverlay?.AddToClassList("hidden");
+        _currentModalTab = null;
+        ClearNavActiveState();
+    }
+
+    private void UpdateNavActiveState(string activeTab)
+    {
+        _navOutfit?.RemoveFromClassList("active");
+        _navGift?.RemoveFromClassList("active");
+        _navTalk?.RemoveFromClassList("active");
+        _navLens?.RemoveFromClassList("active");
+
+        var activeNav = activeTab switch
+        {
+            "outfit" => _navOutfit,
+            "gift" => _navGift,
+            "talk" => _navTalk,
+            "lens" => _navLens,
+            _ => null
+        };
+        activeNav?.AddToClassList("active");
+    }
+
+    private void ClearNavActiveState()
+    {
+        _navOutfit?.RemoveFromClassList("active");
+        _navGift?.RemoveFromClassList("active");
+        _navTalk?.RemoveFromClassList("active");
+        _navLens?.RemoveFromClassList("active");
     }
 
     // ========================================
@@ -148,7 +304,16 @@ public class OperatorUIController : IViewController
     private void SubscribeToEvents()
     {
         if (AffectionManager.Instance != null)
+        {
             AffectionManager.Instance.OnAffectionChanged += OnAffectionChanged;
+            AffectionManager.Instance.OnDialogueRequested += OnDialogueRequested;
+        }
+
+        if (ExcitementManager.Instance != null)
+        {
+            ExcitementManager.Instance.OnExcitementChanged += OnExcitementChanged;
+            ExcitementManager.Instance.OnExcitementLevelChanged += UpdateExcitementEffects;
+        }
 
         if (InventoryManager.Instance != null)
             InventoryManager.Instance.OnItemCountChanged += OnItemCountChanged;
@@ -163,7 +328,16 @@ public class OperatorUIController : IViewController
     private void UnsubscribeFromEvents()
     {
         if (AffectionManager.Instance != null)
+        {
             AffectionManager.Instance.OnAffectionChanged -= OnAffectionChanged;
+            AffectionManager.Instance.OnDialogueRequested -= OnDialogueRequested;
+        }
+
+        if (ExcitementManager.Instance != null)
+        {
+            ExcitementManager.Instance.OnExcitementChanged -= OnExcitementChanged;
+            ExcitementManager.Instance.OnExcitementLevelChanged -= UpdateExcitementEffects;
+        }
 
         if (InventoryManager.Instance != null)
             InventoryManager.Instance.OnItemCountChanged -= OnItemCountChanged;
@@ -176,7 +350,19 @@ public class OperatorUIController : IViewController
     }
 
     private void OnAffectionChanged(string characterId, int newValue, int delta)
-        => _affectionController?.UpdateAffectionUI();
+    {
+        UpdateStatusUI();
+    }
+
+    private void OnExcitementChanged(float newValue, float delta)
+    {
+        UpdateExcitementUI();
+    }
+
+    private void OnDialogueRequested(string dialogue)
+    {
+        _messageController?.ShowMessage(dialogue, GetCurrentCharacterName(), 3f);
+    }
 
     private void OnCostumeUnlocked(string characterId, string costumeId)
         => UpdateOutfitButtons();
@@ -191,6 +377,97 @@ public class OperatorUIController : IViewController
     {
         ApplyCurrentSceneUI();
         UpdateTalkControllerForCurrentScene();
+        UpdateCharacterNameDisplay();
+    }
+
+    // ========================================
+    // UI更新
+    // ========================================
+
+    private void UpdateStatusUI()
+    {
+        UpdateAffectionUI();
+        UpdateExcitementUI();
+    }
+
+    private void UpdateAffectionUI()
+    {
+        var affManager = AffectionManager.Instance;
+        if (affManager == null) return;
+
+        int current = affManager.GetCurrentAffection();
+        var level = affManager.GetCurrentAffectionLevel();
+
+        // レベル表示
+        int levelNum = level?.level ?? 1;
+        if (_lvDisplay != null)
+            _lvDisplay.text = $"Lv.{levelNum}";
+
+        // EXPバー
+        int nextThreshold = level?.nextThreshold ?? 100;
+        int prevThreshold = level?.threshold ?? 0;
+        int expInLevel = current - prevThreshold;
+        int expNeeded = nextThreshold - prevThreshold;
+        float percent = expNeeded > 0 ? (float)expInLevel / expNeeded * 100f : 100f;
+
+        if (_barAff != null)
+            _barAff.style.width = new StyleLength(new Length(percent, LengthUnit.Percent));
+
+        if (_txtAff != null)
+            _txtAff.text = $"{expInLevel} / {expNeeded}";
+    }
+
+    private void UpdateExcitementUI()
+    {
+        var excManager = ExcitementManager.Instance;
+        if (excManager == null) return;
+
+        float percent = excManager.ExcitementPercent;
+
+        if (_barExc != null)
+            _barExc.style.width = new StyleLength(new Length(percent, LengthUnit.Percent));
+
+        if (_txtExc != null)
+            _txtExc.text = $"{Mathf.FloorToInt(percent)}%";
+    }
+
+    private void UpdateExcitementEffects(int level)
+    {
+        // 背景色変化
+        _bgCanvas?.RemoveFromClassList("excited-low");
+        _bgCanvas?.RemoveFromClassList("excited-high");
+
+        _vignette?.RemoveFromClassList("excited-low");
+        _vignette?.RemoveFromClassList("excited-high");
+
+        if (level >= 2)
+        {
+            _bgCanvas?.AddToClassList("excited-high");
+            _vignette?.AddToClassList("excited-high");
+        }
+        else if (level >= 1)
+        {
+            _bgCanvas?.AddToClassList("excited-low");
+            _vignette?.AddToClassList("excited-low");
+        }
+    }
+
+    private void UpdateCharacterNameDisplay()
+    {
+        var presenter = OverlayCharacterPresenter.Instance;
+        if (presenter?.CurrentCharacter == null) return;
+
+        if (_characterName != null)
+            _characterName.text = presenter.CurrentCharacter.displayName ?? presenter.CurrentCharacter.characterId;
+
+        if (_characterClass != null)
+            _characterClass.text = presenter.CurrentCharacter.characterClass ?? "";
+    }
+
+    private string GetCurrentCharacterName()
+    {
+        var presenter = OverlayCharacterPresenter.Instance;
+        return presenter?.CurrentCharacter?.displayName ?? "???";
     }
 
     // ========================================
@@ -248,6 +525,8 @@ public class OperatorUIController : IViewController
         presenter.Show();
         presenter.SetUpdateCallback(_lensController.UpdateBattery);
         SubscribeToInteractionZones(presenter);
+
+        UpdateCharacterNameDisplay();
     }
 
     private void HideCharacterOverlay()
@@ -286,12 +565,37 @@ public class OperatorUIController : IViewController
 
     private void OnInteractionZoneTouched(CharacterInteractionZone.ZoneType zoneType, int comboCount)
     {
-        _affectionController?.UpdateAffectionUI();
+        UpdateStatusUI();
+
+        // ゾーンに応じたセリフ表示
+        string dialogue = GetZoneDialogue(zoneType, comboCount);
+        if (!string.IsNullOrEmpty(dialogue))
+        {
+            _messageController?.ShowMessage(dialogue, GetCurrentCharacterName(), 2.5f);
+        }
 
         if (zoneType == CharacterInteractionZone.ZoneType.Head && comboCount >= 5)
         {
-            LogUIController.Msg("<color=#FF69B4>♪♪♪</color>");
+            LogUIController.Msg("<color=#FF69B4>...</color>");
         }
+    }
+
+    private string GetZoneDialogue(CharacterInteractionZone.ZoneType zoneType, int comboCount)
+    {
+        var affManager = AffectionManager.Instance;
+        int level = affManager?.GetLevel(OverlayCharacterPresenter.Instance?.CurrentCharacter?.characterId) ?? 1;
+
+        // レベルとコンボに応じたセリフ（サンプル）
+        return (zoneType, level, comboCount) switch
+        {
+            (CharacterInteractionZone.ZoneType.Head, >= 3, >= 3) => "......ふふ、あなたの手、落ち着くわ。",
+            (CharacterInteractionZone.ZoneType.Head, >= 1, _) => "あ、なでなでするの？ 子供扱いしないでよね。",
+            (CharacterInteractionZone.ZoneType.Body, >= 3, _) => "......もう、わがままなんだから。",
+            (CharacterInteractionZone.ZoneType.Body, >= 1, _) => "くすぐったいってば！",
+            (CharacterInteractionZone.ZoneType.Hand, >= 3, _) => "ギュッてしてると、安心する。",
+            (CharacterInteractionZone.ZoneType.Hand, >= 1, _) => "手、繋ぎたいの？ 仕方ないわね。",
+            _ => null
+        };
     }
 
     // ========================================
@@ -307,7 +611,7 @@ public class OperatorUIController : IViewController
         {
             if (!CostumeManager.Instance.IsCostumeUnlockedByIndex(characterId, outfitIndex))
             {
-                LogUIController.Msg("この衣装はまだ解放されていません");
+                _messageController?.ShowMessage("この衣装はまだ解放されていません", null, 2f);
                 return;
             }
             CostumeManager.Instance.EquipCostumeByIndex(characterId, outfitIndex);
@@ -324,7 +628,7 @@ public class OperatorUIController : IViewController
             presenter.SetScene(sceneId);
         }
 
-        LogUIController.Msg($"Outfit changed to: {GetOutfitName(outfitIndex)}");
+        _messageController?.ShowMessage($"衣装を変更したわ。", GetCurrentCharacterName(), 2f);
     }
 
     private void UpdateOutfitButtons()
@@ -362,14 +666,6 @@ public class OperatorUIController : IViewController
         }
     }
 
-    private static string GetOutfitName(int index) => index switch
-    {
-        0 => "Default",
-        1 => "Skin 1",
-        2 => "Skin 2",
-        _ => "Unknown"
-    };
-
     // ========================================
     // レンズ効果
     // ========================================
@@ -387,7 +683,6 @@ public class OperatorUIController : IViewController
         else
         {
             presenter.DisableLensMask();
-            // マウス追従は登録したままでOK（レンズOFF時は無視される）
         }
 
         var lensItem = _lensController.CurrentLensItem;
@@ -463,7 +758,7 @@ public class OperatorUIController : IViewController
         _giftController?.Dispose();
         _affectionController?.Dispose();
         _talkController?.Dispose();
-        _tabController?.Dispose();
+        _messageController?.Dispose();
 
         // シーンUI解放
         _currentSceneUI?.Hide();
