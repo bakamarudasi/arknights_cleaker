@@ -1,5 +1,6 @@
 using UnityEngine;
 using System;
+using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
 
@@ -64,6 +65,14 @@ public class EventManager : MonoBehaviour
     private Action<double> _onMoneyEarnedCallback;
     private Action<UpgradeData, int> _onUpgradePurchasedCallback;
     private Action _onFeverStartedCallback;
+
+    /// <summary>定期条件チェック用Coroutine</summary>
+    private Coroutine _periodicCheckCoroutine;
+    private readonly WaitForSeconds _oneSecondWait = new WaitForSeconds(1f);
+
+    /// <summary>未発動イベントキャッシュ（GC圧力軽減）</summary>
+    private List<GameEventData> _pendingEventsCache = new List<GameEventData>();
+    private bool _pendingEventsCacheDirty = true;
 
     // ========================================
     // 初期化
@@ -138,8 +147,20 @@ public class EventManager : MonoBehaviour
         _onFeverStartedCallback = () => CheckFeverConditions();
         gc.SP.OnFeverStarted += _onFeverStartedCallback;
 
-        // 統計の定期チェック（クリック数、プレイ時間など）
-        InvokeRepeating(nameof(CheckPeriodicConditions), 1f, 1f);
+        // 統計の定期チェック（クリック数、プレイ時間など）- Coroutine版
+        _periodicCheckCoroutine = StartCoroutine(PeriodicConditionCheckCoroutine());
+    }
+
+    /// <summary>
+    /// 定期条件チェックCoroutine（GC圧力軽減のためWaitForSecondsを再利用）
+    /// </summary>
+    private IEnumerator PeriodicConditionCheckCoroutine()
+    {
+        while (true)
+        {
+            yield return _oneSecondWait;
+            CheckPeriodicConditions();
+        }
     }
 
     // ========================================
@@ -241,6 +262,9 @@ public class EventManager : MonoBehaviour
 
         // 発動済みに追加
         triggeredEventIds.Add(evt.eventId);
+
+        // キャッシュ無効化
+        InvalidatePendingEventsCache();
 
         // イベント発火
         evt.Raise();
@@ -346,12 +370,40 @@ public class EventManager : MonoBehaviour
 
     /// <summary>
     /// まだ発動していない（チェック対象の）イベントを取得
+    /// キャッシュを使用してGC圧力を軽減
     /// </summary>
-    private IEnumerable<GameEventData> GetPendingEvents()
+    private List<GameEventData> GetPendingEvents()
     {
-        return allEvents
-            .Where(e => !e.oneTimeOnly || !triggeredEventIds.Contains(e.eventId))
-            .OrderByDescending(e => e.priority);
+        if (!_pendingEventsCacheDirty)
+        {
+            return _pendingEventsCache;
+        }
+
+        _pendingEventsCache.Clear();
+
+        // 未発動イベントを収集
+        for (int i = 0; i < allEvents.Count; i++)
+        {
+            var evt = allEvents[i];
+            if (!evt.oneTimeOnly || !triggeredEventIds.Contains(evt.eventId))
+            {
+                _pendingEventsCache.Add(evt);
+            }
+        }
+
+        // 優先度でソート（降順）
+        _pendingEventsCache.Sort((a, b) => b.priority.CompareTo(a.priority));
+
+        _pendingEventsCacheDirty = false;
+        return _pendingEventsCache;
+    }
+
+    /// <summary>
+    /// 未発動イベントキャッシュを無効化
+    /// </summary>
+    private void InvalidatePendingEventsCache()
+    {
+        _pendingEventsCacheDirty = true;
     }
 
     /// <summary>
@@ -363,13 +415,19 @@ public class EventManager : MonoBehaviour
     }
 
     /// <summary>
-    /// 特定のメニューが解放済みかどうか
+    /// 特定のメニューが解放済みかどうか（LINQ不使用版）
     /// </summary>
     public bool IsMenuUnlocked(MenuType menuType)
     {
-        return allEvents
-            .Where(e => e.unlockMenu == menuType)
-            .Any(e => triggeredEventIds.Contains(e.eventId));
+        for (int i = 0; i < allEvents.Count; i++)
+        {
+            var evt = allEvents[i];
+            if (evt.unlockMenu == menuType && triggeredEventIds.Contains(evt.eventId))
+            {
+                return true;
+            }
+        }
+        return false;
     }
 
     // ========================================
@@ -391,6 +449,9 @@ public class EventManager : MonoBehaviour
     {
         triggeredEventIds = new HashSet<string>(eventIds ?? new List<string>());
 
+        // キャッシュ無効化
+        InvalidatePendingEventsCache();
+
         // セーブデータがあれば初回起動ではない
         if (triggeredEventIds.Count > 0)
         {
@@ -406,7 +467,12 @@ public class EventManager : MonoBehaviour
 
     private void OnDestroy()
     {
-        CancelInvoke();
+        // Coroutine停止
+        if (_periodicCheckCoroutine != null)
+        {
+            StopCoroutine(_periodicCheckCoroutine);
+            _periodicCheckCoroutine = null;
+        }
 
         var gc = GameController.Instance;
         if (gc != null)

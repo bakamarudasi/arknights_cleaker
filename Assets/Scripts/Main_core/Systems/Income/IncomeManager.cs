@@ -1,4 +1,5 @@
 using System;
+using System.Collections;
 using UnityEngine;
 
 /// <summary>
@@ -51,6 +52,8 @@ public class IncomeManager : MonoBehaviour
     // ========================================
 
     private bool _isRunning = false;
+    private Coroutine _incomeCoroutine;
+    private WaitForSeconds _tickWait;
 
     // ========================================
     // 初期化
@@ -79,7 +82,10 @@ public class IncomeManager : MonoBehaviour
     {
         if (_isRunning) return;
         _isRunning = true;
-        InvokeRepeating(nameof(IncomeTick), tickInterval, tickInterval);
+
+        // WaitForSecondsを再利用してGC圧力を軽減
+        _tickWait ??= new WaitForSeconds(tickInterval);
+        _incomeCoroutine = StartCoroutine(IncomeTickCoroutine());
     }
 
     /// <summary>
@@ -89,7 +95,12 @@ public class IncomeManager : MonoBehaviour
     {
         if (!_isRunning) return;
         _isRunning = false;
-        CancelInvoke(nameof(IncomeTick));
+
+        if (_incomeCoroutine != null)
+        {
+            StopCoroutine(_incomeCoroutine);
+            _incomeCoroutine = null;
+        }
     }
 
     /// <summary>
@@ -112,11 +123,20 @@ public class IncomeManager : MonoBehaviour
     // ティック処理
     // ========================================
 
-    private void IncomeTick()
+    /// <summary>
+    /// 収入ティックCoroutine（GC圧力軽減のためWaitForSecondsを再利用）
+    /// </summary>
+    private IEnumerator IncomeTickCoroutine()
     {
-        if (_finalIncomePerTick <= 0) return;
+        while (_isRunning)
+        {
+            yield return _tickWait;
 
-        OnIncomeGenerated?.Invoke(_finalIncomePerTick);
+            if (_finalIncomePerTick > 0)
+            {
+                OnIncomeGenerated?.Invoke(_finalIncomePerTick);
+            }
+        }
     }
 
     // ========================================

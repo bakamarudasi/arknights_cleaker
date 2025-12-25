@@ -2,6 +2,7 @@ using UnityEngine;
 using UnityEngine.Events;
 using TMPro;
 using System;
+using System.Collections;
 using System.Collections.Generic;
 
 /// <summary>
@@ -104,6 +105,13 @@ public class GameController : MonoBehaviour
     private Action _onFeverEndedCallback;
 
     // ========================================
+    // Coroutine参照
+    // ========================================
+
+    private Coroutine _playTimeCoroutine;
+    private readonly WaitForSeconds _oneSecondWait = new WaitForSeconds(1f);
+
+    // ========================================
     // バフシステム用イベント
     // ========================================
 
@@ -136,7 +144,7 @@ public class GameController : MonoBehaviour
             BindEvents();
             RecalculateStats();
             Income?.StartIncome();
-            InvokeRepeating(nameof(TrackPlayTime), 1f, 1f);
+            _playTimeCoroutine = StartCoroutine(TrackPlayTimeCoroutine());
         }
         catch (Exception ex)
         {
@@ -419,7 +427,18 @@ public class GameController : MonoBehaviour
     // 統計
     // ========================================
 
-    private void TrackPlayTime() => stats.totalPlayTimeSeconds += 1.0;
+    /// <summary>
+    /// プレイ時間を追跡するCoroutine（GC圧力軽減のためWaitForSecondsを再利用）
+    /// </summary>
+    private IEnumerator TrackPlayTimeCoroutine()
+    {
+        while (true)
+        {
+            yield return _oneSecondWait;
+            stats.totalPlayTimeSeconds += 1.0;
+        }
+    }
+
     public StatisticsData GetStatistics() => stats;
 
     // ========================================
@@ -428,8 +447,12 @@ public class GameController : MonoBehaviour
 
     private void OnDestroy()
     {
-        // InvokeRepeating停止
-        CancelInvoke(nameof(TrackPlayTime));
+        // Coroutine停止
+        if (_playTimeCoroutine != null)
+        {
+            StopCoroutine(_playTimeCoroutine);
+            _playTimeCoroutine = null;
+        }
 
         // イベント解除
         if (Wallet != null)
