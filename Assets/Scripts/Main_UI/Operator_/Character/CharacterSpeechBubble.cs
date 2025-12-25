@@ -84,7 +84,7 @@ public class CharacterSpeechBubble : MonoBehaviour
     // ========================================
 
     /// <summary>
-    /// セリフを表示
+    /// セリフを表示（現在位置）
     /// </summary>
     public void ShowDialogue(string dialogue)
     {
@@ -97,6 +97,56 @@ public class CharacterSpeechBubble : MonoBehaviour
         }
 
         _displayCoroutine = StartCoroutine(DisplayDialogueCoroutine(dialogue));
+    }
+
+    /// <summary>
+    /// 指定位置にセリフを表示
+    /// </summary>
+    /// <param name="worldPosition">ワールド座標での表示位置</param>
+    /// <param name="dialogue">セリフ内容</param>
+    /// <param name="offset">位置オフセット（デフォルト: 上方向に少しずらす）</param>
+    public void ShowDialogueAt(Vector3 worldPosition, string dialogue, Vector3? offset = null)
+    {
+        if (string.IsNullOrEmpty(dialogue)) return;
+
+        // 位置を設定
+        Vector3 finalOffset = offset ?? new Vector3(0, 0.5f, 0);
+        transform.position = worldPosition + finalOffset;
+
+        ShowDialogue(dialogue);
+    }
+
+    /// <summary>
+    /// 会話モード用：タップ待ちでセリフを表示
+    /// </summary>
+    /// <param name="dialogue">セリフ内容</param>
+    /// <param name="onComplete">表示完了後のコールバック</param>
+    public void ShowDialogueWithCallback(string dialogue, System.Action onComplete)
+    {
+        if (string.IsNullOrEmpty(dialogue))
+        {
+            onComplete?.Invoke();
+            return;
+        }
+
+        // 既存の表示をキャンセル
+        if (_displayCoroutine != null)
+        {
+            StopCoroutine(_displayCoroutine);
+        }
+
+        _displayCoroutine = StartCoroutine(DisplayDialogueWithCallbackCoroutine(dialogue, onComplete));
+    }
+
+    /// <summary>
+    /// 指定位置に会話モード用セリフを表示
+    /// </summary>
+    public void ShowDialogueAtWithCallback(Vector3 worldPosition, string dialogue, System.Action onComplete, Vector3? offset = null)
+    {
+        Vector3 finalOffset = offset ?? new Vector3(0, 0.5f, 0);
+        transform.position = worldPosition + finalOffset;
+
+        ShowDialogueWithCallback(dialogue, onComplete);
     }
 
     private IEnumerator DisplayDialogueCoroutine(string dialogue)
@@ -123,6 +173,85 @@ public class CharacterSpeechBubble : MonoBehaviour
 
         _isShowing = false;
         _displayCoroutine = null;
+    }
+
+    private IEnumerator DisplayDialogueWithCallbackCoroutine(string dialogue, System.Action onComplete)
+    {
+        _isShowing = true;
+        _waitingForTap = true;
+        _skipRequested = false;
+
+        // テキスト設定
+        if (bubbleText != null)
+        {
+            bubbleText.text = "";
+        }
+
+        // フェードイン
+        yield return StartCoroutine(FadeCoroutine(0f, 1f, fadeInDuration));
+
+        // タイプライター効果（スキップ可能）
+        yield return StartCoroutine(TypewriterCoroutineSkippable(dialogue));
+
+        // タップ待ち
+        _skipRequested = false;
+        while (!_skipRequested)
+        {
+            // 画面タップで次へ
+            if (Input.GetMouseButtonDown(0) || Input.touchCount > 0)
+            {
+                _skipRequested = true;
+            }
+            yield return null;
+        }
+
+        // フェードアウト
+        yield return StartCoroutine(FadeCoroutine(1f, 0f, fadeOutDuration));
+
+        _isShowing = false;
+        _waitingForTap = false;
+        _displayCoroutine = null;
+
+        onComplete?.Invoke();
+    }
+
+    private IEnumerator TypewriterCoroutineSkippable(string dialogue)
+    {
+        if (bubbleText == null) yield break;
+
+        bubbleText.text = "";
+        foreach (char c in dialogue)
+        {
+            // スキップリクエストがあれば全文表示
+            if (_skipRequested || Input.GetMouseButtonDown(0))
+            {
+                bubbleText.text = dialogue;
+                AdjustBubbleSize();
+                _skipRequested = false; // スキップは消費
+                yield break;
+            }
+
+            bubbleText.text += c;
+            AdjustBubbleSize();
+            yield return new WaitForSeconds(typewriterSpeed);
+        }
+    }
+
+    // タップ待ち状態
+    private bool _waitingForTap = false;
+    private bool _skipRequested = false;
+
+    /// <summary>
+    /// タップ待ち中か
+    /// </summary>
+    public bool IsWaitingForTap => _waitingForTap;
+
+    /// <summary>
+    /// 次へ進む（外部からタップをシミュレート）
+    /// </summary>
+    public void RequestSkip()
+    {
+        _skipRequested = true;
     }
 
     private IEnumerator FadeCoroutine(float from, float to, float duration)

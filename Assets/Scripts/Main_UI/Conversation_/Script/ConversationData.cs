@@ -3,6 +3,17 @@ using System;
 using System.Collections.Generic;
 
 /// <summary>
+/// 会話の表示モード
+/// </summary>
+public enum ConversationDisplayMode
+{
+    /// <summary>全画面会話UI（従来の表示）</summary>
+    OverlayUI,
+    /// <summary>立ち絵画面 + 吹き出し</summary>
+    SpeechBubble,
+}
+
+/// <summary>
 /// 会話イベントのデータ定義（ScriptableObject）
 /// 複数のダイアログ行を持つ会話シーケンスを定義
 /// </summary>
@@ -15,6 +26,10 @@ public class ConversationData : ScriptableObject
 
     [Tooltip("会話のタイトル（デバッグ用）")]
     public string title;
+
+    [Header("表示モード")]
+    [Tooltip("会話のデフォルト表示モード")]
+    public ConversationDisplayMode defaultDisplayMode = ConversationDisplayMode.OverlayUI;
 
     [Header("ダイアログ")]
     [Tooltip("会話の各行")]
@@ -67,12 +82,37 @@ public class DialogLine
     [Tooltip("表情変更（キャラに複数表情がある場合）")]
     public int expressionIndex = 0;
 
+    [Header("表示モードオーバーライド")]
+    [Tooltip("この行だけ表示モードを変更する")]
+    public bool overrideDisplayMode = false;
+
+    [Tooltip("オーバーライド時の表示モード")]
+    public ConversationDisplayMode displayModeOverride = ConversationDisplayMode.OverlayUI;
+
+    [Header("シーン・アニメーション切り替え")]
+    [Tooltip("この行でシーン（立ち絵）を切り替える（CharacterSceneDataのsceneId）")]
+    public string changeToSceneId = "";
+
+    [Tooltip("この行でアニメーションを変更する（Spineアニメーション名）")]
+    public string animationTrigger = "";
+
+    [Tooltip("吹き出しモード時のアンカー位置（Spineボーン名: head, mouth など）")]
+    public string bubbleAnchor = "head";
+
     [Header("チュートリアル用")]
     [Tooltip("ハイライトするUI要素名（チュートリアル用）")]
     public string highlightElement;
 
     [Tooltip("ダイアログの表示位置")]
     public DialogPosition dialogPosition = DialogPosition.Bottom;
+
+    /// <summary>
+    /// この行の実際の表示モードを取得
+    /// </summary>
+    public ConversationDisplayMode GetDisplayMode(ConversationDisplayMode defaultMode)
+    {
+        return overrideDisplayMode ? displayModeOverride : defaultMode;
+    }
 }
 
 /// <summary>
