@@ -16,7 +16,7 @@ using System.Collections.Generic;
 /// - Layer 2: Inner（インナー）  → penetrateLevel >= 2 で非表示
 /// - Layer 3: Outer（上着）      → penetrateLevel >= 1 で非表示
 /// </summary>
-public class CharacterLayerController : MonoBehaviour
+public class CharacterLayerController : MonoBehaviour, ILayerController
 {
     [Serializable]
     public class LayerEntry

@@ -2,12 +2,12 @@ using UnityEngine;
 
 /// <summary>
 /// レンズマスク機能のアダプター
-/// LensMaskControllerとCharacterLayerControllerを連携させる
+/// LensMaskControllerとILayerController（PSB/Spine両対応）を連携させる
 /// </summary>
 public class PresenterLensAdapter
 {
     private LensMaskController _lensMaskController;
-    private CharacterLayerController _layerController;
+    private ILayerController _layerController;
     private Camera _camera;
     private Transform _parentTransform;
 
@@ -24,9 +24,9 @@ public class PresenterLensAdapter
     }
 
     /// <summary>
-    /// レイヤーコントローラーを設定
+    /// レイヤーコントローラーを設定（PSB: CharacterLayerController, Spine: SpineLayerController）
     /// </summary>
-    public void SetLayerController(CharacterLayerController controller)
+    public void SetLayerController(ILayerController controller)
     {
         _layerController = controller;
     }
