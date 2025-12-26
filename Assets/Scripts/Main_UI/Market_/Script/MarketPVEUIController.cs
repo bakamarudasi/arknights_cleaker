@@ -6,9 +6,19 @@ using System;
 /// マーケットPVE UIの管理クラス
 /// 防衛戦・敵対的買収パネルの表示/更新を担当
 /// MarketUIControllerから呼び出される
+///
+/// リファクタリング: ファサードパターン適用
+/// - IMarketPVEFacade経由でPVE Managerにアクセス
+/// - MarketPVEEventHub経由でイベントを購読
 /// </summary>
 public class MarketPVEUIController
 {
+    // ========================================
+    // 依存（ファサード経由）
+    // ========================================
+    private readonly IMarketPVEFacade facade;
+    private readonly MarketPVEEventHub eventHub;
+
     // ========================================
     // UI要素：防衛戦
     // ========================================
@@ -55,6 +65,18 @@ public class MarketPVEUIController
     // ========================================
     private VisualElement root;
     private IVisualElementScheduledItem updateTimer;
+
+    // ========================================
+    // コンストラクタ
+    // ========================================
+
+    public MarketPVEUIController() : this(MarketPVEFacade.Instance) { }
+
+    public MarketPVEUIController(IMarketPVEFacade facade)
+    {
+        this.facade = facade;
+        this.eventHub = new MarketPVEEventHub();
+    }
 
     // ========================================
     // 初期化
@@ -140,49 +162,35 @@ public class MarketPVEUIController
 
     private void BindPVEEvents()
     {
+        eventHub.Subscribe();
+
         // 防衛戦イベント
-        if (EconomicEventManager.Instance != null)
-        {
-            EconomicEventManager.Instance.OnEventStarted += OnDefenseEventStarted;
-            EconomicEventManager.Instance.OnEventEnded += OnDefenseEventEnded;
-        }
+        eventHub.OnDefenseEventStarted += OnDefenseEventStarted;
+        eventHub.OnDefenseEventEnded += OnDefenseEventEnded;
 
-        // 買収バトル
-        if (TakeoverBattleManager.Instance != null)
-        {
-            TakeoverBattleManager.Instance.OnBattleStarted += OnTakeoverBattleStarted;
-            TakeoverBattleManager.Instance.OnBattleEnded += OnTakeoverBattleEnded;
-        }
+        // 買収バトルイベント
+        eventHub.OnBattleStarted += OnTakeoverBattleStarted;
+        eventHub.OnBattleEnded += OnTakeoverBattleEnded;
 
-        // インサイダー情報
-        if (InsiderTipManager.Instance != null)
-        {
-            InsiderTipManager.Instance.OnTipReceived += OnInsiderTipReceived;
-            InsiderTipManager.Instance.OnTipExpired += OnInsiderTipExpired;
-            InsiderTipManager.Instance.OnTipTriggered += OnInsiderTipTriggered;
-        }
+        // インサイダー情報イベント
+        eventHub.OnTipReceived += OnInsiderTipReceived;
+        eventHub.OnTipExpired += OnInsiderTipExpired;
+        eventHub.OnTipTriggered += OnInsiderTipTriggered;
     }
 
     private void UnbindPVEEvents()
     {
-        if (EconomicEventManager.Instance != null)
-        {
-            EconomicEventManager.Instance.OnEventStarted -= OnDefenseEventStarted;
-            EconomicEventManager.Instance.OnEventEnded -= OnDefenseEventEnded;
-        }
+        eventHub.OnDefenseEventStarted -= OnDefenseEventStarted;
+        eventHub.OnDefenseEventEnded -= OnDefenseEventEnded;
 
-        if (TakeoverBattleManager.Instance != null)
-        {
-            TakeoverBattleManager.Instance.OnBattleStarted -= OnTakeoverBattleStarted;
-            TakeoverBattleManager.Instance.OnBattleEnded -= OnTakeoverBattleEnded;
-        }
+        eventHub.OnBattleStarted -= OnTakeoverBattleStarted;
+        eventHub.OnBattleEnded -= OnTakeoverBattleEnded;
 
-        if (InsiderTipManager.Instance != null)
-        {
-            InsiderTipManager.Instance.OnTipReceived -= OnInsiderTipReceived;
-            InsiderTipManager.Instance.OnTipExpired -= OnInsiderTipExpired;
-            InsiderTipManager.Instance.OnTipTriggered -= OnInsiderTipTriggered;
-        }
+        eventHub.OnTipReceived -= OnInsiderTipReceived;
+        eventHub.OnTipExpired -= OnInsiderTipExpired;
+        eventHub.OnTipTriggered -= OnInsiderTipTriggered;
+
+        eventHub.Unsubscribe();
     }
 
     // ========================================
@@ -234,11 +242,10 @@ public class MarketPVEUIController
 
     private void UpdateDefenseEventPanel()
     {
-        var manager = EconomicEventManager.Instance;
-        if (manager == null || !manager.HasActiveEvent) return;
+        if (!facade.HasActiveEvent) return;
 
         // 最初のアクティブイベントを表示
-        var events = manager.ActiveEvents;
+        var events = facade.ActiveEvents;
         if (events.Count == 0) return;
 
         var evt = events[0];
@@ -259,14 +266,13 @@ public class MarketPVEUIController
 
     private void OnDefenseClick(ClickEvent evt)
     {
-        var manager = EconomicEventManager.Instance;
-        if (manager == null || !manager.HasActiveEvent) return;
+        if (!facade.HasActiveEvent) return;
 
-        var events = manager.ActiveEvents;
+        var events = facade.ActiveEvents;
         if (events.Count == 0) return;
 
-        // クリックを送信
-        manager.OnSupportClick(events[0].stockId);
+        // クリックを送信（ファサード経由）
+        facade.OnSupportClick(events[0].stockId);
 
         // クリックエフェクト
         PlayDefenseClickEffect();
@@ -323,10 +329,9 @@ public class MarketPVEUIController
 
     private void UpdateTakeoverBattlePanel()
     {
-        var manager = TakeoverBattleManager.Instance;
-        if (manager == null || !manager.IsBattleActive) return;
+        if (!facade.IsBattleActive) return;
 
-        var battle = manager.CurrentBattle;
+        var battle = facade.CurrentBattle;
         if (battle == null) return;
 
         // ボス進捗
@@ -357,8 +362,8 @@ public class MarketPVEUIController
             battleTimer.text = $"残り {minutes:D2}:{seconds:D2}";
         }
 
-        // ボタンの有効/無効
-        double money = WalletManager.Instance?.Money ?? 0;
+        // ボタンの有効/無効（ファサード経由）
+        double money = facade.Money;
         if (defendSmallBtn != null) defendSmallBtn.SetEnabled(money >= 1000);
         if (defendMediumBtn != null) defendMediumBtn.SetEnabled(money >= 10000);
         if (defendLargeBtn != null) defendLargeBtn.SetEnabled(money > 0);
@@ -366,12 +371,12 @@ public class MarketPVEUIController
 
     private void OnDefendClicked(double amount)
     {
-        TakeoverBattleManager.Instance?.TryDefend(amount);
+        facade.TryDefend(amount);
     }
 
     private void OnDefendAllIn()
     {
-        TakeoverBattleManager.Instance?.QuickDefend(1f); // 全額投入
+        facade.QuickDefend(1f); // 全額投入
     }
 
     // ========================================
