@@ -29,7 +29,7 @@ public class UICallbackRegistry : IDisposable
     {
         if (element == null || handler == null) return;
 
-        EventCallback<ClickEvent> callback = handler;
+        EventCallback<ClickEvent> callback = evt => handler(evt);
         element.RegisterCallback(callback);
         _unregisterActions.Add(() => element.UnregisterCallback(callback));
     }
@@ -41,7 +41,7 @@ public class UICallbackRegistry : IDisposable
     {
         if (element == null || handler == null) return;
 
-        EventCallback<MouseMoveEvent> callback = handler;
+        EventCallback<MouseMoveEvent> callback = evt => handler(evt);
         element.RegisterCallback(callback);
         _unregisterActions.Add(() => element.UnregisterCallback(callback));
     }
@@ -53,7 +53,7 @@ public class UICallbackRegistry : IDisposable
     {
         if (element == null || handler == null) return;
 
-        EventCallback<MouseDownEvent> callback = handler;
+        EventCallback<MouseDownEvent> callback = evt => handler(evt);
         element.RegisterCallback(callback);
         _unregisterActions.Add(() => element.UnregisterCallback(callback));
     }
@@ -65,7 +65,7 @@ public class UICallbackRegistry : IDisposable
     {
         if (element == null || handler == null) return;
 
-        EventCallback<MouseUpEvent> callback = handler;
+        EventCallback<MouseUpEvent> callback = evt => handler(evt);
         element.RegisterCallback(callback);
         _unregisterActions.Add(() => element.UnregisterCallback(callback));
     }
@@ -77,7 +77,7 @@ public class UICallbackRegistry : IDisposable
     {
         if (element == null || handler == null) return;
 
-        EventCallback<PointerDownEvent> callback = handler;
+        EventCallback<PointerDownEvent> callback = evt => handler(evt);
         element.RegisterCallback(callback);
         _unregisterActions.Add(() => element.UnregisterCallback(callback));
     }
@@ -89,7 +89,7 @@ public class UICallbackRegistry : IDisposable
     {
         if (element == null || handler == null) return;
 
-        EventCallback<PointerUpEvent> callback = handler;
+        EventCallback<PointerUpEvent> callback = evt => handler(evt);
         element.RegisterCallback(callback);
         _unregisterActions.Add(() => element.UnregisterCallback(callback));
     }
@@ -101,7 +101,7 @@ public class UICallbackRegistry : IDisposable
     {
         if (element == null || handler == null) return;
 
-        EventCallback<ChangeEvent<T>> callback = handler;
+        EventCallback<ChangeEvent<T>> callback = evt => handler(evt);
         element.RegisterCallback(callback);
         _unregisterActions.Add(() => element.UnregisterCallback(callback));
     }
