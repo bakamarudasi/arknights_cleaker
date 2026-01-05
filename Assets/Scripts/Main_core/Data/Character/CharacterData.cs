@@ -19,8 +19,6 @@ public class CharacterData : ScriptableObject
     [Header("=== 基本情報 ===")]
     public string characterId;
     public string displayName;
-    [Tooltip("キャラクターの職分（前衛、狙撃、医療など）")]
-    public string characterClass;
     [TextArea(2, 4)]
     public string description;
     public Sprite thumbnail;

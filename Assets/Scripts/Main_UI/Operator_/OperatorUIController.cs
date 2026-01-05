@@ -36,7 +36,6 @@ public class OperatorUIController : IViewController
 
     // キャラクター名
     private Label _characterName;
-    private Label _characterClass;
 
     // モーダル
     private VisualElement _modalOverlay;
@@ -147,7 +146,6 @@ public class OperatorUIController : IViewController
 
         // キャラクター名
         _characterName = _root.Q<Label>("character-name");
-        _characterClass = _root.Q<Label>("character-class");
 
         // モーダル
         _modalOverlay = _root.Q<VisualElement>("modal-overlay");
@@ -535,9 +533,6 @@ public class OperatorUIController : IViewController
 
         if (_characterName != null)
             _characterName.text = presenter.CurrentCharacter.displayName ?? presenter.CurrentCharacter.characterId;
-
-        if (_characterClass != null)
-            _characterClass.text = presenter.CurrentCharacter.characterClass ?? "";
     }
 
     private string GetCurrentCharacterName()
