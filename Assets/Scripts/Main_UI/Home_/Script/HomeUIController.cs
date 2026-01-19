@@ -7,10 +7,8 @@ using System.Collections.Generic;
 /// ホーム画面（メインクリック画面）のUIコントローラー
 /// 各ハンドラーを統括し、通貨・統計表示を管理
 /// </summary>
-public class HomeUIController : IViewController
+public class HomeUIController : BaseUIController
 {
-    private VisualElement _root;
-
     // ========================================
     // ハンドラー
     // ========================================
@@ -60,57 +58,44 @@ public class HomeUIController : IViewController
     private IVisualElementScheduledItem _updateSchedule;
 
     // ========================================
-    // 初期化
+    // 初期化 (BaseUIControllerテンプレートメソッド)
     // ========================================
 
-    public void Initialize(VisualElement contentArea)
-    {
-        _root = contentArea;
-
-        QueryElements();
-        InitializeHandlers();
-        BindGameEvents();
-        SetupUpdateLoop();
-        UpdateUI();
-
-        LogUIController.LogSystem("Home View Initialized.");
-    }
-
-    private void QueryElements()
+    protected override void QueryElements()
     {
         // レイヤー
-        _particleLayer = _root.Q<VisualElement>("particle-layer");
-        _effectLayer = _root.Q<VisualElement>("effect-layer");
+        _particleLayer = root.Q<VisualElement>("particle-layer");
+        _effectLayer = root.Q<VisualElement>("effect-layer");
 
         // 上部UI
-        _moneyLabel = _root.Q<Label>("money-label");
-        _incomeRateLabel = _root.Q<Label>("income-rate");
-        _dpsValueLabel = _root.Q<Label>("dps-value");
-        _clicksValueLabel = _root.Q<Label>("clicks-value");
-        _critValueLabel = _root.Q<Label>("crit-value");
+        _moneyLabel = root.Q<Label>("money-label");
+        _incomeRateLabel = root.Q<Label>("income-rate");
+        _dpsValueLabel = root.Q<Label>("dps-value");
+        _clicksValueLabel = root.Q<Label>("clicks-value");
+        _critValueLabel = root.Q<Label>("crit-value");
 
         // 中央
-        _powerValueLabel = _root.Q<Label>("power-value");
-        _multiplierLabel = _root.Q<Label>("multiplier-label");
+        _powerValueLabel = root.Q<Label>("power-value");
+        _multiplierLabel = root.Q<Label>("multiplier-label");
     }
 
-    private void InitializeHandlers()
+    protected override void InitializeSubControllers()
     {
         // クリックハンドラー
-        _clickHandler = new ClickAreaHandler(_root, _effectLayer);
+        _clickHandler = new ClickAreaHandler(root, _effectLayer);
         _clickHandler.Initialize();
         _clickHandler.OnClicked += OnClickHandled;
 
         // フィーバーハンドラー
-        _feverHandler = new FeverEffectHandler(_root);
+        _feverHandler = new FeverEffectHandler(root);
         _feverHandler.Initialize();
 
         // スロットハンドラー
-        _slotHandler = new SlotEffectHandler(_root);
+        _slotHandler = new SlotEffectHandler(root);
         _slotHandler.Initialize();
     }
 
-    private void BindGameEvents()
+    protected override void BindGameEvents()
     {
         var gc = GameController.Instance;
         if (gc == null) return;
@@ -130,9 +115,17 @@ public class HomeUIController : IViewController
         }
     }
 
+    protected override void OnPostInitialize()
+    {
+        SetupUpdateLoop();
+        UpdateUI();
+
+        LogUIController.LogSystem("Home View Initialized.");
+    }
+
     private void SetupUpdateLoop()
     {
-        _updateSchedule = _root.schedule.Execute(() =>
+        _updateSchedule = root.schedule.Execute(() =>
         {
             // ハンドラーの更新
             _clickHandler?.UpdateComboDecay();
@@ -315,38 +308,23 @@ public class HomeUIController : IViewController
 
             _effectLayer.Add(heart);
 
-            _root.schedule.Execute(() => heart.AddToClassList("fade-out")).ExecuteLater(50);
-            _root.schedule.Execute(() => _effectLayer.Remove(heart)).ExecuteLater(1100);
+            root.schedule.Execute(() => heart.AddToClassList("fade-out")).ExecuteLater(50);
+            root.schedule.Execute(() => _effectLayer.Remove(heart)).ExecuteLater(1100);
         }
     }
 
     // ========================================
-    // ユーティリティ
+    // クリーンアップ (BaseUIControllerテンプレートメソッド)
     // ========================================
 
-    private string FormatNumber(double value)
-    {
-        if (value >= 1_000_000_000_000) return $"{value / 1_000_000_000_000:F2}T";
-        if (value >= 1_000_000_000) return $"{value / 1_000_000_000:F2}B";
-        if (value >= 1_000_000) return $"{value / 1_000_000:F2}M";
-        if (value >= 1_000) return $"{value / 1_000:F2}K";
-        return value.ToString("N0");
-    }
-
-    // ========================================
-    // クリーンアップ
-    // ========================================
-
-    public void Dispose()
+    protected override void OnPreDispose()
     {
         // スケジュール停止
         _updateSchedule?.Pause();
+    }
 
-        // ハンドラーの破棄
-        _clickHandler?.Dispose();
-        _feverHandler?.Dispose();
-        _slotHandler?.Dispose();
-
+    protected override void UnbindGameEvents()
+    {
         // GameControllerイベント解除
         var gc = GameController.Instance;
         if (gc?.Wallet != null && _onMoneyChangedCallback != null)
@@ -359,7 +337,18 @@ public class HomeUIController : IViewController
         {
             AffectionManager.Instance.OnAffectionChanged -= _onAffectionChangedCallback;
         }
+    }
 
+    protected override void DisposeSubControllers()
+    {
+        // ハンドラーの破棄
+        _clickHandler?.Dispose();
+        _feverHandler?.Dispose();
+        _slotHandler?.Dispose();
+    }
+
+    protected override void OnPostDispose()
+    {
         // パーティクルクリア
         foreach (var particle in _particles)
         {

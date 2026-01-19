@@ -7,14 +7,12 @@ using System.Collections.Generic;
 /// ショップ/強化画面のUIファサード
 /// 単一責任: 各サブコントローラーの統合と画面全体のライフサイクル管理
 /// </summary>
-public class ShopUIController : IViewController
+public class ShopUIController : BaseUIController
 {
-    private const string LOG_TAG = "[ShopUIController]";
     // ========================================
     // UI要素
     // ========================================
 
-    private VisualElement root;
     private Label moneyLabel;
     private Label certLabel;
     private ListView upgradeListView;
@@ -42,98 +40,33 @@ public class ShopUIController : IViewController
     private List<UpgradeData> currentList = new();
 
     // ========================================
-    // 初期化
+    // 初期化 (BaseUIControllerテンプレートメソッド)
     // ========================================
 
-    public void Initialize(VisualElement root)
+    protected override void OnPreInitialize()
     {
-        if (root == null)
+        var database = GameController.Instance?.Upgrade?.Database;
+
+        if (database == null)
         {
-            Debug.LogError($"{LOG_TAG} Initialize: root VisualElement is null");
+            Debug.LogWarning($"{LogTag} UpgradeDatabase not found in UpgradeManager!");
+            return;
+        }
+        this.database = database;
+
+        // ビジネスロジック層の初期化
+        var gc = GameController.Instance;
+        if (gc == null)
+        {
+            Debug.LogError($"{LogTag} GameController.Instance is null");
             return;
         }
 
-        this.root = root;
-
-        try
-        {
-            var database = GameController.Instance?.Upgrade?.Database;
-
-            if (database == null)
-            {
-                Debug.LogWarning($"{LOG_TAG} UpgradeDatabase not found in UpgradeManager!");
-                return;
-            }
-            this.database = database;
-
-            // ビジネスロジック層の初期化
-            var gc = GameController.Instance;
-            if (gc == null)
-            {
-                Debug.LogError($"{LOG_TAG} GameController.Instance is null");
-                return;
-            }
-
-            shopService = new ShopService(gc);
-            shopService.OnPurchaseSuccess += OnPurchaseSuccess;
-
-            // UI要素取得
-            QueryElements();
-
-            // UI要素検証
-            if (!ValidateUIElements())
-            {
-                Debug.LogWarning($"{LOG_TAG} Some UI elements are missing, shop may not function correctly");
-            }
-
-            // サブコントローラーの初期化
-            InitializeSubControllers();
-
-            // ListView設定
-            SetupListView();
-
-            // イベント登録
-            BindEvents();
-
-            // 初期表示
-            tabController?.SwitchCategory(UpgradeData.UpgradeCategory.Click);
-
-            // 初期カテゴリのリストを読み込む
-            // ※ SwitchCategoryは同一カテゴリへの切り替えを無視するため、
-            //    初期値がClickの場合はOnCategoryChangedが発火しない。
-            //    そのため明示的にRefreshListを呼び出す必要がある。
-            RefreshList();
-        }
-        catch (Exception ex)
-        {
-            Debug.LogError($"{LOG_TAG} Initialize failed: {ex.Message}\n{ex.StackTrace}");
-        }
+        shopService = new ShopService(gc);
+        shopService.OnPurchaseSuccess += OnPurchaseSuccess;
     }
 
-    private bool ValidateUIElements()
-    {
-        bool isValid = true;
-
-        if (moneyLabel == null)
-        {
-            Debug.LogWarning($"{LOG_TAG} UI element 'money-label' not found");
-            isValid = false;
-        }
-        if (certLabel == null)
-        {
-            Debug.LogWarning($"{LOG_TAG} UI element 'cert-label' not found");
-            isValid = false;
-        }
-        if (upgradeListView == null)
-        {
-            Debug.LogWarning($"{LOG_TAG} UI element 'upgrade-list' not found");
-            isValid = false;
-        }
-
-        return isValid;
-    }
-
-    private void QueryElements()
+    protected override void QueryElements()
     {
         moneyLabel = root.Q<Label>("money-label");
         certLabel = root.Q<Label>("cert-label");
@@ -141,7 +74,30 @@ public class ShopUIController : IViewController
         listCountLabel = root.Q<Label>("list-count");
     }
 
-    private void InitializeSubControllers()
+    protected override bool ValidateElements()
+    {
+        bool isValid = true;
+
+        if (moneyLabel == null)
+        {
+            Debug.LogWarning($"{LogTag} UI element 'money-label' not found");
+            isValid = false;
+        }
+        if (certLabel == null)
+        {
+            Debug.LogWarning($"{LogTag} UI element 'cert-label' not found");
+            isValid = false;
+        }
+        if (upgradeListView == null)
+        {
+            Debug.LogWarning($"{LogTag} UI element 'upgrade-list' not found");
+            isValid = false;
+        }
+
+        return isValid;
+    }
+
+    protected override void InitializeSubControllers()
     {
         // アニメーションヘルパー
         animationHelper = new ShopAnimationHelper();
@@ -161,6 +117,41 @@ public class ShopUIController : IViewController
         detailPanelController.Initialize(root, shopService, animationHelper);
         detailPanelController.OnBuyClicked += OnBulkBuyClicked;
         detailPanelController.OnBuyMaxClicked += OnBuyMaxClicked;
+    }
+
+    protected override void BindUIEvents()
+    {
+        // ListView設定
+        SetupListView();
+    }
+
+    protected override void BindGameEvents()
+    {
+        var gc = GameController.Instance;
+        if (gc == null) return;
+
+        if (gc.Wallet != null)
+        {
+            gc.Wallet.OnMoneyChanged += OnMoneyChanged;
+            gc.Wallet.OnCertificateChanged += OnCertChanged;
+        }
+
+        if (gc.Upgrade != null)
+        {
+            gc.Upgrade.OnUpgradePurchased += OnUpgradePurchased;
+        }
+    }
+
+    protected override void OnPostInitialize()
+    {
+        // 初期表示
+        tabController?.SwitchCategory(UpgradeData.UpgradeCategory.Click);
+
+        // 初期カテゴリのリストを読み込む
+        // ※ SwitchCategoryは同一カテゴリへの切り替えを無視するため、
+        //    初期値がClickの場合はOnCategoryChangedが発火しない。
+        //    そのため明示的にRefreshListを呼び出す必要がある。
+        RefreshList();
     }
 
     // ========================================
@@ -203,7 +194,7 @@ public class ShopUIController : IViewController
         }
         catch (Exception ex)
         {
-            Debug.LogError($"{LOG_TAG} BindItem failed at index {index}: {ex.Message}");
+            Debug.LogError($"{LogTag} BindItem failed at index {index}: {ex.Message}");
         }
     }
 
@@ -257,40 +248,6 @@ public class ShopUIController : IViewController
     // 通貨イベント
     // ========================================
 
-    private void BindEvents()
-    {
-        var gc = GameController.Instance;
-        if (gc == null) return;
-
-        if (gc.Wallet != null)
-        {
-            gc.Wallet.OnMoneyChanged += OnMoneyChanged;
-            gc.Wallet.OnCertificateChanged += OnCertChanged;
-        }
-
-        if (gc.Upgrade != null)
-        {
-            gc.Upgrade.OnUpgradePurchased += OnUpgradePurchased;
-        }
-    }
-
-    private void UnbindEvents()
-    {
-        var gc = GameController.Instance;
-        if (gc == null) return;
-
-        if (gc.Wallet != null)
-        {
-            gc.Wallet.OnMoneyChanged -= OnMoneyChanged;
-            gc.Wallet.OnCertificateChanged -= OnCertChanged;
-        }
-
-        if (gc.Upgrade != null)
-        {
-            gc.Upgrade.OnUpgradePurchased -= OnUpgradePurchased;
-        }
-    }
-
     private void OnMoneyChanged(double amount)
     {
         animationHelper.SetTargetMoney(amount);
@@ -327,7 +284,7 @@ public class ShopUIController : IViewController
             var gc = GameController.Instance;
             if (gc == null || gc.Upgrade == null || database == null || tabController == null)
             {
-                Debug.LogWarning($"{LOG_TAG} RefreshList: Required dependencies not available");
+                Debug.LogWarning($"{LogTag} RefreshList: Required dependencies not available");
                 return;
             }
 
@@ -336,7 +293,7 @@ public class ShopUIController : IViewController
 
             if (allItems == null)
             {
-                Debug.LogWarning($"{LOG_TAG} RefreshList: No items found for category {currentCategory}");
+                Debug.LogWarning($"{LogTag} RefreshList: No items found for category {currentCategory}");
                 return;
             }
 
@@ -361,25 +318,47 @@ public class ShopUIController : IViewController
         }
         catch (Exception ex)
         {
-            Debug.LogError($"{LOG_TAG} RefreshList failed: {ex.Message}");
+            Debug.LogError($"{LogTag} RefreshList failed: {ex.Message}");
         }
     }
 
     // ========================================
-    // クリーンアップ
+    // クリーンアップ (BaseUIControllerテンプレートメソッド)
     // ========================================
 
-    public void Dispose()
+    protected override void UnbindGameEvents()
     {
-        UnbindEvents();
+        var gc = GameController.Instance;
+        if (gc == null) return;
+
+        if (gc.Wallet != null)
+        {
+            gc.Wallet.OnMoneyChanged -= OnMoneyChanged;
+            gc.Wallet.OnCertificateChanged -= OnCertChanged;
+        }
+
+        if (gc.Upgrade != null)
+        {
+            gc.Upgrade.OnUpgradePurchased -= OnUpgradePurchased;
+        }
 
         // ShopServiceのイベント解除
         if (shopService != null)
         {
             shopService.OnPurchaseSuccess -= OnPurchaseSuccess;
         }
+    }
 
-        // サブコントローラーの解放
+    protected override void UnbindUIEvents()
+    {
+        if (upgradeListView != null)
+        {
+            upgradeListView.selectionChanged -= OnSelectionChanged;
+        }
+    }
+
+    protected override void DisposeSubControllers()
+    {
         if (tabController != null)
         {
             tabController.OnCategoryChanged -= OnCategoryChanged;
@@ -394,12 +373,10 @@ public class ShopUIController : IViewController
         }
 
         animationHelper?.Dispose();
+    }
 
-        if (upgradeListView != null)
-        {
-            upgradeListView.selectionChanged -= OnSelectionChanged;
-        }
-
+    protected override void OnPostDispose()
+    {
         currentList.Clear();
         shopService = null;
     }

@@ -17,13 +17,8 @@ using System.Linq;
 /// - mainRoot: チャート、演出、リスト（Sort Order = 0）
 /// - tradeRoot: ボタン、入力欄（Sort Order = 1、常に最前面）
 /// </summary>
-public class MarketUIController : IViewController
+public class MarketUIController : BaseUIController
 {
-    // ========================================
-    // 定数
-    // ========================================
-    // 売買パネルは同じUIDocument内に統合（別UIDocumentでのクリック透過は困難なため）
-
     // ========================================
     // 依存（ファサード経由）
     // ========================================
@@ -42,7 +37,6 @@ public class MarketUIController : IViewController
     // ========================================
     // UI要素
     // ========================================
-    private VisualElement root;
     private VisualElement overlayRoot;
 
     // ヘッダー
@@ -86,43 +80,10 @@ public class MarketUIController : IViewController
     }
 
     // ========================================
-    // 初期化
+    // 初期化（BaseUIControllerのオーバーライド）
     // ========================================
 
-    public void Initialize(VisualElement root)
-    {
-        this.root = root;
-
-        QueryElements();
-        InitializeSubControllers();
-        BindUIEvents();
-        BindMarketEvents();
-
-        // 更新ループ開始（30fps）
-        updateTimer = root.schedule.Execute(OnUpdateTick).Every(33);
-
-        // メニューから開いた時は表示状態にする
-        if (overlayRoot != null)
-        {
-            overlayRoot.AddToClassList("visible");
-        }
-
-        // 最初の銘柄を選択
-        var unlockedStocks = facade.GetUnlockedStocks();
-        if (unlockedStocks != null && unlockedStocks.Count > 0)
-        {
-            SelectStock(unlockedStocks[0]);
-        }
-
-        RefreshStockList();
-        RefreshAssetPanel();
-        RefreshPortfolioList();
-
-        // 初回オープン時にチュートリアルを開始
-        facade.TryStartTutorial("market_basic", root);
-    }
-
-    private void QueryElements()
+    protected override void QueryElements()
     {
         overlayRoot = root.Q<VisualElement>("market-overlay-root");
 
@@ -150,7 +111,7 @@ public class MarketUIController : IViewController
         lossCutOverlay = root.Q<VisualElement>("loss-cut-overlay");
     }
 
-    private void InitializeSubControllers()
+    protected override void InitializeSubControllers()
     {
         // チャートコントローラ
         chartController = new MarketChartController(root, facade);
@@ -174,15 +135,12 @@ public class MarketUIController : IViewController
         prestigeUIController.Initialize(root);
     }
 
-    private void BindUIEvents()
+    protected override void BindUIEvents()
     {
-        if (closeButton != null)
-        {
-            closeButton.clicked += Hide;
-        }
+        RegisterButtonClick(closeButton, Hide);
     }
 
-    private void BindMarketEvents()
+    protected override void BindGameEvents()
     {
         eventHub.Subscribe();
 
@@ -196,7 +154,37 @@ public class MarketUIController : IViewController
         eventHub.OnDividendPaid += OnDividendPaid;
     }
 
-    private void UnbindMarketEvents()
+    protected override void OnPostInitialize()
+    {
+        // 更新ループ開始（30fps）
+        updateTimer = ExecuteEvery(OnUpdateTick, 33);
+
+        // メニューから開いた時は表示状態にする
+        if (overlayRoot != null)
+        {
+            overlayRoot.AddToClassList("visible");
+        }
+
+        // 最初の銘柄を選択
+        var unlockedStocks = facade.GetUnlockedStocks();
+        if (unlockedStocks != null && unlockedStocks.Count > 0)
+        {
+            SelectStock(unlockedStocks[0]);
+        }
+
+        RefreshStockList();
+        RefreshAssetPanel();
+        RefreshPortfolioList();
+
+        // 初回オープン時にチュートリアルを開始
+        facade.TryStartTutorial("market_basic", root);
+    }
+
+    // ========================================
+    // 破棄（BaseUIControllerのオーバーライド）
+    // ========================================
+
+    protected override void UnbindGameEvents()
     {
         eventHub.OnPriceUpdated -= OnPriceUpdated;
         eventHub.OnStockBought -= OnStockBought;
@@ -208,6 +196,35 @@ public class MarketUIController : IViewController
         eventHub.OnDividendPaid -= OnDividendPaid;
 
         eventHub.Unsubscribe();
+    }
+
+    protected override void UnbindUIEvents()
+    {
+        UnregisterButtonClick(closeButton, Hide);
+    }
+
+    protected override void DisposeSubControllers()
+    {
+        chartController?.Dispose();
+        tradeController?.Dispose();
+        skillController?.Dispose();
+        pveUIController?.Dispose();
+        prestigeUIController?.Dispose();
+
+        chartController = null;
+        tradeController = null;
+        skillController = null;
+        pveUIController = null;
+        prestigeUIController = null;
+    }
+
+    protected override void OnPostDispose()
+    {
+        if (updateTimer != null)
+        {
+            updateTimer.Pause();
+            updateTimer = null;
+        }
     }
 
     // ========================================
@@ -647,30 +664,4 @@ public class MarketUIController : IViewController
         }).ExecuteLater(1000);
     }
 
-    // ========================================
-    // 破棄
-    // ========================================
-
-    public void Dispose()
-    {
-        UnbindMarketEvents();
-
-        chartController?.Dispose();
-        tradeController?.Dispose();
-        skillController?.Dispose();
-        pveUIController?.Dispose();
-        prestigeUIController?.Dispose();
-
-        chartController = null;
-        tradeController = null;
-        skillController = null;
-        pveUIController = null;
-        prestigeUIController = null;
-
-        if (updateTimer != null)
-        {
-            updateTimer.Pause();
-            updateTimer = null;
-        }
-    }
 }
