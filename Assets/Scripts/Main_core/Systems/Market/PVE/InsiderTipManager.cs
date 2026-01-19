@@ -13,12 +13,8 @@ using System.Collections.Generic;
 ///
 /// 疎結合設計：このクラスを削除しても他システムに影響なし
 /// </summary>
-public class InsiderTipManager : MonoBehaviour
+public class InsiderTipManager : BaseSingleton<InsiderTipManager>
 {
-    // ========================================
-    // シングルトン
-    // ========================================
-    public static InsiderTipManager Instance { get; private set; }
 
     // ========================================
     // 設定
@@ -58,17 +54,6 @@ public class InsiderTipManager : MonoBehaviour
     // ========================================
     // Unity ライフサイクル
     // ========================================
-
-    private void Awake()
-    {
-        if (Instance != null && Instance != this)
-        {
-            Destroy(gameObject);
-            return;
-        }
-        Instance = this;
-        DontDestroyOnLoad(gameObject);
-    }
 
     private void Start()
     {

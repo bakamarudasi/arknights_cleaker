@@ -5,9 +5,9 @@ using UnityEngine;
 /// <summary>
 /// 自動収入（毎秒収入）の計算を担当するマネージャー
 /// </summary>
-public class IncomeManager : MonoBehaviour
+public class IncomeManager : BaseSingleton<IncomeManager>
 {
-    public static IncomeManager Instance { get; private set; }
+    protected override bool Persistent => false;
 
     // ========================================
     // 設定
@@ -54,22 +54,6 @@ public class IncomeManager : MonoBehaviour
     private bool _isRunning = false;
     private Coroutine _incomeCoroutine;
     private WaitForSeconds _tickWait;
-
-    // ========================================
-    // 初期化
-    // ========================================
-
-    void Awake()
-    {
-        if (Instance == null)
-        {
-            Instance = this;
-        }
-        else
-        {
-            Destroy(gameObject);
-        }
-    }
 
     // ========================================
     // 開始/停止

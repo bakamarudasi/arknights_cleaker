@@ -8,13 +8,8 @@ using System.Linq;
 /// 株価の更新、履歴管理、ニュース生成を担当
 /// バックグラウンドで常に動作
 /// </summary>
-public class MarketManager : MonoBehaviour
+public class MarketManager : BaseSingleton<MarketManager>
 {
-    // ========================================
-    // シングルトン
-    // ========================================
-    public static MarketManager Instance { get; private set; }
-
     private const string LOG_TAG = "[MarketManager]";
 
     // ========================================
@@ -53,17 +48,6 @@ public class MarketManager : MonoBehaviour
     // ========================================
     // Unity ライフサイクル
     // ========================================
-
-    private void Awake()
-    {
-        if (Instance != null && Instance != this)
-        {
-            Destroy(gameObject);
-            return;
-        }
-        Instance = this;
-        DontDestroyOnLoad(gameObject);
-    }
 
     private void Start()
     {

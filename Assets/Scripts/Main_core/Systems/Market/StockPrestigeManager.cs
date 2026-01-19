@@ -7,9 +7,9 @@ using UnityEngine;
 /// 株式周回（プレステージ）システムの管理
 /// 100%買い占め → リセット → 永続ボーナス獲得
 /// </summary>
-public class StockPrestigeManager : MonoBehaviour
+public class StockPrestigeManager : BaseSingleton<StockPrestigeManager>
 {
-    public static StockPrestigeManager Instance { get; private set; }
+    protected override bool Persistent => false;
 
     // ========================================
     // 設定
@@ -36,16 +36,6 @@ public class StockPrestigeManager : MonoBehaviour
     // 初期化
     // ========================================
 
-    private void Awake()
-    {
-        if (Instance != null && Instance != this)
-        {
-            Destroy(gameObject);
-            return;
-        }
-        Instance = this;
-    }
-
     private void Start()
     {
         // StockHoldingBonusManagerのイベントを購読
@@ -60,11 +50,6 @@ public class StockPrestigeManager : MonoBehaviour
         if (StockHoldingBonusManager.Instance != null)
         {
             StockHoldingBonusManager.Instance.OnBonusesChanged -= CheckAcquisition;
-        }
-
-        if (Instance == this)
-        {
-            Instance = null;
         }
     }
 

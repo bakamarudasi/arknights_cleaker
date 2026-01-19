@@ -8,9 +8,9 @@ using System.Linq;
 /// ゲームイベントの監視・発動を管理するマネージャー
 /// GameControllerと連携し、条件達成時にイベントを発火する
 /// </summary>
-public class EventManager : MonoBehaviour
+public class EventManager : BaseSingleton<EventManager>
 {
-    public static EventManager Instance { get; private set; }
+    protected override bool Persistent => false;
 
     // ========================================
     // 設定
@@ -77,12 +77,6 @@ public class EventManager : MonoBehaviour
     // ========================================
     // 初期化
     // ========================================
-
-    void Awake()
-    {
-        if (Instance == null) Instance = this;
-        else { Destroy(gameObject); return; }
-    }
 
     void Start()
     {

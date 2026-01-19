@@ -5,9 +5,8 @@ using UnityEngine;
 /// サウンド管理システム（シングルトン）
 /// BGM / SE / Voice を一元管理
 /// </summary>
-public class AudioManager : MonoBehaviour
+public class AudioManager : BaseSingleton<AudioManager>
 {
-    public static AudioManager Instance { get; private set; }
 
     // ========================================
     // 設定
@@ -45,16 +44,8 @@ public class AudioManager : MonoBehaviour
     // 初期化
     // ========================================
 
-    private void Awake()
+    protected override void OnAwake()
     {
-        if (Instance != null && Instance != this)
-        {
-            Destroy(gameObject);
-            return;
-        }
-        Instance = this;
-        DontDestroyOnLoad(gameObject);
-
         InitializeAudioSources();
         LoadVolumeSettings();
     }

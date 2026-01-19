@@ -9,12 +9,8 @@ using System.Collections.Generic;
 ///
 /// 疎結合設計：このクラスを削除しても他システムに影響なし
 /// </summary>
-public class TakeoverBattleManager : MonoBehaviour
+public class TakeoverBattleManager : BaseSingleton<TakeoverBattleManager>
 {
-    // ========================================
-    // シングルトン
-    // ========================================
-    public static TakeoverBattleManager Instance { get; private set; }
 
     // ========================================
     // 設定
@@ -67,17 +63,6 @@ public class TakeoverBattleManager : MonoBehaviour
     // ========================================
     // Unity ライフサイクル
     // ========================================
-
-    private void Awake()
-    {
-        if (Instance != null && Instance != this)
-        {
-            Destroy(gameObject);
-            return;
-        }
-        Instance = this;
-        DontDestroyOnLoad(gameObject);
-    }
 
     private void Update()
     {

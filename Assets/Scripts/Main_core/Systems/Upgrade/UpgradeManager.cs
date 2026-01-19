@@ -6,9 +6,9 @@ using UnityEngine;
 /// 強化の購入処理・状態管理を担当するマネージャー
 /// WalletManager と InventoryManager に依存
 /// </summary>
-public class UpgradeManager : MonoBehaviour
+public class UpgradeManager : BaseSingleton<UpgradeManager>
 {
-    public static UpgradeManager Instance { get; private set; }
+    protected override bool Persistent => false;
 
     // ========================================
     // データベース
@@ -55,18 +55,6 @@ public class UpgradeManager : MonoBehaviour
     // ========================================
     // 初期化
     // ========================================
-
-    void Awake()
-    {
-        if (Instance == null)
-        {
-            Instance = this;
-        }
-        else
-        {
-            Destroy(gameObject);
-        }
-    }
 
     void Start()
     {

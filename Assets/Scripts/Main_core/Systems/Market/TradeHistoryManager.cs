@@ -7,9 +7,8 @@ using System.Linq;
 /// 取引履歴マネージャー
 /// 売買の記録を保持・統計を計算
 /// </summary>
-public class TradeHistoryManager : MonoBehaviour
+public class TradeHistoryManager : BaseSingleton<TradeHistoryManager>
 {
-    public static TradeHistoryManager Instance { get; private set; }
 
     // ========================================
     // 取引記録データ
@@ -69,17 +68,6 @@ public class TradeHistoryManager : MonoBehaviour
     // ========================================
     // 初期化
     // ========================================
-
-    private void Awake()
-    {
-        if (Instance != null && Instance != this)
-        {
-            Destroy(gameObject);
-            return;
-        }
-        Instance = this;
-        DontDestroyOnLoad(gameObject);
-    }
 
     private void Start()
     {

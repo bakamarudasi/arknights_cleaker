@@ -4,9 +4,8 @@ using UnityEngine;
 /// マーケット通知マネージャー（常駐）
 /// Market画面を開いていなくてもイベントを受信してログに表示
 /// </summary>
-public class MarketNotificationManager : MonoBehaviour
+public class MarketNotificationManager : BaseSingleton<MarketNotificationManager>
 {
-    public static MarketNotificationManager Instance { get; private set; }
 
     [Header("通知設定")]
     [Tooltip("ニュース通知を表示")]
@@ -27,17 +26,6 @@ public class MarketNotificationManager : MonoBehaviour
     // ========================================
     // 初期化
     // ========================================
-
-    private void Awake()
-    {
-        if (Instance != null && Instance != this)
-        {
-            Destroy(gameObject);
-            return;
-        }
-        Instance = this;
-        DontDestroyOnLoad(gameObject);
-    }
 
     private void Start()
     {

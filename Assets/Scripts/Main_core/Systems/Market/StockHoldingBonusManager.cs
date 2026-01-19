@@ -6,9 +6,9 @@ using UnityEngine;
 /// 株式保有ボーナス管理システム
 /// 各株の保有率を計算し、対応するボーナスを適用
 /// </summary>
-public class StockHoldingBonusManager : MonoBehaviour
+public class StockHoldingBonusManager : BaseSingleton<StockHoldingBonusManager>
 {
-    public static StockHoldingBonusManager Instance { get; private set; }
+    protected override bool Persistent => false;
 
     // ========================================
     // イベント
@@ -32,16 +32,6 @@ public class StockHoldingBonusManager : MonoBehaviour
     // 初期化
     // ========================================
 
-    private void Awake()
-    {
-        if (Instance != null && Instance != this)
-        {
-            Destroy(gameObject);
-            return;
-        }
-        Instance = this;
-    }
-
     private void Start()
     {
         // PortfolioManagerのイベントを購読
@@ -59,11 +49,6 @@ public class StockHoldingBonusManager : MonoBehaviour
         if (PortfolioManager.Instance != null)
         {
             PortfolioManager.Instance.OnHoldingChanged -= OnHoldingChanged;
-        }
-
-        if (Instance == this)
-        {
-            Instance = null;
         }
     }
 
