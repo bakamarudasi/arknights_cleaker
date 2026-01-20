@@ -14,8 +14,6 @@ public class HomeUIController : BaseUIController
     // ========================================
 
     private ClickAreaHandler _clickHandler;
-    private FeverEffectHandler _feverHandler;
-    private SlotEffectHandler _slotHandler;
 
     // ========================================
     // UI要素参照
@@ -85,14 +83,6 @@ public class HomeUIController : BaseUIController
         _clickHandler = new ClickAreaHandler(root, _effectLayer);
         _clickHandler.Initialize();
         _clickHandler.OnClicked += OnClickHandled;
-
-        // フィーバーハンドラー
-        _feverHandler = new FeverEffectHandler(root);
-        _feverHandler.Initialize();
-
-        // スロットハンドラー
-        _slotHandler = new SlotEffectHandler(root);
-        _slotHandler.Initialize();
     }
 
     protected override void BindGameEvents()
@@ -131,7 +121,6 @@ public class HomeUIController : BaseUIController
             _clickHandler?.UpdateComboDecay();
             _clickHandler?.CleanupDamageNumbers();
             _clickHandler?.UpdateDPS();
-            _feverHandler?.UpdateFeverTimer();
 
             // パーティクル更新
             UpdateParticles();
@@ -343,8 +332,6 @@ public class HomeUIController : BaseUIController
     {
         // ハンドラーの破棄
         _clickHandler?.Dispose();
-        _feverHandler?.Dispose();
-        _slotHandler?.Dispose();
     }
 
     protected override void OnPostDispose()
@@ -360,8 +347,6 @@ public class HomeUIController : BaseUIController
         _onMoneyChangedCallback = null;
         _onAffectionChangedCallback = null;
         _clickHandler = null;
-        _feverHandler = null;
-        _slotHandler = null;
 
         LogUIController.LogSystem("Home View Disposed.");
     }

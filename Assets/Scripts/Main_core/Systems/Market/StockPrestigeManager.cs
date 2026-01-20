@@ -38,18 +38,18 @@ public class StockPrestigeManager : BaseSingleton<StockPrestigeManager>
 
     private void Start()
     {
-        // StockHoldingBonusManagerのイベントを購読
-        if (StockHoldingBonusManager.Instance != null)
+        // PortfolioManagerのイベントを購読
+        if (PortfolioManager.Instance != null)
         {
-            StockHoldingBonusManager.Instance.OnBonusesChanged += CheckAcquisition;
+            PortfolioManager.Instance.OnHoldingChanged += CheckAcquisition;
         }
     }
 
     private void OnDestroy()
     {
-        if (StockHoldingBonusManager.Instance != null)
+        if (PortfolioManager.Instance != null)
         {
-            StockHoldingBonusManager.Instance.OnBonusesChanged -= CheckAcquisition;
+            PortfolioManager.Instance.OnHoldingChanged -= CheckAcquisition;
         }
     }
 
@@ -57,15 +57,30 @@ public class StockPrestigeManager : BaseSingleton<StockPrestigeManager>
     // 買収チェック
     // ========================================
 
-    private void CheckAcquisition(string stockId, List<StockHoldingBonus> bonuses)
+    private void CheckAcquisition(string stockId)
     {
-        float holdingRate = StockHoldingBonusManager.Instance?.GetHoldingRate(stockId) ?? 0f;
+        float holdingRate = GetHoldingRate(stockId);
 
         // 100%到達チェック
         if (holdingRate >= 1.0f)
         {
             TryCompleteAcquisition(stockId);
         }
+    }
+
+    /// <summary>
+    /// 保有率を計算（StockHoldingBonusManager削除に伴い移植）
+    /// </summary>
+    public float GetHoldingRate(string stockId)
+    {
+        var stockData = MarketManager.Instance?.GetStockData(stockId);
+        if (stockData == null) return 0f;
+
+        long totalShares = GetAdjustedTotalShares(stockId);
+        if (totalShares <= 0) return 0f;
+
+        int holdings = PortfolioManager.Instance?.GetHoldingQuantity(stockId) ?? 0;
+        return (float)holdings / totalShares;
     }
 
     /// <summary>

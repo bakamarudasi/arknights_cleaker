@@ -281,7 +281,7 @@ public class GameController : MonoBehaviour
             // スロット発動時はルーレットで倍率を決定してボーナス報酬を追加
             if (result.TriggeredSlot)
             {
-                int slotMultiplier = RollSlotMultiplier();
+                int slotMultiplier = RollBonusMultiplier();
                 double slotBonus = result.EarnedAmount * slotMultiplier;
                 Wallet.AddMoney(slotBonus);
 
@@ -407,12 +407,12 @@ public class GameController : MonoBehaviour
     }
 
     /// <summary>
-    /// スロットのルーレット倍率を決定
-    /// 確率分布はSlotRarityTableを参照
+    /// ボーナス倍率を決定（簡略化版）
     /// </summary>
-    private int RollSlotMultiplier()
+    private int RollBonusMultiplier()
     {
-        return SlotRarityTable.Roll();
+        // 簡略化: 固定で1倍（ボーナスなし）
+        return 1;
     }
 
     // ========================================
