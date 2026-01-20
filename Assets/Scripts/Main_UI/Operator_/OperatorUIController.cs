@@ -154,7 +154,7 @@ public class OperatorUIController : BaseUIController
         // ギフト
         _giftController = new OperatorGiftController();
         _giftController.Initialize(root);
-        _giftController.OnGiftGiven += _ => UpdateStatusUI();
+        _giftController.OnGiftGiven += OnGiftGiven;
 
         // 会話
         _talkController = new OperatorTalkController();
@@ -748,9 +748,61 @@ public class OperatorUIController : BaseUIController
                 CostumeManager.GetCostumeIdFromIndex(outfitIndex)
             );
             presenter.SetScene(sceneId);
-        }
 
-        _messageController?.ShowMessage($"衣装を変更したわ。", GetCurrentCharacterName(), 2f);
+            // 衣装変更時の反応セリフ
+            ShowCostumeReaction(sceneId);
+        }
+    }
+
+    /// <summary>
+    /// 衣装変更時の反応セリフを表示
+    /// </summary>
+    private void ShowCostumeReaction(string costumeId)
+    {
+        var presenter = OverlayCharacterPresenter.Instance;
+        var sceneData = presenter?.CurrentSceneData;
+        if (sceneData == null) return;
+
+        int affection = AffectionManager.Instance?.GetCurrentAffection() ?? 0;
+        var reaction = sceneData.GetCostumeReaction(costumeId, affection);
+
+        if (reaction != null && reaction.lines != null && reaction.lines.Length > 0)
+        {
+            // ランダムに1行選んで表示
+            string line = reaction.lines[UnityEngine.Random.Range(0, reaction.lines.Length)];
+            _messageController?.ShowMessage(line, GetCurrentCharacterName(), 3f);
+        }
+        else
+        {
+            // デフォルトメッセージ
+            _messageController?.ShowMessage("衣装を変更したわ。", GetCurrentCharacterName(), 2f);
+        }
+    }
+
+    /// <summary>
+    /// プレゼント時の反応セリフを表示
+    /// </summary>
+    private void OnGiftGiven(ItemData item)
+    {
+        UpdateStatusUI();
+
+        var presenter = OverlayCharacterPresenter.Instance;
+        var sceneData = presenter?.CurrentSceneData;
+        if (sceneData == null || item == null) return;
+
+        int affection = AffectionManager.Instance?.GetCurrentAffection() ?? 0;
+        var reaction = sceneData.GetGiftReaction(item.id, affection);
+
+        if (reaction != null && reaction.lines != null && reaction.lines.Length > 0)
+        {
+            string line = reaction.lines[UnityEngine.Random.Range(0, reaction.lines.Length)];
+            _messageController?.ShowMessage(line, GetCurrentCharacterName(), 3f);
+        }
+        else
+        {
+            // デフォルトメッセージ
+            _messageController?.ShowMessage("ありがとう。", GetCurrentCharacterName(), 2f);
+        }
     }
 
     private void UpdateOutfitButtons()
