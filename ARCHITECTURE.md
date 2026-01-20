@@ -34,8 +34,7 @@ Assets/Scripts/
 ├── Main_UI/                      # UI関連
 │   ├── Home_/Script/             # ホーム画面
 │   │   ├── HomeUIController.cs
-│   │   ├── ClickAreaHandler.cs
-│   │   └── SlotEffectHandler.cs
+│   │   └── ClickAreaHandler.cs
 │   ├── Shop_/Script/             # ショップ画面
 │   │   ├── ShopUIController.cs      # ファサード
 │   │   ├── ShopTabController.cs     # タブ管理
