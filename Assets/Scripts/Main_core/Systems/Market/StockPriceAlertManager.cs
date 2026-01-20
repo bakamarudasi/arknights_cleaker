@@ -112,7 +112,6 @@ public class StockPriceAlertManager : BaseSingleton<StockPriceAlertManager>
         string typeText = type == AlertType.AbovePrice ? "以上" : "以下";
         LogUIController.Msg($"<color=#fbbf24>🔔 アラート設定: {stockName} が {targetPrice:N0} {typeText}</color>");
 
-        Debug.Log($"[PriceAlert] Added: {stockId} {type} {targetPrice}");
         return alert;
     }
 
@@ -125,7 +124,6 @@ public class StockPriceAlertManager : BaseSingleton<StockPriceAlertManager>
         if (alert != null)
         {
             alerts.Remove(alert);
-            Debug.Log($"[PriceAlert] Removed: {alertId}");
             return true;
         }
         return false;
@@ -202,7 +200,6 @@ public class StockPriceAlertManager : BaseSingleton<StockPriceAlertManager>
         // イベント発火
         OnAlertTriggered?.Invoke(alert, currentPrice);
 
-        Debug.Log($"[PriceAlert] Triggered: {alert.stockId} @ {currentPrice}");
     }
 
     // ========================================

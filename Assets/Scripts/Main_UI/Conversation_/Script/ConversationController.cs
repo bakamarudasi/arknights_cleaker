@@ -254,7 +254,6 @@ public class ConversationController : MonoBehaviour, IEventDisplay
         }
 
         currentDisplayMode = newMode;
-        Debug.Log($"[Conversation] Display mode changed to: {newMode}");
     }
 
     // ========================================
@@ -415,7 +414,6 @@ public class ConversationController : MonoBehaviour, IEventDisplay
 
     private void RequestSceneChange(string sceneId)
     {
-        Debug.Log($"[Conversation] Scene change requested: {sceneId}");
 
         // イベントで通知
         OnSceneChangeRequested?.Invoke(sceneId);
@@ -432,7 +430,6 @@ public class ConversationController : MonoBehaviour, IEventDisplay
 
     private void RequestAnimationChange(string animationName)
     {
-        Debug.Log($"[Conversation] Animation change requested: {animationName}");
 
         // イベントで通知
         OnAnimationChangeRequested?.Invoke(animationName);

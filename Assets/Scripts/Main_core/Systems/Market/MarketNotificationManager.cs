@@ -30,7 +30,6 @@ public class MarketNotificationManager : BaseSingleton<MarketNotificationManager
     private void Start()
     {
         SubscribeToEvents();
-        Debug.Log("[MarketNotification] 常駐通知マネージャー起動");
     }
 
     private void OnDestroy()

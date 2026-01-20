@@ -188,7 +188,6 @@ public class SidebarController : MonoBehaviour
         if (IsMenuLocked(data.menuType))
         {
             OnLockedMenuClicked?.Invoke(data.lockedHintText);
-            Debug.Log($"[Sidebar] Locked menu clicked: {data.menuType} - {data.lockedHintText}");
             return;
         }
 
@@ -274,7 +273,6 @@ public class SidebarController : MonoBehaviour
             SetBadgeVisibility(itemRoot, true);
         }
 
-        Debug.Log($"[Sidebar] Menu unlocked: {menuType}");
     }
 
     /// <summary>

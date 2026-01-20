@@ -58,7 +58,6 @@ public class CharacterCameraController
         // 初期状態は非アクティブ
         _cameraRig.SetActive(false);
 
-        Debug.Log($"[CameraController] Initialized - RT: {_renderTextureSize.x}x{_renderTextureSize.y}");
     }
 
     private RenderTexture CreateRenderTexture()
@@ -145,7 +144,6 @@ public class CharacterCameraController
         characterInstance.transform.localPosition = -offset;
 
         _currentOrthoSize = _camera.orthographicSize;
-        Debug.Log($"[CameraController] Adjusted: orthoSize={_currentOrthoSize:F2}, bounds={bounds.size}");
     }
 
     /// <summary>

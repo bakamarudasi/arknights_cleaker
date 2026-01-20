@@ -52,8 +52,7 @@
 Assets/Scripts/
 ├── Main_core/                    # コアシステム（ビジネスロジック）
 │   ├── Core/
-│   │   ├── GameController.cs     # ゲーム全体の統括（シングルトン）
-│   │   └── SlotRarityTable.cs    # スロット倍率テーブル
+│   │   └── GameController.cs     # ゲーム全体の統括（シングルトン）
 │   ├── Data/
 │   │   ├── Definitions/          # ScriptableObject定義
 │   │   │   ├── BaseData.cs       # 全データの基底クラス
@@ -113,9 +112,7 @@ Assets/Scripts/
 │   ├── Home_/                    # ホーム画面（メインクリック）
 │   │   └── Script/
 │   │       ├── HomeUIController.cs
-│   │       ├── ClickAreaHandler.cs
-│   │       ├── FeverEffectHandler.cs
-│   │       └── SlotEffectHandler.cs
+│   │       └── ClickAreaHandler.cs
 │   ├── Shop_/                    # ショップ画面
 │   │   └── Script/
 │   │       ├── ShopUIController.cs      # ファサード
@@ -283,19 +280,15 @@ ClickMainButton() 呼び出し
     │   ├── BaseClickValue（計算済みクリック威力）
     │   ├── CriticalChance（クリティカル率）
     │   ├── CriticalMultiplier（クリティカル倍率）
-    │   ├── FeverMultiplier（フィーバー倍率）
-    │   └── SlotTriggerChance（スロット発動率）
+    │   └── FeverMultiplier（フィーバー倍率）
     │
     ├── ClickManager.Calculate(ctx)  // 純粋計算
     │   └── ClickResult {
     │         EarnedAmount,    // 獲得金額
-    │         WasCritical,     // クリティカルか
-    │         TriggeredSlot    // スロット発動か
+    │         WasCritical      // クリティカルか
     │       }
     │
     ├── Wallet.AddMoney(result.EarnedAmount)
-    │
-    ├── スロット発動時 → RollSlotMultiplier() → 追加報酬
     │
     └── 統計更新 & FloatingText表示
 ```
@@ -519,7 +512,6 @@ public float FinalFeverMultiplier => _baseFeverMultiplier + _feverPowerBonus;
 public static ClickResult Calculate(ClickStatsContext context)
 {
     bool isCritical = Random.value < context.CriticalChance;
-    bool triggeredSlot = Random.value < context.SlotTriggerChance;
 
     double multiplier = 1.0;
     if (isCritical) multiplier = context.CriticalMultiplier;
@@ -527,7 +519,7 @@ public static ClickResult Calculate(ClickStatsContext context)
 
     double earnedAmount = context.BaseClickValue * multiplier;
 
-    return new ClickResult(earnedAmount, isCritical, triggeredSlot, multiplier);
+    return new ClickResult(earnedAmount, isCritical, multiplier);
 }
 ```
 
@@ -623,9 +615,7 @@ public interface IViewController
 ### サブハンドラー構成
 ```
 HomeUIController
-    ├── ClickAreaHandler    # クリック処理・コンボ・ダメージ表示
-    ├── FeverEffectHandler  # フィーバー演出
-    └── SlotEffectHandler   # スロット演出
+    └── ClickAreaHandler    # クリック処理・コンボ・ダメージ表示
 ```
 
 ### 更新ループ
@@ -637,7 +627,6 @@ private void SetupUpdateLoop()
         _clickHandler?.UpdateComboDecay();
         _clickHandler?.CleanupDamageNumbers();
         _clickHandler?.UpdateDPS();
-        _feverHandler?.UpdateFeverTimer();
         UpdateParticles();
         UpdateStatsDisplay();
     }).Every(50); // 20fps更新

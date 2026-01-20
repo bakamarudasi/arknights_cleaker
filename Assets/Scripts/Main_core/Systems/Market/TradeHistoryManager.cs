@@ -123,7 +123,6 @@ public class TradeHistoryManager : BaseSingleton<TradeHistoryManager>
         _statsDirty = true;
         OnTradeRecorded?.Invoke(record);
 
-        Debug.Log($"[TradeHistory] Recorded: {record.type} {record.stockId} x{record.quantity} @ {record.pricePerShare:N0}");
     }
 
     /// <summary>

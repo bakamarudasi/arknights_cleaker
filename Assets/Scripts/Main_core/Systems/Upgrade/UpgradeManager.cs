@@ -220,7 +220,6 @@ public class UpgradeManager : BaseSingleton<UpgradeManager>
         OnUpgradePurchased?.Invoke(data, newLevel);
         OnUpgradeCountIncremented?.Invoke();
 
-        Debug.Log($"[Upgrade] {data.displayName} Lv.{currentLevel} → Lv.{newLevel}");
         return true;
     }
 

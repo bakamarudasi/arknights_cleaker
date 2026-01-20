@@ -47,7 +47,6 @@ public class CharacterSceneManager
 
         _currentScene = defaultScene;
 
-        Debug.Log($"[SceneManager] Loaded: {data.characterId}, default scene: {_currentSceneId}");
         OnCharacterLoaded?.Invoke(data);
         OnSceneChanged?.Invoke(_currentSceneId);
 
@@ -82,7 +81,6 @@ public class CharacterSceneManager
         // 同じシーンなら切り替え不要
         if (_currentSceneId == sceneId)
         {
-            Debug.Log($"[SceneManager] Already showing: {sceneId}");
             return (null, 0, true); // 成功だがprefabはnull（切り替え不要）
         }
 
@@ -90,7 +88,6 @@ public class CharacterSceneManager
         _currentSceneId = sceneId;
         _currentScene = sceneData;
 
-        Debug.Log($"[SceneManager] Scene changed: {previousSceneId} → {sceneId}");
         OnSceneChanged?.Invoke(sceneId);
 
         return (sceneData.prefab, sceneData.recommendedCameraSize, true);

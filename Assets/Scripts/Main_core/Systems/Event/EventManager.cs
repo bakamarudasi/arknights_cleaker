@@ -98,7 +98,6 @@ public class EventManager : BaseSingleton<EventManager>
         // 起動時イベントをチェック（少し遅延させてUIの準備を待つ）
         Invoke(nameof(CheckStartupEvents), 0.5f);
 
-        Debug.Log($"[EventManager] Initialized with {allEvents.Count} events");
     }
 
     /// <summary>
@@ -284,7 +283,6 @@ public class EventManager : BaseSingleton<EventManager>
             ShowNotification(evt);
         }
 
-        Debug.Log($"[EventManager] Event triggered: {evt.eventName}");
     }
 
     /// <summary>
@@ -355,7 +353,6 @@ public class EventManager : BaseSingleton<EventManager>
     private void ShowNotification(GameEventData evt)
     {
         // TODO: ログシステムや通知UIと連携
-        Debug.Log($"[Notification] {evt.notificationText}");
     }
 
     // ========================================
@@ -451,8 +448,6 @@ public class EventManager : BaseSingleton<EventManager>
         {
             IsFirstLaunch = false;
         }
-
-        Debug.Log($"[EventManager] Restored {triggeredEventIds.Count} triggered events (FirstLaunch: {IsFirstLaunch})");
     }
 
     // ========================================

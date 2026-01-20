@@ -93,7 +93,6 @@ public class CharacterLayerController : MonoBehaviour, ILayerController
 
         ApplyPenetrateLevel(level, immediate: false);
 
-        Debug.Log($"[LayerController] Penetrate level: {previousLevel} → {level}");
         OnPenetrateLevelChanged?.Invoke(level);
     }
 
@@ -205,7 +204,6 @@ public class CharacterLayerController : MonoBehaviour, ILayerController
         // MaskInteractionを設定
         ApplyMaskInteraction(_currentPenetrateLevel);
 
-        Debug.Log($"[LayerController] MaskMode enabled - Level: {_currentPenetrateLevel}");
     }
 
     /// <summary>
@@ -221,7 +219,6 @@ public class CharacterLayerController : MonoBehaviour, ILayerController
         // MaskInteractionをNoneに戻す
         ClearMaskInteraction();
 
-        Debug.Log("[LayerController] MaskMode disabled");
     }
 
     /// <summary>
@@ -409,7 +406,6 @@ public class CharacterLayerController : MonoBehaviour, ILayerController
             };
             layers.Add(entry);
             UnityEditor.EditorUtility.SetDirty(this);
-            Debug.Log($"[LayerController] Added {others.Count} sprites to 'other' layer");
         }
     }
 
@@ -494,7 +490,6 @@ public class CharacterLayerController : MonoBehaviour, ILayerController
                 }
 
                 UnityEditor.EditorUtility.SetDirty(this);
-                Debug.Log($"[LayerController] Merged: {layerGroups.Count} layer groups processed");
                 return;
             }
         }
@@ -511,12 +506,10 @@ public class CharacterLayerController : MonoBehaviour, ILayerController
         layers.Sort((a, b) => a.hideAtPenetrateLevel.CompareTo(b.hideAtPenetrateLevel));
 
         UnityEditor.EditorUtility.SetDirty(this);
-        Debug.Log($"[LayerController] Auto setup complete: {layers.Count} layers found");
 
         // 結果をログ出力
         foreach (var layer in layers)
         {
-            Debug.Log($"  - {layer.layerName}: {layer.sprites.Length} sprites, hideAt={layer.hideAtPenetrateLevel}");
         }
     }
 

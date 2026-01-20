@@ -100,7 +100,6 @@ public class StockPrestigeManager : BaseSingleton<StockPrestigeManager>
         // 最大周回チェック
         if (prestigeData.IsMaxLevel(currentLevel))
         {
-            Debug.Log($"[Prestige] {stockId} is at max prestige level: {currentLevel}");
             return false;
         }
 
@@ -125,7 +124,6 @@ public class StockPrestigeManager : BaseSingleton<StockPrestigeManager>
 
         // ログ
         string companyName = prestigeData.targetStock?.companyName ?? stockId;
-        Debug.Log($"[Prestige] Acquisition complete! {companyName} -> Prestige Lv.{newLevel}");
 
         // 演出メッセージ（UIシステムがあれば表示）
         string message = string.Format(prestigeData.acquisitionMessage, companyName);
@@ -166,7 +164,6 @@ public class StockPrestigeManager : BaseSingleton<StockPrestigeManager>
     private void ShowAcquisitionMessage(string message, StockPrestigeData prestigeData)
     {
         // TODO: UIシステムと連携してメッセージ表示
-        Debug.Log($"[Prestige] {message}");
 
         // 効果音再生
         if (prestigeData.acquisitionSound != null)
@@ -302,7 +299,6 @@ public class StockPrestigeManager : BaseSingleton<StockPrestigeManager>
     [ContextMenu("Log Prestige Status")]
     public void LogPrestigeStatus()
     {
-        Debug.Log("=== Stock Prestige Status ===");
         foreach (var data in prestigeDataList)
         {
             if (data?.targetStock == null) continue;
@@ -311,12 +307,10 @@ public class StockPrestigeManager : BaseSingleton<StockPrestigeManager>
             int level = GetPrestigeLevel(stockId);
             long shares = GetAdjustedTotalShares(stockId);
 
-            Debug.Log($"{data.targetStock.companyName}: Lv.{level}, TotalShares: {shares:N0}");
 
             foreach (var bonus in data.prestigeBonuses)
             {
                 float value = bonus.valuePerLevel * level;
-                Debug.Log($"  - {bonus.bonusType}: +{value * 100:F1}%");
             }
         }
     }

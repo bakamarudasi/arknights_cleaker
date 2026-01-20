@@ -185,7 +185,6 @@ public class OverlayCharacterPresenter : MonoBehaviour
 
         _cameraController.AdjustToCharacter(_currentInstance);
 
-        Debug.Log("[Presenter] Character shown");
         OnCharacterReady?.Invoke();
     }
 

@@ -552,7 +552,6 @@ public class GachaManager : BaseSingleton<GachaManager>
         // 通貨チェック
         if (!wallet.CanAfford(cost, banner.currencyType))
         {
-            Debug.Log($"{LOG_TAG} PullGacha: Insufficient funds for {count} pulls (cost: {cost})");
             return new List<GachaResultItem>();
         }
 

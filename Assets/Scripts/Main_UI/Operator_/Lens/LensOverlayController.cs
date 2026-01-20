@@ -191,7 +191,6 @@ public class LensOverlayController
         // RenderTextureを設定
         UpdateXRayDisplay();
 
-        Debug.Log($"[LensOverlay] Shown - Level: {penetrateLevel}, Shape: {_currentShape}");
     }
 
     public void Hide()

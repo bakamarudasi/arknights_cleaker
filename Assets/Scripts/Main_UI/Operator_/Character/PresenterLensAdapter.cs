@@ -44,7 +44,6 @@ public class PresenterLensAdapter
         // マスクを表示
         _lensMaskController?.Show();
 
-        Debug.Log($"[LensAdapter] Enabled - Level: {penetrateLevel}");
     }
 
     /// <summary>
@@ -58,7 +57,6 @@ public class PresenterLensAdapter
         // マスクを非表示
         _lensMaskController?.Hide();
 
-        Debug.Log("[LensAdapter] Disabled");
     }
 
     /// <summary>
@@ -104,7 +102,6 @@ public class PresenterLensAdapter
         _lensMaskController = maskObj.AddComponent<LensMaskController>();
         _lensMaskController.Initialize(_camera);
 
-        Debug.Log("[LensAdapter] LensMask created");
     }
 
     /// <summary>

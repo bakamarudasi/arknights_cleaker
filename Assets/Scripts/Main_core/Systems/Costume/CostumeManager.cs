@@ -114,7 +114,6 @@ public class CostumeManager : BaseSingleton<CostumeManager>
         }
         _unlockedCostumes[characterId].Add(costumeId);
 
-        Debug.Log($"[CostumeManager] Unlocked: {characterId} / {costumeId}");
         OnCostumeUnlocked?.Invoke(characterId, costumeId);
 
         return true;
@@ -199,7 +198,6 @@ public class CostumeManager : BaseSingleton<CostumeManager>
         // 装備
         _equippedCostumes[characterId] = costumeId;
 
-        Debug.Log($"[CostumeManager] Equipped: {characterId} / {costumeId}");
         OnCostumeEquipped?.Invoke(characterId, costumeId);
 
         return true;

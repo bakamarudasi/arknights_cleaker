@@ -110,7 +110,6 @@ public class PortfolioManager : BaseSingleton<PortfolioManager>
 
         if (!WalletManager.Instance.CanAffordMoney(totalCost))
         {
-            Debug.Log($"[Portfolio] Insufficient funds: need {totalCost:F0}, have {WalletManager.Instance.Money:F0}");
             return false;
         }
 
@@ -143,7 +142,6 @@ public class PortfolioManager : BaseSingleton<PortfolioManager>
         EventUtility.SafeInvoke(OnHoldingChanged, stockId, LOG_TAG, nameof(OnHoldingChanged));
         EventUtility.SafeInvoke(OnPortfolioUpdated, LOG_TAG, nameof(OnPortfolioUpdated));
 
-        Debug.Log($"{LOG_TAG} Bought {quantity} {stockId} @ {currentPrice:F2} (Total: {totalCost:F0} LMD)");
         return true;
     }
 
@@ -207,9 +205,6 @@ public class PortfolioManager : BaseSingleton<PortfolioManager>
 
         EventUtility.SafeInvoke(OnHoldingChanged, stockId, LOG_TAG, nameof(OnHoldingChanged));
         EventUtility.SafeInvoke(OnPortfolioUpdated, LOG_TAG, nameof(OnPortfolioUpdated));
-
-        string resultText = profitLoss >= 0 ? $"+{profitLoss:F0} 利確" : $"{profitLoss:F0} 損切り";
-        Debug.Log($"{LOG_TAG} Sold {quantity} {stockId} @ {currentPrice:F2} ({resultText})");
 
         return true;
     }
@@ -304,7 +299,6 @@ public class PortfolioManager : BaseSingleton<PortfolioManager>
         double costPerShare = currentPrice * (1 + stock.transactionFee);
 
         int maxQty = (int)(money / costPerShare);
-        Debug.Log($"[Portfolio] GetMaxBuyableQuantity: stockId={stockId}, price={currentPrice}, money={money}, fee={stock.transactionFee}, costPerShare={costPerShare}, maxQty={maxQty}");
 
         return maxQty;
     }
