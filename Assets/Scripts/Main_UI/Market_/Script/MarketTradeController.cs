@@ -114,7 +114,6 @@ public class MarketTradeController : IDisposable
         }
 
         string rawValue = tradeQuantityInput.value;
-        Debug.Log($"[Trade] TextField raw value: '{rawValue}'");
 
         if (int.TryParse(rawValue, out int qty))
         {
@@ -140,14 +139,12 @@ public class MarketTradeController : IDisposable
         int maxBuyable = facade.GetMaxBuyableQuantity(selectedStockId);
 
         // デバッグ用ログ
-        Debug.Log($"[Trade] Stock: {selectedStockId}, Qty: {qty}, MaxBuyable: {maxBuyable}, Holdings: {holdings}");
 
         // 購入ボタン
         if (buyButton != null)
         {
             bool canBuy = qty > 0 && qty <= maxBuyable;
             buyButton.SetEnabled(canBuy);
-            Debug.Log($"[Trade] BuyButton enabled: {canBuy}");
         }
 
         // 売却ボタン

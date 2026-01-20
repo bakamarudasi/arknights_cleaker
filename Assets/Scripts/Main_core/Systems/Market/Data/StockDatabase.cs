@@ -96,7 +96,6 @@ public class StockDatabase : ScriptableObject
     private void EditorRebuildCache()
     {
         RebuildCache();
-        Debug.Log($"[StockDatabase] Rebuilt cache with {stockCache.Count} stocks");
     }
 
     [ContextMenu("Sort by Sort Order")]
@@ -104,7 +103,6 @@ public class StockDatabase : ScriptableObject
     {
         stocks = stocks.Where(s => s != null).OrderBy(s => s.sortOrder).ToList();
         UnityEditor.EditorUtility.SetDirty(this);
-        Debug.Log("[StockDatabase] Sorted stocks by sortOrder");
     }
 #endif
 }

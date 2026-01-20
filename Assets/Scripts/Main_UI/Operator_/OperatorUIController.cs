@@ -695,13 +695,11 @@ public class OperatorUIController : BaseUIController
     private void OnZoomWindowOpened(CharacterInteractionZone.ZoneType zoneType)
     {
         // ズーム窓が開いた時の処理
-        Debug.Log($"[OperatorUI] Zoom window opened for zone: {zoneType}");
     }
 
     private void OnAllZoomWindowsClosed()
     {
         // 全ズーム窓が閉じた時の処理
-        Debug.Log("[OperatorUI] All zoom windows closed");
     }
 
     private string GetZoneDialogue(CharacterInteractionZone.ZoneType zoneType, int comboCount)
@@ -812,7 +810,6 @@ public class OperatorUIController : BaseUIController
         var lensItem = _lensController.CurrentLensItem;
         if (lensItem?.lensSpecs.isLens == true)
         {
-            Debug.Log($"[Lens] Applied - Level: {lensMode}");
         }
     }
 

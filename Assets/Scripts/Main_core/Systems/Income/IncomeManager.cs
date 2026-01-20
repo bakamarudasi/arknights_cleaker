@@ -212,6 +212,5 @@ public class IncomeManager : BaseSingleton<IncomeManager>
     /// </summary>
     public void DebugLog()
     {
-        Debug.Log($"[Income] Base:{_baseIncome} + Flat:{_flatBonus} × (1+{_percentBonus:P0}) × Global:{_globalMultiplier} = {_finalIncomePerTick}/tick ({IncomePerSecond}/s)");
     }
 }

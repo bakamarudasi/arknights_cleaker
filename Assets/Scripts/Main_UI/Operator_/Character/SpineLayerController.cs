@@ -139,7 +139,6 @@ public class SpineLayerController : MonoBehaviour, ILayerController
 
         ApplyPenetrateLevel(level);
 
-        Debug.Log($"[SpineLayerController] Penetrate level: {previousLevel} → {level}");
         OnPenetrateLevelChanged?.Invoke(level);
     }
 
@@ -175,7 +174,6 @@ public class SpineLayerController : MonoBehaviour, ILayerController
             }
         }
 
-        Debug.Log($"[SpineLayerController] MaskMode enabled - Level: {_currentPenetrateLevel}");
     }
 
     public void DisableMaskMode()
@@ -195,7 +193,6 @@ public class SpineLayerController : MonoBehaviour, ILayerController
             }
         }
 
-        Debug.Log("[SpineLayerController] MaskMode disabled");
     }
 
     public void ResetToNormal()
@@ -252,8 +249,6 @@ public class SpineLayerController : MonoBehaviour, ILayerController
         //     var skeleton = layer.skeletonObject.GetComponent<SkeletonAnimation>();
         //     var track = skeleton.AnimationState.SetAnimation(0, animationName, loop);
         // }
-
-        Debug.Log($"[SpineLayerController] PlayAnimation: {animationName} (loop={loop})");
     }
 
     /// <summary>

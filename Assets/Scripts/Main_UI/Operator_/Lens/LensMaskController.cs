@@ -82,7 +82,6 @@ public class LensMaskController : MonoBehaviour
         // 形状を適用
         ApplyShape(lensShape);
 
-        Debug.Log("[LensMask] Created mask object");
     }
 
     // ========================================

@@ -110,7 +110,6 @@ public class WalletManager : BaseSingleton<WalletManager>
 
         _certificates += amount;
         EventUtility.SafeInvoke(OnCertificateChanged, _certificates, LOG_TAG, nameof(OnCertificateChanged));
-        Debug.Log($"{LOG_TAG} 資格証を入手: +{amount}");
     }
 
     /// <summary>

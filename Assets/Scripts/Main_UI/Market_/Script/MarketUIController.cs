@@ -371,7 +371,6 @@ public class MarketUIController : BaseUIController
         // Buttonのclickedイベントを使用（最も確実なクリック検出）
         item.clicked += () =>
         {
-            Debug.Log($"[MarketUI] Stock clicked: {stock.stockId}");
             SelectStock(stock);
         };
 

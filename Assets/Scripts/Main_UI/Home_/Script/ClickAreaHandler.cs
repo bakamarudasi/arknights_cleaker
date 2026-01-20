@@ -94,7 +94,6 @@ public class ClickAreaHandler : IDisposable
         _comboContainer = _root.Q<VisualElement>("combo-container");
         _comboCountLabel = _root.Q<Label>("combo-count");
 
-        Debug.Log($"[ClickAreaHandler] clickTarget = {_clickTarget}");
     }
 
     private void InitializeDamageNumberPool()
@@ -124,10 +123,8 @@ public class ClickAreaHandler : IDisposable
 
         _clickTarget.RegisterCallback<GeometryChangedEvent>(evt =>
         {
-            Debug.Log($"[ClickAreaHandler] clickTarget geometry: {evt.newRect.width}x{evt.newRect.height}");
         });
 
-        Debug.Log("[ClickAreaHandler] PointerDown callback registered.");
     }
 
     // ========================================
@@ -136,7 +133,6 @@ public class ClickAreaHandler : IDisposable
 
     private void OnPointerDown(PointerDownEvent evt)
     {
-        Debug.Log($"[ClickAreaHandler] PointerDown detected at {evt.localPosition}");
 
         var gc = GameController.Instance;
         if (gc == null)

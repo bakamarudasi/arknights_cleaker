@@ -329,7 +329,6 @@ public class ZoomWindowManager : MonoBehaviour
     {
         if (debugLog)
         {
-            Debug.Log($"[ZoomWindowManager] {message}");
         }
     }
 

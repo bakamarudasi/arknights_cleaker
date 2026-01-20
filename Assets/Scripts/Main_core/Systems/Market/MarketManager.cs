@@ -151,8 +151,6 @@ public class MarketManager : BaseSingleton<MarketManager>
                 failCount++;
             }
         }
-
-        Debug.Log($"{LOG_TAG} Initialized {successCount} stocks ({failCount} failed)");
     }
 
     // ========================================
@@ -329,7 +327,6 @@ public class MarketManager : BaseSingleton<MarketManager>
     public void SetMarketOpen(bool open)
     {
         isMarketOpen = open;
-        Debug.Log($"[MarketManager] Market is now {(open ? "OPEN" : "CLOSED")}");
     }
 
     // ========================================
