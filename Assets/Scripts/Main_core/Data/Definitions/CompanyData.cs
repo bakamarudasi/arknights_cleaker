@@ -109,8 +109,9 @@ public class CompanyData : ScriptableObject
     [Tooltip("配当間隔（秒）- 0で配当なし")]
     public int dividendIntervalSeconds = 0;
 
-    [Header("株式保有ボーナス")]
-    [Tooltip("株式保有率に応じたボーナス（複数設定可）")]
+    [Header("株式保有ボーナス (機能削除済み)")]
+    [Tooltip("旧機能: 株式保有率に応じたボーナス - 現在未使用")]
+    [HideInInspector]
     public List<StockHoldingBonus> holdingBonuses = new();
 
     [Header("解放条件")]

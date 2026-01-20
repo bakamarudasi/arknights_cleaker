@@ -8,12 +8,8 @@ using System.Collections.Generic;
 ///
 /// 疎結合設計：このクラスを削除しても他システムに影響なし
 /// </summary>
-public class EconomicEventManager : MonoBehaviour
+public class EconomicEventManager : BaseSingleton<EconomicEventManager>
 {
-    // ========================================
-    // シングルトン
-    // ========================================
-    public static EconomicEventManager Instance { get; private set; }
 
     // ========================================
     // 設定
@@ -70,17 +66,6 @@ public class EconomicEventManager : MonoBehaviour
     // ========================================
     // Unity ライフサイクル
     // ========================================
-
-    private void Awake()
-    {
-        if (Instance != null && Instance != this)
-        {
-            Destroy(gameObject);
-            return;
-        }
-        Instance = this;
-        DontDestroyOnLoad(gameObject);
-    }
 
     private void Update()
     {

@@ -186,7 +186,7 @@ public class StockPrestigeUIController : IViewController
         var progressContainer = new VisualElement();
         progressContainer.AddToClassList("prestige-progress-container");
 
-        float holdingRate = StockHoldingBonusManager.Instance?.GetHoldingRate(summary.stockId) ?? 0f;
+        float holdingRate = StockPrestigeManager.Instance?.GetHoldingRate(summary.stockId) ?? 0f;
 
         var progressBar = new VisualElement();
         progressBar.AddToClassList("prestige-progress-bar");

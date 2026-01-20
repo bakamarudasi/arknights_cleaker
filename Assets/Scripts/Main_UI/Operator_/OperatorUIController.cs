@@ -6,13 +6,12 @@ using System;
 /// オペレーター画面のUIファサード（フルスクリーンレイアウト版）
 /// 各サブコントローラーの統合と画面全体のライフサイクル管理
 /// </summary>
-public class OperatorUIController : IViewController
+public class OperatorUIController : BaseUIController
 {
     // ========================================
     // UI要素
     // ========================================
 
-    private VisualElement _root;
     private VisualElement _characterDisplay;
 
     // 背景エフェクト
@@ -95,102 +94,82 @@ public class OperatorUIController : IViewController
     public event Action OnBackRequested;
 
     // ========================================
-    // 初期化
+    // 初期化（BaseUIControllerのオーバーライド）
     // ========================================
 
-    public void Initialize(VisualElement contentArea)
+    protected override void QueryElements()
     {
-        _root = contentArea;
-
-        QueryElements();
-        InitializeSubControllers();
-        InitializeSceneUIs();
-        SetupCallbacks();
-        SubscribeToEvents();
-
-        ShowCharacterOverlay();
-        UpdateOutfitButtons();
-        ApplyCurrentSceneUI();
-        UpdateTalkControllerForCurrentScene();
-        UpdateStatusUI();
-        UpdateExcitementEffects(0);
-
-        // 初期メッセージ
-        _messageController?.ShowMessage("......やっと来た。待ちくたびれたわよ？", GetCurrentCharacterName(), 3f);
-
-        LogUIController.LogSystem("Operator View Initialized (Fullscreen Layout).");
-    }
-
-    private void QueryElements()
-    {
-        _characterDisplay = _root.Q<VisualElement>("character-display");
+        _characterDisplay = root.Q<VisualElement>("character-display");
 
         // 背景エフェクト
-        _bgCanvas = _root.Q<VisualElement>("bg-canvas");
-        _vignette = _root.Q<VisualElement>("vignette");
-        _levelupFlash = _root.Q<VisualElement>("levelup-flash");
+        _bgCanvas = root.Q<VisualElement>("bg-canvas");
+        _vignette = root.Q<VisualElement>("vignette");
+        _levelupFlash = root.Q<VisualElement>("levelup-flash");
 
         // 左サイドバー
-        _navOutfit = _root.Q<Button>("nav-outfit");
-        _navGift = _root.Q<Button>("nav-gift");
-        _navTalk = _root.Q<Button>("nav-talk");
-        _navLens = _root.Q<Button>("nav-lens");
-        _btnBack = _root.Q<Button>("btn-back");
-        _lvDisplay = _root.Q<Label>("lv-display");
+        _navOutfit = root.Q<Button>("nav-outfit");
+        _navGift = root.Q<Button>("nav-gift");
+        _navTalk = root.Q<Button>("nav-talk");
+        _navLens = root.Q<Button>("nav-lens");
+        _btnBack = root.Q<Button>("btn-back");
+        _lvDisplay = root.Q<Label>("lv-display");
 
         // ステータスゲージ
-        _barAff = _root.Q<VisualElement>("bar-aff");
-        _txtAff = _root.Q<Label>("txt-aff");
-        _barExc = _root.Q<VisualElement>("bar-exc");
-        _txtExc = _root.Q<Label>("txt-exc");
+        _barAff = root.Q<VisualElement>("bar-aff");
+        _txtAff = root.Q<Label>("txt-aff");
+        _barExc = root.Q<VisualElement>("bar-exc");
+        _txtExc = root.Q<Label>("txt-exc");
 
         // キャラクター名
-        _characterName = _root.Q<Label>("character-name");
+        _characterName = root.Q<Label>("character-name");
 
         // モーダル
-        _modalOverlay = _root.Q<VisualElement>("modal-overlay");
-        _modalPanel = _root.Q<VisualElement>("modal-panel");
-        _modalTitle = _root.Q<Label>("modal-title");
-        _btnModalClose = _root.Q<Button>("btn-modal-close");
-        _contentOutfit = _root.Q<VisualElement>("content-outfit");
-        _contentGift = _root.Q<VisualElement>("content-gift");
-        _contentTalk = _root.Q<VisualElement>("content-talk");
-        _contentLens = _root.Q<VisualElement>("content-lens");
+        _modalOverlay = root.Q<VisualElement>("modal-overlay");
+        _modalPanel = root.Q<VisualElement>("modal-panel");
+        _modalTitle = root.Q<Label>("modal-title");
+        _btnModalClose = root.Q<Button>("btn-modal-close");
+        _contentOutfit = root.Q<VisualElement>("content-outfit");
+        _contentGift = root.Q<VisualElement>("content-gift");
+        _contentTalk = root.Q<VisualElement>("content-talk");
+        _contentLens = root.Q<VisualElement>("content-lens");
 
         // 衣装ボタン
-        _btnOutfitDefault = _root.Q<Button>("btn-outfit-default");
-        _btnOutfitSkin1 = _root.Q<Button>("btn-outfit-skin1");
-        _btnOutfitSkin2 = _root.Q<Button>("btn-outfit-skin2");
+        _btnOutfitDefault = root.Q<Button>("btn-outfit-default");
+        _btnOutfitSkin1 = root.Q<Button>("btn-outfit-skin1");
+        _btnOutfitSkin2 = root.Q<Button>("btn-outfit-skin2");
 
         // ズーム窓コンテナ
-        _zoomContainer = _root.Q<VisualElement>("zoom-container");
+        _zoomContainer = root.Q<VisualElement>("zoom-container");
     }
 
-    private void InitializeSubControllers()
+    protected override void InitializeSubControllers()
     {
         // レンズ（モーダル内）
         _lensController = new OperatorLensController();
-        _lensController.Initialize(_root);
+        _lensController.Initialize(root);
         _lensController.OnLensModeChanged += OnLensModeChanged;
         _lensController.OnLensShapeChanged += shape => OverlayCharacterPresenter.Instance?.SetLensShape(shape);
         _lensController.OnLensSizeChanged += size => OverlayCharacterPresenter.Instance?.SetLensSize(size);
 
         // ギフト
         _giftController = new OperatorGiftController();
-        _giftController.Initialize(_root);
+        _giftController.Initialize(root);
         _giftController.OnGiftGiven += _ => UpdateStatusUI();
 
         // 会話
         _talkController = new OperatorTalkController();
-        _talkController.Initialize(_root);
+        _talkController.Initialize(root);
         _talkController.OnConversationEnded += () => UpdateStatusUI();
 
         // メッセージウィンドウ
         _messageController = new MessageWindowController();
-        _messageController.Initialize(_root);
+        _messageController.Initialize(root);
 
         // ズーム窓マネージャー
         InitializeZoomWindowManager();
+
+        // シーンUI初期化
+        InitializeSceneUIs();
     }
 
     private void InitializeZoomWindowManager()
@@ -218,15 +197,15 @@ public class OperatorUIController : IViewController
     private void InitializeSceneUIs()
     {
         _defaultSceneUI = new DefaultSceneUI();
-        _defaultSceneUI.Initialize(_root);
+        _defaultSceneUI.Initialize(root);
 
         _fullscreenSceneUI = new FullscreenSceneUI();
-        _fullscreenSceneUI.Initialize(_root);
+        _fullscreenSceneUI.Initialize(root);
 
         _currentSceneUI = _defaultSceneUI;
     }
 
-    private void SetupCallbacks()
+    protected override void BindUIEvents()
     {
         // 左サイドバーナビゲーション
         _callbacks.RegisterClick(_navOutfit, () => OpenModal("outfit", "COSTUME"));
@@ -325,10 +304,10 @@ public class OperatorUIController : IViewController
     }
 
     // ========================================
-    // イベント購読
+    // イベント購読（BaseUIControllerのオーバーライド）
     // ========================================
 
-    private void SubscribeToEvents()
+    protected override void BindGameEvents()
     {
         if (AffectionManager.Instance != null)
         {
@@ -353,7 +332,26 @@ public class OperatorUIController : IViewController
             CostumeManager.Instance.OnCostumeUnlocked += OnCostumeUnlocked;
     }
 
-    private void UnsubscribeFromEvents()
+    protected override void OnPostInitialize()
+    {
+        ShowCharacterOverlay();
+        UpdateOutfitButtons();
+        ApplyCurrentSceneUI();
+        UpdateTalkControllerForCurrentScene();
+        UpdateStatusUI();
+        UpdateExcitementEffects(0);
+
+        // 初期メッセージ
+        _messageController?.ShowMessage("......やっと来た。待ちくたびれたわよ？", GetCurrentCharacterName(), 3f);
+
+        LogUIController.LogSystem($"{LogTag} Operator View Initialized (Fullscreen Layout).");
+    }
+
+    // ========================================
+    // 破棄（BaseUIControllerのオーバーライド）
+    // ========================================
+
+    protected override void UnbindGameEvents()
     {
         if (AffectionManager.Instance != null)
         {
@@ -376,6 +374,43 @@ public class OperatorUIController : IViewController
 
         if (CostumeManager.Instance != null)
             CostumeManager.Instance.OnCostumeUnlocked -= OnCostumeUnlocked;
+    }
+
+    protected override void UnbindUIEvents()
+    {
+        // コールバック一括解除
+        _callbacks.Dispose();
+    }
+
+    protected override void OnPreDispose()
+    {
+        UnsubscribeFromInteractionZones();
+        HideCharacterOverlay();
+    }
+
+    protected override void DisposeSubControllers()
+    {
+        _lensController?.Dispose();
+        _giftController?.Dispose();
+        _talkController?.Dispose();
+        _messageController?.Dispose();
+
+        // ズーム窓マネージャーのイベント解除
+        if (_zoomWindowManager != null)
+        {
+            _zoomWindowManager.OnZoomWindowOpened -= OnZoomWindowOpened;
+            _zoomWindowManager.OnAllWindowsClosed -= OnAllZoomWindowsClosed;
+        }
+
+        // シーンUI解放
+        _currentSceneUI?.Hide();
+        _defaultSceneUI?.Dispose();
+        _fullscreenSceneUI?.Dispose();
+    }
+
+    protected override void OnPostDispose()
+    {
+        LogUIController.LogSystem($"{LogTag} Operator View Disposed.");
     }
 
     private void OnAffectionChanged(string characterId, int newValue, int delta)
@@ -831,38 +866,4 @@ public class OperatorUIController : IViewController
         }
     }
 
-    // ========================================
-    // クリーンアップ
-    // ========================================
-
-    public void Dispose()
-    {
-        // イベント解除
-        UnsubscribeFromEvents();
-        UnsubscribeFromInteractionZones();
-        HideCharacterOverlay();
-
-        // サブコントローラー解放
-        _lensController?.Dispose();
-        _giftController?.Dispose();
-        _talkController?.Dispose();
-        _messageController?.Dispose();
-
-        // ズーム窓マネージャーのイベント解除
-        if (_zoomWindowManager != null)
-        {
-            _zoomWindowManager.OnZoomWindowOpened -= OnZoomWindowOpened;
-            _zoomWindowManager.OnAllWindowsClosed -= OnAllZoomWindowsClosed;
-        }
-
-        // シーンUI解放
-        _currentSceneUI?.Hide();
-        _defaultSceneUI?.Dispose();
-        _fullscreenSceneUI?.Dispose();
-
-        // コールバック一括解除
-        _callbacks.Dispose();
-
-        LogUIController.LogSystem("Operator View Disposed.");
-    }
 }

@@ -7,13 +7,8 @@ using System;
 /// - 放置しても損はしない（暴落なし）
 /// - 頑張ると株価上昇 → 配当アップ
 /// </summary>
-public class RhodosStockManager : MonoBehaviour
+public class RhodosStockManager : BaseSingleton<RhodosStockManager>
 {
-    // ========================================
-    // シングルトン
-    // ========================================
-    public static RhodosStockManager Instance { get; private set; }
-
     // ========================================
     // 設定
     // ========================================
@@ -81,17 +76,6 @@ public class RhodosStockManager : MonoBehaviour
     // ========================================
     // Unity ライフサイクル
     // ========================================
-
-    private void Awake()
-    {
-        if (Instance != null && Instance != this)
-        {
-            Destroy(gameObject);
-            return;
-        }
-        Instance = this;
-        DontDestroyOnLoad(gameObject);
-    }
 
     private void Start()
     {

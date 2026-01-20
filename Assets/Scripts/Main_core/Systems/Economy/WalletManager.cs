@@ -5,28 +5,11 @@ using UnityEngine;
 /// 通貨（LMD・資格証）の管理を担当するマネージャー
 /// 残高の加算・減算・チェックを行う
 /// </summary>
-public class WalletManager : MonoBehaviour
+public class WalletManager : BaseSingleton<WalletManager>
 {
-    public static WalletManager Instance { get; private set; }
-
     private const string LOG_TAG = "[WalletManager]";
 
-    // ========================================
-    // 安全なイベント発火ヘルパー
-    // ========================================
-
-    private void SafeInvoke<T>(Action<T> action, T arg, string eventName)
-    {
-        if (action == null) return;
-        try
-        {
-            action.Invoke(arg);
-        }
-        catch (Exception ex)
-        {
-            Debug.LogError($"{LOG_TAG} Event '{eventName}' handler threw exception: {ex.Message}\n{ex.StackTrace}");
-        }
-    }
+    protected override bool Persistent => false; // GameControllerが管理
 
     // ========================================
     // 通貨残高
@@ -66,17 +49,6 @@ public class WalletManager : MonoBehaviour
     // 初期化
     // ========================================
 
-    void Awake()
-    {
-        if (Instance == null)
-        {
-            Instance = this;
-        }
-        else
-        {
-            Destroy(gameObject);
-        }
-    }
 
     // ========================================
     // LMD（メイン通貨）操作
@@ -90,8 +62,8 @@ public class WalletManager : MonoBehaviour
         if (amount <= 0) return;
 
         _money += amount;
-        SafeInvoke(OnMoneyChanged, _money, nameof(OnMoneyChanged));
-        SafeInvoke(OnMoneyEarned, amount, nameof(OnMoneyEarned));
+        EventUtility.SafeInvoke(OnMoneyChanged, _money, LOG_TAG, nameof(OnMoneyChanged));
+        EventUtility.SafeInvoke(OnMoneyEarned, amount, LOG_TAG, nameof(OnMoneyEarned));
     }
 
     /// <summary>
@@ -101,7 +73,7 @@ public class WalletManager : MonoBehaviour
     {
         _money -= amount;
         if (_money < 0) _money = 0;
-        SafeInvoke(OnMoneyChanged, _money, nameof(OnMoneyChanged));
+        EventUtility.SafeInvoke(OnMoneyChanged, _money, LOG_TAG, nameof(OnMoneyChanged));
     }
 
     /// <summary>
@@ -113,7 +85,7 @@ public class WalletManager : MonoBehaviour
         if (!CanAffordMoney(amount)) return false;
 
         SubtractMoney(amount);
-        SafeInvoke(OnMoneySpent, amount, nameof(OnMoneySpent));
+        EventUtility.SafeInvoke(OnMoneySpent, amount, LOG_TAG, nameof(OnMoneySpent));
         return true;
     }
 
@@ -137,7 +109,7 @@ public class WalletManager : MonoBehaviour
         if (amount <= 0) return;
 
         _certificates += amount;
-        SafeInvoke(OnCertificateChanged, _certificates, nameof(OnCertificateChanged));
+        EventUtility.SafeInvoke(OnCertificateChanged, _certificates, LOG_TAG, nameof(OnCertificateChanged));
         Debug.Log($"{LOG_TAG} 資格証を入手: +{amount}");
     }
 
@@ -150,7 +122,7 @@ public class WalletManager : MonoBehaviour
 
         _certificates -= amount;
         if (_certificates < 0) _certificates = 0;
-        SafeInvoke(OnCertificateChanged, _certificates, nameof(OnCertificateChanged));
+        EventUtility.SafeInvoke(OnCertificateChanged, _certificates, LOG_TAG, nameof(OnCertificateChanged));
         return true;
     }
 
@@ -232,8 +204,8 @@ public class WalletManager : MonoBehaviour
     {
         _money = money;
         _certificates = certificates;
-        SafeInvoke(OnMoneyChanged, _money, nameof(OnMoneyChanged));
-        SafeInvoke(OnCertificateChanged, _certificates, nameof(OnCertificateChanged));
+        EventUtility.SafeInvoke(OnMoneyChanged, _money, LOG_TAG, nameof(OnMoneyChanged));
+        EventUtility.SafeInvoke(OnCertificateChanged, _certificates, LOG_TAG, nameof(OnCertificateChanged));
     }
 
     /// <summary>
@@ -243,8 +215,8 @@ public class WalletManager : MonoBehaviour
     {
         _money = 0;
         _certificates = 0;
-        SafeInvoke(OnMoneyChanged, _money, nameof(OnMoneyChanged));
-        SafeInvoke(OnCertificateChanged, _certificates, nameof(OnCertificateChanged));
+        EventUtility.SafeInvoke(OnMoneyChanged, _money, LOG_TAG, nameof(OnMoneyChanged));
+        EventUtility.SafeInvoke(OnCertificateChanged, _certificates, LOG_TAG, nameof(OnCertificateChanged));
     }
 }
 

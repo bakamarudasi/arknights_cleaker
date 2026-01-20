@@ -10,9 +10,9 @@ using System.Collections.Generic;
 /// - 装備中の衣装管理（永続化）
 /// - 解放条件チェック（好感度 or アイテム）
 /// </summary>
-public class CostumeManager : MonoBehaviour
+public class CostumeManager : BaseSingleton<CostumeManager>
 {
-    public static CostumeManager Instance { get; private set; }
+    protected override bool Persistent => false;
 
     // ========================================
     // 定数
@@ -43,16 +43,6 @@ public class CostumeManager : MonoBehaviour
 
     /// <summary>衣装が装備された時 (characterId, costumeId)</summary>
     public event Action<string, string> OnCostumeEquipped;
-
-    // ========================================
-    // 初期化
-    // ========================================
-
-    private void Awake()
-    {
-        if (Instance == null) Instance = this;
-        else { Destroy(gameObject); return; }
-    }
 
     // ========================================
     // 解放状態チェック

@@ -3,18 +3,13 @@ using UnityEngine;
 /// <summary>
 /// GameControllerからの依頼を受けて、指定座標にFloatingTextを生成する工場。
 /// </summary>
-public class FloatingTextManager : MonoBehaviour
+public class FloatingTextManager : BaseSingleton<FloatingTextManager>
 {
-    public static FloatingTextManager Instance;
+    protected override bool Persistent => false;
 
     [Header("設定")]
     public GameObject textPrefab; // ここにプレハブを入れる
     public Transform container;   // 生成したテキストを入れる親（Canvas内の整理用）
-
-    void Awake()
-    {
-        if (Instance == null) Instance = this;
-    }
 
     /// <summary>
     /// 指定した位置にテキストを出す

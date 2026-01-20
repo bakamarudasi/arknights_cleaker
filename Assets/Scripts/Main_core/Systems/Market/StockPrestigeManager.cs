@@ -7,9 +7,9 @@ using UnityEngine;
 /// 株式周回（プレステージ）システムの管理
 /// 100%買い占め → リセット → 永続ボーナス獲得
 /// </summary>
-public class StockPrestigeManager : MonoBehaviour
+public class StockPrestigeManager : BaseSingleton<StockPrestigeManager>
 {
-    public static StockPrestigeManager Instance { get; private set; }
+    protected override bool Persistent => false;
 
     // ========================================
     // 設定
@@ -36,35 +36,20 @@ public class StockPrestigeManager : MonoBehaviour
     // 初期化
     // ========================================
 
-    private void Awake()
-    {
-        if (Instance != null && Instance != this)
-        {
-            Destroy(gameObject);
-            return;
-        }
-        Instance = this;
-    }
-
     private void Start()
     {
-        // StockHoldingBonusManagerのイベントを購読
-        if (StockHoldingBonusManager.Instance != null)
+        // PortfolioManagerのイベントを購読
+        if (PortfolioManager.Instance != null)
         {
-            StockHoldingBonusManager.Instance.OnBonusesChanged += CheckAcquisition;
+            PortfolioManager.Instance.OnHoldingChanged += CheckAcquisition;
         }
     }
 
     private void OnDestroy()
     {
-        if (StockHoldingBonusManager.Instance != null)
+        if (PortfolioManager.Instance != null)
         {
-            StockHoldingBonusManager.Instance.OnBonusesChanged -= CheckAcquisition;
-        }
-
-        if (Instance == this)
-        {
-            Instance = null;
+            PortfolioManager.Instance.OnHoldingChanged -= CheckAcquisition;
         }
     }
 
@@ -72,15 +57,30 @@ public class StockPrestigeManager : MonoBehaviour
     // 買収チェック
     // ========================================
 
-    private void CheckAcquisition(string stockId, List<StockHoldingBonus> bonuses)
+    private void CheckAcquisition(string stockId)
     {
-        float holdingRate = StockHoldingBonusManager.Instance?.GetHoldingRate(stockId) ?? 0f;
+        float holdingRate = GetHoldingRate(stockId);
 
         // 100%到達チェック
         if (holdingRate >= 1.0f)
         {
             TryCompleteAcquisition(stockId);
         }
+    }
+
+    /// <summary>
+    /// 保有率を計算（StockHoldingBonusManager削除に伴い移植）
+    /// </summary>
+    public float GetHoldingRate(string stockId)
+    {
+        var stockData = MarketManager.Instance?.GetStockData(stockId);
+        if (stockData == null) return 0f;
+
+        long totalShares = GetAdjustedTotalShares(stockId);
+        if (totalShares <= 0) return 0f;
+
+        int holdings = PortfolioManager.Instance?.GetHoldingQuantity(stockId) ?? 0;
+        return (float)holdings / totalShares;
     }
 
     /// <summary>

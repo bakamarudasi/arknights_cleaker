@@ -6,13 +6,12 @@ using UnityEngine.UIElements;
 /// ガチャ画面のUIファサード
 /// 単一責任: 各サブコントローラーの統合と画面全体のライフサイクル管理
 /// </summary>
-public class GachaUIController : IViewController
+public class GachaUIController : BaseUIController
 {
     // ========================================
     // UI要素
     // ========================================
 
-    private VisualElement root;
     private VisualElement mainScreen;
     private VisualElement bagScreen;
     private VisualElement resultPanel;
@@ -46,35 +45,20 @@ public class GachaUIController : IViewController
     private bool isAnimating = false;
 
     // ========================================
-    // 初期化
+    // 初期化 (BaseUIControllerテンプレートメソッド)
     // ========================================
 
-    public void Initialize(VisualElement root)
+    protected override void OnPreInitialize()
     {
-        this.root = root;
         this.database = GachaManager.Instance?.Database;
 
         if (database == null)
         {
-            Debug.LogWarning("[GachaUIController] GachaDatabase not found in GachaManager!");
-            return;
+            Debug.LogWarning($"{LogTag} GachaDatabase not found in GachaManager!");
         }
-
-        QueryElements();
-        InitializeSubControllers();
-        BindButtons();
-        BindEvents();
-
-        // 初期表示状態リセット
-        HideResults();
-        if (bagScreen != null) bagScreen.AddToClassList("hidden");
-        if (mainScreen != null) mainScreen.RemoveFromClassList("hidden");
-
-        // バナー表示
-        bannerController.RefreshBannerDisplay();
     }
 
-    private void QueryElements()
+    protected override void QueryElements()
     {
         mainScreen = root.Q<VisualElement>("main-screen");
         bagScreen = root.Q<VisualElement>("BagScreen");
@@ -88,8 +72,10 @@ public class GachaUIController : IViewController
         resultPanel = root.Q<VisualElement>("result-panel");
     }
 
-    private void InitializeSubControllers()
+    protected override void InitializeSubControllers()
     {
+        if (database == null) return;
+
         // バナーコントローラー
         bannerController = new GachaBannerController();
         bannerController.Initialize(root, database.GetAllBanners());
@@ -118,11 +104,7 @@ public class GachaUIController : IViewController
         }
     }
 
-    // ========================================
-    // ボタンとイベント
-    // ========================================
-
-    private void BindButtons()
+    protected override void BindUIEvents()
     {
         pullSingleBtn?.RegisterCallback<ClickEvent>(_ => TryPullGacha(1));
         pullTenBtn?.RegisterCallback<ClickEvent>(_ => TryPullGacha(10));
@@ -137,7 +119,7 @@ public class GachaUIController : IViewController
         });
     }
 
-    private void BindEvents()
+    protected override void BindGameEvents()
     {
         var gc = GameController.Instance;
         if (gc?.Wallet != null)
@@ -147,15 +129,22 @@ public class GachaUIController : IViewController
         }
     }
 
-    private void UnbindEvents()
+    protected override void OnPostInitialize()
     {
-        var gc = GameController.Instance;
-        if (gc?.Wallet != null)
-        {
-            gc.Wallet.OnMoneyChanged -= OnCurrencyChanged;
-            gc.Wallet.OnCertificateChanged -= OnCurrencyChanged;
-        }
+        if (database == null) return;
+
+        // 初期表示状態リセット
+        HideResults();
+        if (bagScreen != null) bagScreen.AddToClassList("hidden");
+        if (mainScreen != null) mainScreen.RemoveFromClassList("hidden");
+
+        // バナー表示
+        bannerController.RefreshBannerDisplay();
     }
+
+    // ========================================
+    // 通貨イベント
+    // ========================================
 
     private void OnCurrencyChanged(double _)
     {
@@ -328,14 +317,22 @@ public class GachaUIController : IViewController
     }
 
     // ========================================
-    // クリーンアップ
+    // クリーンアップ (BaseUIControllerテンプレートメソッド)
     // ========================================
 
-    public void Dispose()
+    protected override void UnbindGameEvents()
     {
-        UnbindEvents();
+        var gc = GameController.Instance;
+        if (gc?.Wallet != null)
+        {
+            gc.Wallet.OnMoneyChanged -= OnCurrencyChanged;
+            gc.Wallet.OnCertificateChanged -= OnCurrencyChanged;
+        }
+    }
 
-        // サブコントローラーの解放
+    protected override void DisposeSubControllers()
+    {
+        // 結果アニメーター
         if (resultAnimator != null)
         {
             resultAnimator.OnAnimationCompleted -= OnResultAnimationCompleted;
@@ -351,7 +348,10 @@ public class GachaUIController : IViewController
             zipper.OnUnzipCompleted -= OnZipperOpened;
             zipper = null;
         }
+    }
 
+    protected override void OnPostDispose()
+    {
         pendingResults = null;
     }
 }

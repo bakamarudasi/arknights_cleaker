@@ -6,9 +6,8 @@ using System.Collections.Generic;
 /// 株価アラートマネージャー
 /// 指定価格に達したら通知を発行
 /// </summary>
-public class StockPriceAlertManager : MonoBehaviour
+public class StockPriceAlertManager : BaseSingleton<StockPriceAlertManager>
 {
-    public static StockPriceAlertManager Instance { get; private set; }
 
     // ========================================
     // アラートデータ
@@ -85,17 +84,6 @@ public class StockPriceAlertManager : MonoBehaviour
     // ========================================
     // 初期化
     // ========================================
-
-    private void Awake()
-    {
-        if (Instance != null && Instance != this)
-        {
-            Destroy(gameObject);
-            return;
-        }
-        Instance = this;
-        DontDestroyOnLoad(gameObject);
-    }
 
     private void Start()
     {

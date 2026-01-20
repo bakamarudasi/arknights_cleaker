@@ -5,10 +5,8 @@ using UnityEngine;
 /// <summary>
 /// ガチャのロジック（排出計算、天井管理）を担当するマネージャー
 /// </summary>
-public class GachaManager : MonoBehaviour
+public class GachaManager : BaseSingleton<GachaManager>
 {
-    public static GachaManager Instance { get; private set; }
-
     private const string LOG_TAG = "[GachaManager]";
 
     // ========================================
@@ -55,46 +53,6 @@ public class GachaManager : MonoBehaviour
     public Action<int> OnGachaCountIncremented;
 
     // ========================================
-    // 初期化
-    // ========================================
-
-    void Awake()
-    {
-        if (Instance == null) Instance = this;
-        else { Destroy(gameObject); return; }
-    }
-
-    // ========================================
-    // 安全なイベント発火ヘルパー
-    // ========================================
-
-    private void SafeInvoke<T>(Action<T> action, T arg, string eventName)
-    {
-        if (action == null) return;
-        try
-        {
-            action.Invoke(arg);
-        }
-        catch (Exception ex)
-        {
-            Debug.LogError($"{LOG_TAG} Event '{eventName}' handler threw exception: {ex.Message}\n{ex.StackTrace}");
-        }
-    }
-
-    private void SafeInvoke<T1, T2>(Action<T1, T2> action, T1 arg1, T2 arg2, string eventName)
-    {
-        if (action == null) return;
-        try
-        {
-            action.Invoke(arg1, arg2);
-        }
-        catch (Exception ex)
-        {
-            Debug.LogError($"{LOG_TAG} Event '{eventName}' handler threw exception: {ex.Message}\n{ex.StackTrace}");
-        }
-    }
-
-    // ========================================
     // ガチャ実行
     // ========================================
 
@@ -123,8 +81,8 @@ public class GachaManager : MonoBehaviour
             }
         }
 
-        SafeInvoke(OnGachaPulled, banner, results, nameof(OnGachaPulled));
-        SafeInvoke(OnGachaCountIncremented, count, nameof(OnGachaCountIncremented));
+        EventUtility.SafeInvoke(OnGachaPulled, banner, results, LOG_TAG, nameof(OnGachaPulled));
+        EventUtility.SafeInvoke(OnGachaCountIncremented, count, LOG_TAG, nameof(OnGachaCountIncremented));
 
         return results;
     }
@@ -153,7 +111,7 @@ public class GachaManager : MonoBehaviour
             // 天井到達 → 最高レアを確定排出
             selectedEntry = GetHighestRarityEntry(banner);
             ResetPityCount(banner.bannerId);
-            SafeInvoke(OnPityReached, banner, nameof(OnPityReached));
+            EventUtility.SafeInvoke(OnPityReached, banner, LOG_TAG, nameof(OnPityReached));
         }
         else
         {
@@ -188,7 +146,7 @@ public class GachaManager : MonoBehaviour
         // 高レア通知
         if (selectedEntry.Rarity >= 5)
         {
-            SafeInvoke(OnHighRarityPulled, result, selectedEntry.Rarity, nameof(OnHighRarityPulled));
+            EventUtility.SafeInvoke(OnHighRarityPulled, result, selectedEntry.Rarity, LOG_TAG, nameof(OnHighRarityPulled));
         }
 
         return result;

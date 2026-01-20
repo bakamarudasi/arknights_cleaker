@@ -5,10 +5,8 @@ using System.Collections.Generic;
 /// <summary>
 /// キャラクターの好感度を管理するマネージャー
 /// </summary>
-public class AffectionManager : MonoBehaviour
+public class AffectionManager : BaseSingleton<AffectionManager>
 {
-    public static AffectionManager Instance { get; private set; }
-
     [Header("設定")]
     [SerializeField] private float clickAffectionCooldown = 1f; // クリックで好感度が上がるクールダウン
     [SerializeField] private int clickAffectionAmount = 1;
@@ -34,16 +32,6 @@ public class AffectionManager : MonoBehaviour
 
     /// <summary>セリフ表示リクエスト (dialogue)</summary>
     public event Action<string> OnDialogueRequested;
-
-    // ========================================
-    // 初期化
-    // ========================================
-
-    private void Awake()
-    {
-        if (Instance == null) Instance = this;
-        else { Destroy(gameObject); return; }
-    }
 
     // ========================================
     // 公開メソッド

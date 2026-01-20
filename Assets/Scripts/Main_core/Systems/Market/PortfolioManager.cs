@@ -7,44 +7,9 @@ using System.Linq;
 /// プレイヤーのポートフォリオ（保有株）を管理
 /// 売買処理、含み損益計算を担当
 /// </summary>
-public class PortfolioManager : MonoBehaviour
+public class PortfolioManager : BaseSingleton<PortfolioManager>
 {
-    // ========================================
-    // シングルトン
-    // ========================================
-    public static PortfolioManager Instance { get; private set; }
-
     private const string LOG_TAG = "[PortfolioManager]";
-
-    // ========================================
-    // 安全なイベント発火ヘルパー
-    // ========================================
-
-    private void SafeInvoke<T>(Action<T> action, T arg, string eventName)
-    {
-        if (action == null) return;
-        try
-        {
-            action.Invoke(arg);
-        }
-        catch (Exception ex)
-        {
-            Debug.LogError($"{LOG_TAG} Event '{eventName}' handler threw exception: {ex.Message}\n{ex.StackTrace}");
-        }
-    }
-
-    private void SafeInvoke(Action action, string eventName)
-    {
-        if (action == null) return;
-        try
-        {
-            action.Invoke();
-        }
-        catch (Exception ex)
-        {
-            Debug.LogError($"{LOG_TAG} Event '{eventName}' handler threw exception: {ex.Message}\n{ex.StackTrace}");
-        }
-    }
 
     // ========================================
     // 依存関係（Inspector注入）
@@ -103,21 +68,6 @@ public class PortfolioManager : MonoBehaviour
             }
             return total;
         }
-    }
-
-    // ========================================
-    // Unity ライフサイクル
-    // ========================================
-
-    private void Awake()
-    {
-        if (Instance != null && Instance != this)
-        {
-            Destroy(gameObject);
-            return;
-        }
-        Instance = this;
-        DontDestroyOnLoad(gameObject);
     }
 
     // ========================================
@@ -190,8 +140,8 @@ public class PortfolioManager : MonoBehaviour
             Debug.LogError($"{LOG_TAG} MarketEventBus.PublishStockBought threw exception: {ex.Message}");
         }
 
-        SafeInvoke(OnHoldingChanged, stockId, nameof(OnHoldingChanged));
-        SafeInvoke(OnPortfolioUpdated, nameof(OnPortfolioUpdated));
+        EventUtility.SafeInvoke(OnHoldingChanged, stockId, LOG_TAG, nameof(OnHoldingChanged));
+        EventUtility.SafeInvoke(OnPortfolioUpdated, LOG_TAG, nameof(OnPortfolioUpdated));
 
         Debug.Log($"{LOG_TAG} Bought {quantity} {stockId} @ {currentPrice:F2} (Total: {totalCost:F0} LMD)");
         return true;
@@ -255,8 +205,8 @@ public class PortfolioManager : MonoBehaviour
             Debug.LogError($"{LOG_TAG} MarketEventBus.PublishStockSold threw exception: {ex.Message}");
         }
 
-        SafeInvoke(OnHoldingChanged, stockId, nameof(OnHoldingChanged));
-        SafeInvoke(OnPortfolioUpdated, nameof(OnPortfolioUpdated));
+        EventUtility.SafeInvoke(OnHoldingChanged, stockId, LOG_TAG, nameof(OnHoldingChanged));
+        EventUtility.SafeInvoke(OnPortfolioUpdated, LOG_TAG, nameof(OnPortfolioUpdated));
 
         string resultText = profitLoss >= 0 ? $"+{profitLoss:F0} 利確" : $"{profitLoss:F0} 損切り";
         Debug.Log($"{LOG_TAG} Sold {quantity} {stockId} @ {currentPrice:F2} ({resultText})");
@@ -420,7 +370,7 @@ public class PortfolioManager : MonoBehaviour
                 }
             }
         }
-        SafeInvoke(OnPortfolioUpdated, nameof(OnPortfolioUpdated));
+        EventUtility.SafeInvoke(OnPortfolioUpdated, LOG_TAG, nameof(OnPortfolioUpdated));
     }
 }
 

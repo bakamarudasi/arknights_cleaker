@@ -4,9 +4,9 @@ using UnityEngine;
 /// <summary>
 /// SP（スキルポイント）とフィーバーモードを管理
 /// </summary>
-public class SPManager : MonoBehaviour
+public class SPManager : BaseSingleton<SPManager>
 {
-    public static SPManager Instance { get; private set; }
+    protected override bool Persistent => false;
 
     // ========================================
     // 設定
@@ -71,16 +71,6 @@ public class SPManager : MonoBehaviour
     public event Action<float> OnSPChanged;
     public event Action OnFeverStarted;
     public event Action OnFeverEnded;
-
-    // ========================================
-    // 初期化
-    // ========================================
-
-    void Awake()
-    {
-        if (Instance == null) Instance = this;
-        else Destroy(gameObject);
-    }
 
     // ========================================
     // SP操作

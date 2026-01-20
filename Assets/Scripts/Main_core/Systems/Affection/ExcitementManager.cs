@@ -5,9 +5,9 @@ using System;
 /// キャラクターの興奮度を管理するマネージャー
 /// 興奮度はタッチで上昇し、時間経過で減少する
 /// </summary>
-public class ExcitementManager : MonoBehaviour
+public class ExcitementManager : BaseSingleton<ExcitementManager>
 {
-    public static ExcitementManager Instance { get; private set; }
+    protected override bool Persistent => false;
 
     [Header("興奮度設定")]
     [SerializeField] private float maxExcitement = 100f;
@@ -59,14 +59,8 @@ public class ExcitementManager : MonoBehaviour
     public bool IsFeverMode => _currentExcitement >= highThreshold;
 
     // ========================================
-    // 初期化
+    // Update
     // ========================================
-
-    private void Awake()
-    {
-        if (Instance == null) Instance = this;
-        else { Destroy(gameObject); return; }
-    }
 
     private void Update()
     {
