@@ -63,6 +63,13 @@ public class CharacterSceneData : ScriptableObject
     [Tooltip("ゾーンタッチ時のズームアップ窓設定")]
     public List<ZoomTargetConfig> zoomTargets = new List<ZoomTargetConfig>();
 
+    [Header("=== 反応セリフ ===")]
+    [Tooltip("プレゼント時の反応（triggerId = アイテムID）")]
+    public List<ReactionDialogue> giftReactions = new List<ReactionDialogue>();
+
+    [Tooltip("衣装変更時の反応（triggerId = 変更先のsceneId）")]
+    public List<ReactionDialogue> costumeReactions = new List<ReactionDialogue>();
+
     // ========================================
     // ヘルパーメソッド
     // ========================================
@@ -151,6 +158,26 @@ public class CharacterSceneData : ScriptableObject
 
         return true;
     }
+
+    /// <summary>
+    /// プレゼント時の反応を取得
+    /// </summary>
+    public ReactionDialogue GetGiftReaction(string itemId, int currentAffection)
+    {
+        if (giftReactions == null) return null;
+        return giftReactions.Find(r =>
+            r.triggerId == itemId && r.requiredAffection <= currentAffection);
+    }
+
+    /// <summary>
+    /// 衣装変更時の反応を取得
+    /// </summary>
+    public ReactionDialogue GetCostumeReaction(string costumeId, int currentAffection)
+    {
+        if (costumeReactions == null) return null;
+        return costumeReactions.Find(r =>
+            r.triggerId == costumeId && r.requiredAffection <= currentAffection);
+    }
 }
 
 /// <summary>
@@ -173,4 +200,24 @@ public class SceneConversation
 
     [Tooltip("一度だけ再生する（イベント会話用）")]
     public bool playOnce = false;
+
+    [Tooltip("Hシーンかどうか（専用演出で再生）")]
+    public bool isHScene = false;
+}
+
+/// <summary>
+/// プレゼント・衣装変更時などの反応セリフ
+/// </summary>
+[Serializable]
+public class ReactionDialogue
+{
+    [Tooltip("トリガーID（アイテムID or 衣装ID）")]
+    public string triggerId;
+
+    [Tooltip("反応セリフ（複数行対応）")]
+    [TextArea(1, 3)]
+    public string[] lines;
+
+    [Tooltip("この反応に必要な好感度（0 = 条件なし）")]
+    public int requiredAffection = 0;
 }
