@@ -5,6 +5,7 @@ import { Modal, ModalFooter } from '../components/Modal';
 import { FormField, Input, Select, TextArea, Checkbox } from '../components/FormField';
 import { Button } from '../components/Button';
 import { RarityBadge } from '../components/RarityBadge';
+import { ImagePicker, ImagePreview } from '../components/ImagePicker';
 import { useDataList, useCreateData, useUpdateData, useDeleteData } from '../hooks/useDataQuery';
 import type { ItemData, ItemType, Rarity, ConsumableType } from '../types';
 
@@ -41,7 +42,8 @@ export function ItemsPage() {
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [editingItem, setEditingItem] = useState<ItemData | null>(null);
 
-  const { register, handleSubmit, reset, formState: { errors } } = useForm<ItemData>();
+  const { register, handleSubmit, reset, watch, setValue, formState: { errors } } = useForm<ItemData>();
+  const iconValue = watch('icon');
 
   const openCreateModal = () => {
     setEditingItem(null);
@@ -83,6 +85,12 @@ export function ItemsPage() {
   };
 
   const columns = [
+    {
+      key: 'icon',
+      header: '',
+      width: 'w-14',
+      render: (item: ItemData) => <ImagePreview src={item.icon} size="sm" />,
+    },
     { key: 'id', header: 'ID', width: 'w-32' },
     { key: 'displayName', header: '名前' },
     {
@@ -124,21 +132,32 @@ export function ItemsPage() {
         size="lg"
       >
         <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
-          <div className="grid grid-cols-2 gap-4">
-            <FormField label="ID" required error={errors.id?.message}>
-              <Input
-                {...register('id', { required: 'IDは必須です' })}
-                disabled={!!editingItem}
-                error={!!errors.id}
-              />
-            </FormField>
+          <div className="flex gap-4">
+            <ImagePicker
+              value={iconValue}
+              onChange={(path) => setValue('icon', path)}
+              category="items"
+              label="アイコン"
+            />
+            <div className="flex-1 grid grid-cols-2 gap-4">
+              <FormField label="ID" required error={errors.id?.message}>
+                <Input
+                  {...register('id', { required: 'IDは必須です' })}
+                  disabled={!!editingItem}
+                  error={!!errors.id}
+                />
+              </FormField>
 
-            <FormField label="表示名" required error={errors.displayName?.message}>
-              <Input
-                {...register('displayName', { required: '表示名は必須です' })}
-                error={!!errors.displayName}
-              />
-            </FormField>
+              <FormField label="表示名" required error={errors.displayName?.message}>
+                <Input
+                  {...register('displayName', { required: '表示名は必須です' })}
+                  error={!!errors.displayName}
+                />
+              </FormField>
+            </div>
+          </div>
+
+          <div className="grid grid-cols-2 gap-4">
 
             <FormField label="タイプ" required>
               <Select {...register('type')} options={ITEM_TYPES} />

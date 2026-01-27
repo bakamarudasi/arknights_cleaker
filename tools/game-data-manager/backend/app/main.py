@@ -3,6 +3,7 @@ from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 
 from .routers import data_router
+from .routers.image_router import router as image_router
 
 app = FastAPI(
     title="Game Data Manager",
@@ -21,6 +22,7 @@ app.add_middleware(
 
 # ルーター登録
 app.include_router(data_router)
+app.include_router(image_router)
 
 
 @app.get("/")
