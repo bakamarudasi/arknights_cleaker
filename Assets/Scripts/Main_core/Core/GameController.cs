@@ -337,18 +337,6 @@ public class GameController : MonoBehaviour
                 case UpgradeData.UpgradeType.Income_PercentAdd:
                     Income?.AddPercentBonus(data.effectValue);
                     break;
-                case UpgradeData.UpgradeType.Critical_ChanceAdd:
-                    criticalChanceBonus += data.effectValue;
-                    break;
-                case UpgradeData.UpgradeType.Critical_PowerAdd:
-                    criticalPowerBonus += data.effectValue;
-                    break;
-                case UpgradeData.UpgradeType.SP_ChargeAdd:
-                    SP?.AddChargeBonus((float)data.effectValue);
-                    break;
-                case UpgradeData.UpgradeType.Fever_PowerAdd:
-                    SP?.AddFeverPowerBonus((float)data.effectValue);
-                    break;
             }
             RecalculateStats();
         }

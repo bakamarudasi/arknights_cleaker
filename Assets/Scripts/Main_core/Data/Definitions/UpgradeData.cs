@@ -12,11 +12,7 @@ public class UpgradeData : BaseData
         Click_FlatAdd,      // クリック固定値加算
         Click_PercentAdd,   // クリック%加算
         Income_FlatAdd,     // 自動収入固定値
-        Income_PercentAdd,  // 自動収入%加算
-        Critical_ChanceAdd, // クリティカル率
-        Critical_PowerAdd,  // クリティカル倍率
-        SP_ChargeAdd,       // SPチャージ速度
-        Fever_PowerAdd      // フィーバー倍率
+        Income_PercentAdd   // 自動収入%加算
     }
 
     // ========================================
@@ -26,9 +22,7 @@ public class UpgradeData : BaseData
     {
         Click,      // クリック系
         Income,     // 自動収入系
-        Critical,   // クリティカル系
-        Skill,      // SP・フィーバー系
-        Special     // 特殊・その他
+        Special     // 特殊・その他（オペレーター用）
     }
 
     // ========================================
@@ -182,8 +176,6 @@ public class UpgradeData : BaseData
         {
             UpgradeCategory.Click => "クリック",
             UpgradeCategory.Income => "自動収入",
-            UpgradeCategory.Critical => "クリティカル",
-            UpgradeCategory.Skill => "スキル",
             UpgradeCategory.Special => "特殊",
             _ => "その他"
         };
@@ -195,8 +187,6 @@ public class UpgradeData : BaseData
         {
             UpgradeCategory.Click => new Color(1.0f, 0.6f, 0.2f),    // オレンジ
             UpgradeCategory.Income => new Color(0.2f, 0.8f, 0.4f),   // 緑
-            UpgradeCategory.Critical => new Color(1.0f, 0.3f, 0.3f), // 赤
-            UpgradeCategory.Skill => new Color(0.4f, 0.6f, 1.0f),    // 青
             UpgradeCategory.Special => new Color(0.8f, 0.5f, 1.0f),  // 紫
             _ => Color.white
         };

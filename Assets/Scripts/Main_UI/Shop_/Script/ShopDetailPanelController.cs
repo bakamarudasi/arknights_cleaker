@@ -323,10 +323,6 @@ public class ShopDetailPanelController
             UpgradeData.UpgradeType.Click_PercentAdd => "クリック倍率",
             UpgradeData.UpgradeType.Income_FlatAdd => "自動収入",
             UpgradeData.UpgradeType.Income_PercentAdd => "収入倍率",
-            UpgradeData.UpgradeType.Critical_ChanceAdd => "クリティカル率",
-            UpgradeData.UpgradeType.Critical_PowerAdd => "クリティカル倍率",
-            UpgradeData.UpgradeType.SP_ChargeAdd => "SPチャージ",
-            UpgradeData.UpgradeType.Fever_PowerAdd => "フィーバー倍率",
             _ => "効果"
         };
     }

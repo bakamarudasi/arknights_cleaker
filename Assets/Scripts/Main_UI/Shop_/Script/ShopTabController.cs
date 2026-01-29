@@ -18,8 +18,6 @@ public class ShopTabController
     {
         (UpgradeData.UpgradeCategory.Click, "クリック", "⚔"),
         (UpgradeData.UpgradeCategory.Income, "収入", "💰"),
-        (UpgradeData.UpgradeCategory.Critical, "クリティカル", "⚡"),
-        (UpgradeData.UpgradeCategory.Skill, "スキル", "🎯"),
         (UpgradeData.UpgradeCategory.Special, "特殊", "⭐")
     };
 
