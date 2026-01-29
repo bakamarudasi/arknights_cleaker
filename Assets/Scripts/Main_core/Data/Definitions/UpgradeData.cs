@@ -63,27 +63,11 @@ public class UpgradeData : BaseData
     public float costMultiplier = 1.15f;
 
     // ========================================
-    // コスト設定（素材）
-    // ========================================
-    [Header("コスト設定 (素材)")]
-    [Tooltip("必要素材リスト（全レベル共通）")]
-    public List<ItemCost> requiredMaterials;
-
-    [Tooltip("レベルごとに素材数が増加する倍率（1.0 = 増加なし）")]
-    public float materialScaling = 1.0f;
-
-    // ========================================
     // 解放条件
     // ========================================
     [Header("解放条件")]
     [Tooltip("このアイテムを持っていれば解放（null = 条件なし）")]
     public ItemData requiredUnlockItem;
-
-    [Tooltip("この強化が必要レベルに達していれば解放（null = 条件なし）")]
-    public UpgradeData prerequisiteUpgrade;
-
-    [Tooltip("前提強化の必要レベル")]
-    public int prerequisiteLevel = 1;
 
     // ========================================
     // 株式連動設定
@@ -112,12 +96,6 @@ public class UpgradeData : BaseData
     [Tooltip("パーセント表示するか")]
     public bool isPercentDisplay = false;
 
-    [Tooltip("カテゴリアイコン（絵文字: ⚔️=Click, 💰=Income, ⚡=Critical, 🎯=Skill, ⭐=Special）")]
-    public string categoryIcon = "⚔️";
-
-    [Tooltip("特別なアップグレードとしてマーク（STARバッジ表示）")]
-    public bool isSpecial = false;
-
     // ========================================
     // 計算ヘルパー
     // ========================================
@@ -136,15 +114,6 @@ public class UpgradeData : BaseData
     public double GetTotalEffectAtLevel(int level)
     {
         return effectValue * level;
-    }
-
-    /// <summary>
-    /// 指定レベルでの素材必要数を計算
-    /// </summary>
-    public int GetMaterialAmountAtLevel(int baseAmount, int currentLevel)
-    {
-        if (materialScaling <= 1.0f) return baseAmount;
-        return Mathf.CeilToInt(baseAmount * Mathf.Pow(materialScaling, currentLevel));
     }
 
     /// <summary>

@@ -183,22 +183,6 @@ public class GameDataManagerWindow : EditorWindow
 
         foreach (var u in upgrades)
         {
-            var materials = new List<Dictionary<string, object>>();
-            if (u.requiredMaterials != null)
-            {
-                foreach (var mat in u.requiredMaterials)
-                {
-                    if (mat.item != null)
-                    {
-                        materials.Add(new Dictionary<string, object>
-                        {
-                            ["itemId"] = mat.item.id,
-                            ["amount"] = mat.amount
-                        });
-                    }
-                }
-            }
-
             jsonList.Add(new Dictionary<string, object>
             {
                 ["id"] = u.id,
@@ -212,19 +196,13 @@ public class GameDataManagerWindow : EditorWindow
                 ["currencyType"] = u.currencyType.ToString(),
                 ["baseCost"] = u.baseCost,
                 ["costMultiplier"] = u.costMultiplier,
-                ["requiredMaterials"] = materials,
-                ["materialScaling"] = u.materialScaling,
                 ["requiredUnlockItemId"] = u.requiredUnlockItem != null ? u.requiredUnlockItem.id : null,
-                ["prerequisiteUpgradeId"] = u.prerequisiteUpgrade != null ? u.prerequisiteUpgrade.id : null,
-                ["prerequisiteLevel"] = u.prerequisiteLevel,
                 ["relatedStockId"] = u.relatedStock != null ? u.relatedStock.stockId : null,
                 ["scaleWithHolding"] = u.scaleWithHolding,
                 ["maxHoldingMultiplier"] = u.maxHoldingMultiplier,
                 ["sortOrder"] = u.sortOrder,
                 ["effectFormat"] = u.effectFormat,
                 ["isPercentDisplay"] = u.isPercentDisplay,
-                ["categoryIcon"] = u.categoryIcon,
-                ["isSpecial"] = u.isSpecial,
             });
         }
 
@@ -494,21 +472,15 @@ public class GameDataManagerWindow : EditorWindow
             u.maxLevel = data.maxLevel;
             u.baseCost = data.baseCost;
             u.costMultiplier = data.costMultiplier;
-            u.materialScaling = data.materialScaling;
-            u.prerequisiteLevel = data.prerequisiteLevel;
             u.scaleWithHolding = data.scaleWithHolding;
             u.maxHoldingMultiplier = data.maxHoldingMultiplier;
             u.sortOrder = data.sortOrder;
             u.effectFormat = data.effectFormat ?? "+{0}";
             u.isPercentDisplay = data.isPercentDisplay;
-            u.categoryIcon = data.categoryIcon ?? "";
-            u.isSpecial = data.isSpecial;
 
-            // 参照の解決は後で行う（2パス必要）
+            // 参照の解決
             if (!string.IsNullOrEmpty(data.requiredUnlockItemId))
                 u.requiredUnlockItem = FindAssetById<ItemData>(data.requiredUnlockItemId);
-            if (!string.IsNullOrEmpty(data.prerequisiteUpgradeId))
-                u.prerequisiteUpgrade = FindAssetById<UpgradeData>(data.prerequisiteUpgradeId);
 
             if (existing == null)
             {
@@ -699,18 +671,13 @@ public class UpgradeJsonData
     public string currencyType;
     public double baseCost;
     public float costMultiplier;
-    public float materialScaling;
     public string requiredUnlockItemId;
-    public string prerequisiteUpgradeId;
-    public int prerequisiteLevel;
     public string relatedStockId;
     public bool scaleWithHolding;
     public float maxHoldingMultiplier;
     public int sortOrder;
     public string effectFormat;
     public bool isPercentDisplay;
-    public string categoryIcon;
-    public bool isSpecial;
 }
 
 // JSONパースヘルパー

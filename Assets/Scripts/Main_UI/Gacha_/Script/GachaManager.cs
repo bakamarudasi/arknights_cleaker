@@ -192,12 +192,6 @@ public class GachaManager : BaseSingleton<GachaManager>
                 weight *= (1f + pityProgress * 5f); // 最大6倍
             }
 
-            // ピックアップ補正
-            if (weight > 0 && entry.isPickup && banner.pickupItems.Contains(entry.item))
-            {
-                weight *= (1f + banner.pickupRateBoost);
-            }
-
             adjustedWeights.Add(weight);
             totalWeight += weight;
         }
