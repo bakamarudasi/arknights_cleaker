@@ -64,7 +64,6 @@ public class EventManager : BaseSingleton<EventManager>
     private Action<double> _onMoneyChangedCallback;
     private Action<double> _onMoneyEarnedCallback;
     private Action<UpgradeData, int> _onUpgradePurchasedCallback;
-    private Action _onFeverStartedCallback;
 
     /// <summary>定期条件チェック用Coroutine</summary>
     private Coroutine _periodicCheckCoroutine;
@@ -136,10 +135,6 @@ public class EventManager : BaseSingleton<EventManager>
         _onUpgradePurchasedCallback = (data, level) => CheckUpgradeConditions(data, level);
         gc.Upgrade.OnUpgradePurchased += _onUpgradePurchasedCallback;
 
-        // フィーバー関連
-        _onFeverStartedCallback = () => CheckFeverConditions();
-        gc.SP.OnFeverStarted += _onFeverStartedCallback;
-
         // 統計の定期チェック（クリック数、プレイ時間など）- Coroutine版
         _periodicCheckCoroutine = StartCoroutine(PeriodicConditionCheckCoroutine());
     }
@@ -195,17 +190,6 @@ public class EventManager : BaseSingleton<EventManager>
             };
 
             if (shouldTrigger) TriggerEvent(evt);
-        }
-    }
-
-    private void CheckFeverConditions()
-    {
-        foreach (var evt in GetPendingEvents())
-        {
-            if (evt.triggerType == EventTriggerType.FirstFeverActivated)
-            {
-                TriggerEvent(evt);
-            }
         }
     }
 
@@ -474,10 +458,6 @@ public class EventManager : BaseSingleton<EventManager>
             if (gc.Upgrade != null)
             {
                 gc.Upgrade.OnUpgradePurchased -= _onUpgradePurchasedCallback;
-            }
-            if (gc.SP != null)
-            {
-                gc.SP.OnFeverStarted -= _onFeverStartedCallback;
             }
         }
     }

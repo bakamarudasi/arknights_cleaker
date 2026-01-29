@@ -18,15 +18,6 @@ public class ClickStatsContext
     /// <summary>クリティカル時の倍率</summary>
     public double CriticalMultiplier;
 
-    /// <summary>フィーバー時の倍率</summary>
-    public float FeverMultiplier;
-
-    /// <summary>フィーバーモード中か</summary>
-    public bool IsFeverActive;
-
-    /// <summary>1クリックあたりのSP充填量</summary>
-    public float SpChargeAmount;
-
     /// <summary>スロット発動確率 (0.0 ~ 1.0)</summary>
     public float SlotTriggerChance;
 

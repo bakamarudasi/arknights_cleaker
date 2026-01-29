@@ -351,14 +351,6 @@ public class ClickAreaHandler : IDisposable
             }
         }
 
-        // SPが満タンに近い時
-        var sp = GameController.Instance?.SP;
-        if (sp != null && sp.FillRate > 0.9f)
-        {
-            var spGaugeGlow = _root.Q<VisualElement>("sp-gauge-glow");
-            spGaugeGlow?.AddToClassList("active");
-            _root.schedule.Execute(() => spGaugeGlow?.RemoveFromClassList("active")).ExecuteLater(200);
-        }
     }
 
     // ========================================

@@ -24,7 +24,6 @@ public class GameController : MonoBehaviour
     public InventoryManager Inventory;
     public UpgradeManager Upgrade;
     public IncomeManager Income;
-    public SPManager SP;
 
     public GachaManager Gacha;
     // ========================================
@@ -33,7 +32,6 @@ public class GameController : MonoBehaviour
 
     [Header("UI")]
     [SerializeField] private UI_RollingCounter moneyCounter;
-    [SerializeField] private TextMeshProUGUI spText;
     [SerializeField] private TextMeshProUGUI certText;
 
     // ========================================
@@ -100,9 +98,6 @@ public class GameController : MonoBehaviour
     private Action<double> _onCertificateChangedCallback;
     private Action<double> _onIncomeGeneratedCallback;
     private Action<UpgradeData, int> _onUpgradePurchasedCallback;
-    private Action<float> _onSPChangedCallback;
-    private Action _onFeverStartedCallback;
-    private Action _onFeverEndedCallback;
 
     // ========================================
     // Coroutine参照
@@ -176,11 +171,6 @@ public class GameController : MonoBehaviour
             Debug.LogError($"{LOG_TAG} IncomeManager is null after initialization");
             isValid = false;
         }
-        if (SP == null)
-        {
-            Debug.LogError($"{LOG_TAG} SPManager is null after initialization");
-            isValid = false;
-        }
 
         return isValid;
     }
@@ -194,7 +184,6 @@ public class GameController : MonoBehaviour
             Inventory ??= GetOrAddManager<InventoryManager>();
             Upgrade ??= GetOrAddManager<UpgradeManager>();
             Income ??= GetOrAddManager<IncomeManager>();
-            SP ??= GetOrAddManager<SPManager>();
             Gacha ??= GetOrAddManager<GachaManager>();
 
             if (Upgrade != null && Wallet != null && Inventory != null)
@@ -229,9 +218,6 @@ public class GameController : MonoBehaviour
         _onCertificateChangedCallback = _ => UpdateCertUI();
         _onIncomeGeneratedCallback = amt => Wallet.AddMoney(amt);
         _onUpgradePurchasedCallback = OnUpgradePurchased;
-        _onSPChangedCallback = _ => UpdateSPUI();
-        _onFeverStartedCallback = UpdateSPUI;
-        _onFeverEndedCallback = UpdateSPUI;
 
         // イベント登録
         Wallet.OnMoneyChanged += _onMoneyChangedCallback;
@@ -242,9 +228,6 @@ public class GameController : MonoBehaviour
         Income.OnIncomeGenerated += _onIncomeGeneratedCallback;
         Upgrade.OnUpgradePurchased += _onUpgradePurchasedCallback;
         Upgrade.OnUpgradeCountIncremented += () => stats.totalUpgradesPurchased++;
-        SP.OnSPChanged += _onSPChangedCallback;
-        SP.OnFeverStarted += _onFeverStartedCallback;
-        SP.OnFeverEnded += _onFeverEndedCallback;
     }
 
     // ========================================
@@ -253,24 +236,19 @@ public class GameController : MonoBehaviour
 
     public void ClickMainButton()
     {
-        if (SP == null || Wallet == null)
+        if (Wallet == null)
         {
-            Debug.LogError($"{LOG_TAG} ClickMainButton: Required managers (SP or Wallet) are null");
+            Debug.LogError($"{LOG_TAG} ClickMainButton: WalletManager is null");
             return;
         }
 
         try
         {
-            SP.ChargeSP();
-
             var ctx = new ClickStatsContext
             {
                 BaseClickValue = _finalClickValue,
                 CriticalChance = _finalCritChance,
                 CriticalMultiplier = _finalCritMultiplier,
-                FeverMultiplier = SP.FinalFeverMultiplier,
-                IsFeverActive = SP.IsFeverActive,
-                SpChargeAmount = SP.FinalChargeAmount,
                 SlotTriggerChance = slotTriggerChance
             };
 
@@ -409,7 +387,6 @@ public class GameController : MonoBehaviour
 
     private void UpdateMoneyUI() => moneyCounter?.SetValue(Wallet.Money, false);
     private void UpdateCertUI() => certText?.SetText(Wallet.Certificates.ToString("N0"));
-    private void UpdateSPUI() => spText?.SetText(SP.IsFeverActive ? "<color=red>FEVER!!</color>" : $"SP: {SP.CurrentSP:F0} / {SP.MaxSP}");
 
     // ========================================
     // 統計
@@ -459,20 +436,10 @@ public class GameController : MonoBehaviour
             Upgrade.OnUpgradePurchased -= _onUpgradePurchasedCallback;
         }
 
-        if (SP != null)
-        {
-            SP.OnSPChanged -= _onSPChangedCallback;
-            SP.OnFeverStarted -= _onFeverStartedCallback;
-            SP.OnFeverEnded -= _onFeverEndedCallback;
-        }
-
         // コールバック参照クリア
         _onMoneyChangedCallback = null;
         _onCertificateChangedCallback = null;
         _onIncomeGeneratedCallback = null;
         _onUpgradePurchasedCallback = null;
-        _onSPChangedCallback = null;
-        _onFeverStartedCallback = null;
-        _onFeverEndedCallback = null;
     }
 }

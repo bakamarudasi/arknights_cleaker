@@ -29,9 +29,6 @@ public class RhodosStockManager : BaseSingleton<RhodosStockManager>
     [Tooltip("クリック時のブースト量")]
     [SerializeField] private double clickBoostAmount = 10;
 
-    [Tooltip("フィーバー時の追加ブースト倍率")]
-    [SerializeField] private double feverBoostMultiplier = 3.0;
-
     [Tooltip("ブーストの減衰速度（秒あたり）")]
     [SerializeField] private double boostDecayRate = 5.0;
 
@@ -62,7 +59,6 @@ public class RhodosStockManager : BaseSingleton<RhodosStockManager>
 
     private float dividendTimer;
     private float lastClickTime;
-    private bool isFeverActive;
 
     // ========================================
     // プロパティ
@@ -112,22 +108,11 @@ public class RhodosStockManager : BaseSingleton<RhodosStockManager>
         {
             // クリックイベントがあれば購読
         }
-
-        // SPManagerのフィーバーイベントに接続
-        if (SPManager.Instance != null)
-        {
-            SPManager.Instance.OnFeverStarted += OnFeverStarted;
-            SPManager.Instance.OnFeverEnded += OnFeverEnded;
-        }
     }
 
     private void UnbindEvents()
     {
-        if (SPManager.Instance != null)
-        {
-            SPManager.Instance.OnFeverStarted -= OnFeverStarted;
-            SPManager.Instance.OnFeverEnded -= OnFeverEnded;
-        }
+        // イベント解除（現在は空）
     }
 
     // ========================================
@@ -172,12 +157,7 @@ public class RhodosStockManager : BaseSingleton<RhodosStockManager>
         {
             // ベースラインに向けて軟着陸（暴落はしない）
             double decay = boostDecayRate * Time.deltaTime;
-
-            // フィーバー中は減衰しない
-            if (!isFeverActive)
-            {
-                currentBoost = Math.Max(0, currentBoost - decay);
-            }
+            currentBoost = Math.Max(0, currentBoost - decay);
         }
     }
 
@@ -255,12 +235,6 @@ public class RhodosStockManager : BaseSingleton<RhodosStockManager>
     {
         double boost = clickBoostAmount;
 
-        // フィーバー中は倍率アップ
-        if (isFeverActive)
-        {
-            boost *= feverBoostMultiplier;
-        }
-
         AddBoost(boost);
         lastClickTime = Time.time;
     }
@@ -276,21 +250,6 @@ public class RhodosStockManager : BaseSingleton<RhodosStockManager>
     /// <summary>
     /// フィーバー開始
     /// </summary>
-    private void OnFeverStarted()
-    {
-        isFeverActive = true;
-
-        // フィーバー開始時にボーナスブースト
-        AddBoost(clickBoostAmount * 10);
-    }
-
-    /// <summary>
-    /// フィーバー終了
-    /// </summary>
-    private void OnFeverEnded()
-    {
-        isFeverActive = false;
-    }
 
     /// <summary>
     /// ランク変更時
