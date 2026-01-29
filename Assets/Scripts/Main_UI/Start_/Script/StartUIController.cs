@@ -25,16 +25,10 @@ public class StartUIController : IViewController
     private VisualElement logoUnderline;
     private Label subtitle;
 
-    // シンボル
-    private VisualElement symbolContainer;
-    private VisualElement symbolRingOuter;
-    private VisualElement symbolRingInner;
-    private VisualElement symbolCore;
-
-    // スタートプロンプト
-    private Label tapToStart;
-    private VisualElement loadingBar;
-    private VisualElement loadingFill;
+    // メニューボタン
+    private Button btnNewGame;
+    private Button btnLoad;
+    private VisualElement menuArea;
 
     // ========================================
     // 状態管理
@@ -46,17 +40,10 @@ public class StartUIController : IViewController
     private float _particleSpawnTimer;
 
     // アニメーション
-    private bool _isBlinking = true;
-    private float _blinkTimer;
-    private const float BlinkInterval = 0.8f;
-
     private bool _isTransitioning = false;
-    private float _loadProgress = 0f;
 
     // コールバック参照
-    private EventCallback<ClickEvent> onClickCallback;
     private IVisualElementScheduledItem _updateSchedule;
-    private IVisualElementScheduledItem _ringAnimSchedule;
 
     // 画面遷移イベント
     public event Action OnStartRequested;
@@ -71,7 +58,6 @@ public class StartUIController : IViewController
 
         QueryElements();
         SetupCallbacks();
-        SetupAnimations();
         SetupUpdateLoop();
 
         // 初期フェードイン
@@ -92,49 +78,32 @@ public class StartUIController : IViewController
         logoUnderline = root.Q<VisualElement>("logo-underline");
         subtitle = root.Q<Label>("subtitle");
 
-        // シンボル
-        symbolContainer = root.Q<VisualElement>("symbol-container");
-        symbolRingOuter = root.Q<VisualElement>("symbol-ring-outer");
-        symbolRingInner = root.Q<VisualElement>("symbol-ring-inner");
-        symbolCore = root.Q<VisualElement>("symbol-core");
-
-        // スタートプロンプト
-        tapToStart = root.Q<Label>("tap-to-start");
-        loadingBar = root.Q<VisualElement>("loading-bar");
-        loadingFill = root.Q<VisualElement>("loading-fill");
+        // メニューボタン
+        menuArea = root.Q<VisualElement>("menu-area");
+        btnNewGame = root.Q<Button>("btn-new-game");
+        btnLoad = root.Q<Button>("btn-load");
     }
 
     private void SetupCallbacks()
     {
-        // 画面全体のクリックでゲーム開始
-        var startContainer = root.Q<VisualElement>("start-container");
-        if (startContainer != null)
+        // NEW GAME ボタン
+        if (btnNewGame != null)
         {
-            onClickCallback = OnScreenTapped;
-            startContainer.RegisterCallback(onClickCallback);
+            btnNewGame.clicked += OnNewGameClicked;
         }
-    }
 
-    private void SetupAnimations()
-    {
-        // シンボルリングの回転アニメーション
-        float rotationOuter = 0f;
-        float rotationInner = 0f;
-
-        _ringAnimSchedule = root.schedule.Execute(() =>
+        // CONTINUE ボタン
+        if (btnLoad != null)
         {
-            rotationOuter += 0.5f;
-            rotationInner -= 0.8f;
+            btnLoad.clicked += OnLoadClicked;
 
-            if (symbolRingOuter != null)
+            // セーブデータがない場合は無効化
+            if (!HasSaveData())
             {
-                symbolRingOuter.style.rotate = new Rotate(rotationOuter);
+                btnLoad.AddToClassList("disabled");
+                btnLoad.SetEnabled(false);
             }
-            if (symbolRingInner != null)
-            {
-                symbolRingInner.style.rotate = new Rotate(rotationInner);
-            }
-        }).Every(30);
+        }
     }
 
     private void SetupUpdateLoop()
@@ -142,9 +111,6 @@ public class StartUIController : IViewController
         _updateSchedule = root.schedule.Execute(() =>
         {
             UpdateParticles();
-            UpdateBlinkAnimation();
-            UpdateLoadingProgress();
-            UpdateSymbolPulse();
         }).Every(50); // 20fps更新
     }
 
@@ -159,8 +125,7 @@ public class StartUIController : IViewController
         if (logoMain != null) logoMain.style.opacity = 0;
         if (logoUnderline != null) logoUnderline.style.opacity = 0;
         if (subtitle != null) subtitle.style.opacity = 0;
-        if (symbolContainer != null) symbolContainer.style.opacity = 0;
-        if (tapToStart != null) tapToStart.style.opacity = 0;
+        if (menuArea != null) menuArea.style.opacity = 0;
 
         // シーケンシャルなフェードイン
         root.schedule.Execute(() =>
@@ -188,47 +153,34 @@ public class StartUIController : IViewController
 
         root.schedule.Execute(() =>
         {
-            if (symbolContainer != null) symbolContainer.style.opacity = 1;
-        }).ExecuteLater(900);
-
-        root.schedule.Execute(() =>
-        {
-            if (tapToStart != null) tapToStart.style.opacity = 1;
-            _isBlinking = true;
-        }).ExecuteLater(1200);
+            if (menuArea != null) menuArea.style.opacity = 1;
+        }).ExecuteLater(1000);
     }
 
     // ========================================
-    // タップ処理
+    // ボタン処理
     // ========================================
 
-    private void OnScreenTapped(ClickEvent evt)
+    private void OnNewGameClicked()
     {
         if (_isTransitioning) return;
 
-        _isTransitioning = true;
-        _isBlinking = false;
-
-        // TAP TO START を非表示
-        tapToStart?.AddToClassList("hidden");
-
-        // ローディングバー表示
-        loadingBar?.AddToClassList("show");
-
-        // シンボルのグロー
-        symbolCore?.AddToClassList("glow");
-
-        LogUIController.Msg("Initializing...");
-
-        // ローディング完了後に画面遷移
-        root.schedule.Execute(() =>
-        {
-            StartTransition();
-        }).ExecuteLater(1500);
+        LogUIController.Msg("Starting new game...");
+        StartTransition(isNewGame: true);
     }
 
-    private void StartTransition()
+    private void OnLoadClicked()
     {
+        if (_isTransitioning) return;
+
+        LogUIController.Msg("Loading save data...");
+        StartTransition(isNewGame: false);
+    }
+
+    private void StartTransition(bool isNewGame)
+    {
+        _isTransitioning = true;
+
         // フェードアウト
         fadeOverlay?.AddToClassList("active");
 
@@ -236,41 +188,27 @@ public class StartUIController : IViewController
         root.schedule.Execute(() =>
         {
             OnStartRequested?.Invoke();
+
+            if (isNewGame)
+            {
+                // 新規ゲーム開始処理（必要であれば既存セーブをクリア）
+                // TODO: セーブデータの初期化処理があれば追加
+            }
+
             // Home画面に遷移
             MainUIController.Instance?.SwitchToMenu(MenuType.Home);
         }).ExecuteLater(600);
     }
 
     // ========================================
-    // 更新処理
+    // セーブデータチェック
     // ========================================
 
-    private void UpdateBlinkAnimation()
+    private bool HasSaveData()
     {
-        if (!_isBlinking || tapToStart == null) return;
-
-        _blinkTimer += 0.05f;
-
-        if (_blinkTimer >= BlinkInterval)
-        {
-            _blinkTimer = 0f;
-            tapToStart.ToggleInClassList("blink");
-        }
-    }
-
-    private void UpdateLoadingProgress()
-    {
-        if (!_isTransitioning || loadingFill == null) return;
-
-        _loadProgress += 2f;
-        if (_loadProgress > 100f) _loadProgress = 100f;
-
-        loadingFill.style.width = new Length(_loadProgress, LengthUnit.Percent);
-    }
-
-    private void UpdateSymbolPulse()
-    {
-        // シンボルコアの微妙なパルス効果（CSS transitionで実現）
+        // SaveManagerが存在するか確認し、セーブデータの有無を返す
+        // 簡易実装: PlayerPrefsにセーブ存在フラグがあるかチェック
+        return PlayerPrefs.HasKey("SaveExists") || PlayerPrefs.HasKey("Money");
     }
 
     // ========================================
@@ -346,14 +284,15 @@ public class StartUIController : IViewController
     {
         // スケジュール停止
         _updateSchedule?.Pause();
-        _ringAnimSchedule?.Pause();
 
-        // クリックイベント解除
-        var startContainer = root?.Q<VisualElement>("start-container");
-        if (startContainer != null && onClickCallback != null)
+        // ボタンイベント解除
+        if (btnNewGame != null)
         {
-            startContainer.UnregisterCallback(onClickCallback);
-            onClickCallback = null;
+            btnNewGame.clicked -= OnNewGameClicked;
+        }
+        if (btnLoad != null)
+        {
+            btnLoad.clicked -= OnLoadClicked;
         }
 
         // パーティクルクリア
