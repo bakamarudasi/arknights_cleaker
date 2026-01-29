@@ -1,28 +1,21 @@
 <ui:UXML xmlns:ui="UnityEngine.UIElements" xmlns:uie="UnityEditor.UIElements" editor-extension-mode="False">
     <Style src="StartStyles.uss" />
 
-    <ui:VisualElement name="start-container" class="start-container">
+    <ui:VisualElement name="start-container" class="start-container fullscreen">
 
         <!-- ========================================
-             背景レイヤー
+             背景レイヤー（画像対応）
              ======================================== -->
         <ui:VisualElement name="background-layer" class="background-layer">
-            <ui:VisualElement name="background-gradient" class="background-gradient" />
-            <ui:VisualElement name="grid-overlay" class="grid-overlay" />
+            <ui:VisualElement name="background-image" class="background-image" />
+            <ui:VisualElement name="background-overlay" class="background-overlay" />
             <ui:VisualElement name="vignette" class="vignette" />
         </ui:VisualElement>
 
         <!-- ========================================
              パーティクルレイヤー
              ======================================== -->
-        <ui:VisualElement name="particle-layer" class="particle-layer">
-            <!-- パーティクルはコードで動的に追加 -->
-        </ui:VisualElement>
-
-        <!-- ========================================
-             スキャンラインエフェクト
-             ======================================== -->
-        <ui:VisualElement name="scanline-effect" class="scanline-effect" />
+        <ui:VisualElement name="particle-layer" class="particle-layer" />
 
         <!-- ========================================
              メインコンテンツ
@@ -31,33 +24,28 @@
 
             <!-- ロゴエリア -->
             <ui:VisualElement name="logo-area" class="logo-area">
-                <!-- メインロゴ -->
+                <!-- タイトルロゴ（画像用） -->
+                <ui:VisualElement name="title-logo" class="title-logo" />
+
+                <!-- テキストフォールバック -->
                 <ui:VisualElement name="logo-container" class="logo-container">
                     <ui:Label name="logo-prefix" text="RHODES ISLAND" class="logo-prefix" />
                     <ui:Label name="logo-main" text="CLICKER" class="logo-main" />
                     <ui:VisualElement name="logo-underline" class="logo-underline" />
                 </ui:VisualElement>
 
-                <!-- サブタイトル -->
                 <ui:Label name="subtitle" text="- PHARMACEUTICAL TYCOON -" class="subtitle" />
             </ui:VisualElement>
 
-            <!-- 中央エリア（将来的にキャラ表示など） -->
+            <!-- 中央エリア（キャラ表示用） -->
             <ui:VisualElement name="center-area" class="center-area">
-                <!-- Rhodes Islandのシンボル的な要素 -->
-                <ui:VisualElement name="symbol-container" class="symbol-container">
-                    <ui:VisualElement name="symbol-ring-outer" class="symbol-ring outer" />
-                    <ui:VisualElement name="symbol-ring-inner" class="symbol-ring inner" />
-                    <ui:VisualElement name="symbol-core" class="symbol-core" />
-                </ui:VisualElement>
+                <ui:VisualElement name="character-image" class="character-image" />
             </ui:VisualElement>
 
-            <!-- TAP TO START -->
-            <ui:VisualElement name="start-prompt-area" class="start-prompt-area">
-                <ui:Label name="tap-to-start" text="TAP TO START" class="tap-to-start" />
-                <ui:VisualElement name="loading-bar" class="loading-bar">
-                    <ui:VisualElement name="loading-fill" class="loading-fill" />
-                </ui:VisualElement>
+            <!-- メニューボタンエリア -->
+            <ui:VisualElement name="menu-area" class="menu-area">
+                <ui:Button name="btn-new-game" text="NEW GAME" class="menu-button primary" />
+                <ui:Button name="btn-load" text="CONTINUE" class="menu-button secondary" />
             </ui:VisualElement>
 
         </ui:VisualElement>

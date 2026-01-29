@@ -38,25 +38,17 @@ public static class ClickManager
     }
 
     /// <summary>
-    /// 倍率を計算（クリティカル × フィーバー）
+    /// 倍率を計算（クリティカル）
     /// </summary>
     private static double CalculateMultiplier(ClickStatsContext context, bool isCritical)
     {
-        double multiplier = 1.0;
-
         // クリティカル倍率
         if (isCritical)
         {
-            multiplier = context.CriticalMultiplier;
+            return context.CriticalMultiplier;
         }
 
-        // フィーバー倍率（乗算）
-        if (context.IsFeverActive)
-        {
-            multiplier *= context.FeverMultiplier;
-        }
-
-        return multiplier;
+        return 1.0;
     }
 
     // ========================================
@@ -82,23 +74,15 @@ public static class ClickManager
         // クリティカル時の期待値
         double criticalValue = context.BaseClickValue * context.CriticalMultiplier * context.CriticalChance;
 
-        double baseExpected = normalValue + criticalValue;
-
-        // フィーバー中なら倍率適用
-        if (context.IsFeverActive)
-        {
-            baseExpected *= context.FeverMultiplier;
-        }
-
-        return baseExpected;
+        return normalValue + criticalValue;
     }
 
     /// <summary>
-    /// 最大ダメージを計算（クリティカル + フィーバー時）
+    /// 最大ダメージを計算（クリティカル時）
     /// </summary>
     public static double CalculateMaxDamage(ClickStatsContext context)
     {
-        return context.BaseClickValue * context.CriticalMultiplier * context.FeverMultiplier;
+        return context.BaseClickValue * context.CriticalMultiplier;
     }
 
     /// <summary>

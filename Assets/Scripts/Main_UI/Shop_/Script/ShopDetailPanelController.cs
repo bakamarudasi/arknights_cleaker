@@ -323,10 +323,6 @@ public class ShopDetailPanelController
             UpgradeData.UpgradeType.Click_PercentAdd => "クリック倍率",
             UpgradeData.UpgradeType.Income_FlatAdd => "自動収入",
             UpgradeData.UpgradeType.Income_PercentAdd => "収入倍率",
-            UpgradeData.UpgradeType.Critical_ChanceAdd => "クリティカル率",
-            UpgradeData.UpgradeType.Critical_PowerAdd => "クリティカル倍率",
-            UpgradeData.UpgradeType.SP_ChargeAdd => "SPチャージ",
-            UpgradeData.UpgradeType.Fever_PowerAdd => "フィーバー倍率",
             _ => "効果"
         };
     }
@@ -346,44 +342,9 @@ public class ShopDetailPanelController
 
     private void RefreshMaterialsDisplay()
     {
+        // 素材システムは削除済み - 表示をクリアするのみ
         if (detailMaterials == null) return;
         detailMaterials.Clear();
-
-        if (selectedUpgrade?.requiredMaterials == null) return;
-
-        foreach (var mat in selectedUpgrade.requiredMaterials)
-        {
-            if (mat.item == null) continue;
-
-            int owned = shopService.GetItemCount(mat.item.id);
-            bool enough = owned >= mat.amount;
-
-            var matElement = CreateMaterialElement(mat, owned, enough);
-            detailMaterials.Add(matElement);
-        }
-    }
-
-    private VisualElement CreateMaterialElement(ItemCost mat, int owned, bool enough)
-    {
-        var matElement = new VisualElement();
-        matElement.AddToClassList("material-item");
-
-        var matIcon = new VisualElement();
-        matIcon.AddToClassList("material-icon");
-        if (mat.item.icon != null)
-        {
-            matIcon.style.backgroundImage = new StyleBackground(mat.item.icon);
-        }
-
-        var matCount = new Label();
-        matCount.AddToClassList("material-count");
-        matCount.text = $"{owned}/{mat.amount}";
-        matCount.style.color = enough ? new Color(0.6f, 0.9f, 0.6f) : new Color(1f, 0.4f, 0.4f);
-
-        matElement.Add(matIcon);
-        matElement.Add(matCount);
-
-        return matElement;
     }
 
     // ========================================

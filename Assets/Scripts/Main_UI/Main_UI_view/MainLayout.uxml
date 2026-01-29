@@ -1,6 +1,16 @@
 <ui:UXML xmlns:ui="UnityEngine.UIElements" xmlns:uie="UnityEditor.UIElements" editor-extension-mode="False">
     <Style src="Assets/Scripts/Main_UI/Main_UI_view/MainStyles.uss?fileID=7433441132597879392&amp;guid=7674eee8127a3934bb1140d73727ea00&amp;type=3#MainStyles" />
     <ui:VisualElement class="main-container">
+
+        <!-- ========================================
+             セーブインジケーター（グローバルオーバーレイ）
+             ======================================== -->
+        <ui:VisualElement name="save-indicator" class="save-indicator">
+            <ui:VisualElement class="save-indicator-content">
+                <ui:VisualElement name="save-spinner" class="save-spinner" />
+                <ui:Label name="save-text" text="Saving..." class="save-text" />
+            </ui:VisualElement>
+        </ui:VisualElement>
         <ui:VisualElement name="sidebar-container" />
         <ui:VisualElement class="right-container">
             <ui:VisualElement name="content-area" class="content-area" />

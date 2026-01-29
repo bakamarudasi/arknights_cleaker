@@ -52,6 +52,9 @@ public class MainUIController : MonoBehaviour
         // 3. ログシステム初期化
         if (logController != null) logController.Initialize(root);
 
+        // 3.5. セーブインジケーター初期化
+        SaveIndicatorController.Instance?.Initialize(root);
+
         // 4. サイドバー初期化
         if (sidebarController != null && sidebarContainer != null)
         {
@@ -187,6 +190,12 @@ public class MainUIController : MonoBehaviour
                 var marketController = new MarketUIController();
                 marketController.Initialize(ContentArea);
                 currentViewController = marketController;
+                break;
+
+            case MenuType.Settings:
+                var settingsController = new SettingsUIController();
+                settingsController.Initialize(ContentArea);
+                currentViewController = settingsController;
                 break;
 
             default:

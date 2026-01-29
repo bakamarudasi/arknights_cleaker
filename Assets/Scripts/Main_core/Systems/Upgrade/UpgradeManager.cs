@@ -123,14 +123,6 @@ public class UpgradeManager : BaseSingleton<UpgradeManager>
         if (!inventory.HasUnlockItem(data.requiredUnlockItem))
             return false;
 
-        // 前提強化条件
-        if (data.prerequisiteUpgrade != null)
-        {
-            int prereqLevel = GetLevel(data.prerequisiteUpgrade.id);
-            if (prereqLevel < data.prerequisiteLevel)
-                return false;
-        }
-
         return true;
     }
 
@@ -155,10 +147,6 @@ public class UpgradeManager : BaseSingleton<UpgradeManager>
         double cost = data.GetCostAtLevel(currentLevel);
         CurrencyType currencyType = ConvertCurrencyType(data.currencyType);
         if (!wallet.CanAfford(cost, currencyType))
-            return false;
-
-        // 素材チェック
-        if (!inventory.HasAllMaterials(data.requiredMaterials))
             return false;
 
         return true;
@@ -208,9 +196,6 @@ public class UpgradeManager : BaseSingleton<UpgradeManager>
 
         // 通貨消費
         wallet.Spend(cost, currencyType);
-
-        // 素材消費
-        inventory.UseAllMaterials(data.requiredMaterials);
 
         // レベルアップ
         AddLevel(data.id);

@@ -12,11 +12,7 @@ public class UpgradeData : BaseData
         Click_FlatAdd,      // クリック固定値加算
         Click_PercentAdd,   // クリック%加算
         Income_FlatAdd,     // 自動収入固定値
-        Income_PercentAdd,  // 自動収入%加算
-        Critical_ChanceAdd, // クリティカル率
-        Critical_PowerAdd,  // クリティカル倍率
-        SP_ChargeAdd,       // SPチャージ速度
-        Fever_PowerAdd      // フィーバー倍率
+        Income_PercentAdd   // 自動収入%加算
     }
 
     // ========================================
@@ -26,9 +22,7 @@ public class UpgradeData : BaseData
     {
         Click,      // クリック系
         Income,     // 自動収入系
-        Critical,   // クリティカル系
-        Skill,      // SP・フィーバー系
-        Special     // 特殊・その他
+        Special     // 特殊・その他（オペレーター用）
     }
 
     // ========================================
@@ -69,27 +63,11 @@ public class UpgradeData : BaseData
     public float costMultiplier = 1.15f;
 
     // ========================================
-    // コスト設定（素材）
-    // ========================================
-    [Header("コスト設定 (素材)")]
-    [Tooltip("必要素材リスト（全レベル共通）")]
-    public List<ItemCost> requiredMaterials;
-
-    [Tooltip("レベルごとに素材数が増加する倍率（1.0 = 増加なし）")]
-    public float materialScaling = 1.0f;
-
-    // ========================================
     // 解放条件
     // ========================================
     [Header("解放条件")]
     [Tooltip("このアイテムを持っていれば解放（null = 条件なし）")]
     public ItemData requiredUnlockItem;
-
-    [Tooltip("この強化が必要レベルに達していれば解放（null = 条件なし）")]
-    public UpgradeData prerequisiteUpgrade;
-
-    [Tooltip("前提強化の必要レベル")]
-    public int prerequisiteLevel = 1;
 
     // ========================================
     // 株式連動設定
@@ -118,12 +96,6 @@ public class UpgradeData : BaseData
     [Tooltip("パーセント表示するか")]
     public bool isPercentDisplay = false;
 
-    [Tooltip("カテゴリアイコン（絵文字: ⚔️=Click, 💰=Income, ⚡=Critical, 🎯=Skill, ⭐=Special）")]
-    public string categoryIcon = "⚔️";
-
-    [Tooltip("特別なアップグレードとしてマーク（STARバッジ表示）")]
-    public bool isSpecial = false;
-
     // ========================================
     // 計算ヘルパー
     // ========================================
@@ -142,15 +114,6 @@ public class UpgradeData : BaseData
     public double GetTotalEffectAtLevel(int level)
     {
         return effectValue * level;
-    }
-
-    /// <summary>
-    /// 指定レベルでの素材必要数を計算
-    /// </summary>
-    public int GetMaterialAmountAtLevel(int baseAmount, int currentLevel)
-    {
-        if (materialScaling <= 1.0f) return baseAmount;
-        return Mathf.CeilToInt(baseAmount * Mathf.Pow(materialScaling, currentLevel));
     }
 
     /// <summary>
@@ -182,8 +145,6 @@ public class UpgradeData : BaseData
         {
             UpgradeCategory.Click => "クリック",
             UpgradeCategory.Income => "自動収入",
-            UpgradeCategory.Critical => "クリティカル",
-            UpgradeCategory.Skill => "スキル",
             UpgradeCategory.Special => "特殊",
             _ => "その他"
         };
@@ -195,8 +156,6 @@ public class UpgradeData : BaseData
         {
             UpgradeCategory.Click => new Color(1.0f, 0.6f, 0.2f),    // オレンジ
             UpgradeCategory.Income => new Color(0.2f, 0.8f, 0.4f),   // 緑
-            UpgradeCategory.Critical => new Color(1.0f, 0.3f, 0.3f), // 赤
-            UpgradeCategory.Skill => new Color(0.4f, 0.6f, 1.0f),    // 青
             UpgradeCategory.Special => new Color(0.8f, 0.5f, 1.0f),  // 紫
             _ => Color.white
         };
