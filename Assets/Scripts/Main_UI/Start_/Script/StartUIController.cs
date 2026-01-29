@@ -191,8 +191,9 @@ public class StartUIController : IViewController
 
             if (isNewGame)
             {
-                // 新規ゲーム開始処理（必要であれば既存セーブをクリア）
-                // TODO: セーブデータの初期化処理があれば追加
+                // 新規ゲーム開始処理：既存セーブをクリア
+                AutoSaveManager.Instance?.DeleteSaveData();
+                WalletManager.Instance?.Reset();
             }
 
             // Home画面に遷移
@@ -206,9 +207,12 @@ public class StartUIController : IViewController
 
     private bool HasSaveData()
     {
-        // SaveManagerが存在するか確認し、セーブデータの有無を返す
-        // 簡易実装: PlayerPrefsにセーブ存在フラグがあるかチェック
-        return PlayerPrefs.HasKey("SaveExists") || PlayerPrefs.HasKey("Money");
+        // AutoSaveManagerがあればそれを使用、なければPlayerPrefsを直接チェック
+        if (AutoSaveManager.Instance != null)
+        {
+            return AutoSaveManager.Instance.HasSaveData();
+        }
+        return PlayerPrefs.HasKey("SaveExists") || PlayerPrefs.HasKey("Save_Money");
     }
 
     // ========================================

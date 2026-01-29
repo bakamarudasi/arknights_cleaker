@@ -1,0 +1,311 @@
+/* ========================================
+   Settings Screen Styles
+   ======================================== */
+
+/* ========================================
+   Container
+   ======================================== */
+
+.settings-container {
+    flex-grow: 1;
+    padding: 20px;
+    background-color: rgb(15, 20, 30);
+}
+
+/* ========================================
+   Header
+   ======================================== */
+
+.header {
+    padding: 20px 0;
+    margin-bottom: 20px;
+    border-bottom-width: 1px;
+    border-bottom-color: rgba(100, 200, 255, 0.3);
+}
+
+.header-title {
+    font-size: 36px;
+    color: rgb(200, 230, 255);
+    letter-spacing: 4px;
+    -unity-font-style: bold;
+}
+
+.header-subtitle {
+    font-size: 14px;
+    color: rgba(150, 180, 200, 0.6);
+    letter-spacing: 2px;
+    margin-top: 4px;
+}
+
+/* ========================================
+   Scroll View
+   ======================================== */
+
+.settings-scroll {
+    flex-grow: 1;
+}
+
+/* ========================================
+   Sections
+   ======================================== */
+
+.settings-section {
+    background-color: rgba(30, 40, 55, 0.6);
+    border-radius: 8px;
+    padding: 20px;
+    margin-bottom: 20px;
+    border-width: 1px;
+    border-color: rgba(100, 200, 255, 0.1);
+}
+
+.section-title {
+    font-size: 18px;
+    color: rgb(100, 200, 255);
+    letter-spacing: 3px;
+    -unity-font-style: bold;
+    margin-bottom: 16px;
+    padding-bottom: 8px;
+    border-bottom-width: 1px;
+    border-bottom-color: rgba(100, 200, 255, 0.2);
+}
+
+/* ========================================
+   Setting Rows
+   ======================================== */
+
+.setting-row {
+    flex-direction: row;
+    justify-content: space-between;
+    align-items: center;
+    padding: 12px 0;
+    border-bottom-width: 1px;
+    border-bottom-color: rgba(100, 100, 120, 0.2);
+}
+
+.setting-row:last-child {
+    border-bottom-width: 0;
+}
+
+.setting-label {
+    font-size: 16px;
+    color: rgb(200, 210, 220);
+    min-width: 150px;
+}
+
+.setting-hint {
+    font-size: 12px;
+    color: rgba(150, 160, 170, 0.7);
+    margin-top: 4px;
+}
+
+.setting-hint.danger {
+    color: rgba(255, 100, 100, 0.8);
+}
+
+/* ========================================
+   Slider
+   ======================================== */
+
+.slider-container {
+    flex-direction: row;
+    align-items: center;
+    flex-grow: 1;
+    max-width: 300px;
+}
+
+.volume-slider {
+    flex-grow: 1;
+    margin-right: 12px;
+}
+
+.volume-slider .unity-base-slider__dragger {
+    width: 20px;
+    height: 20px;
+    border-radius: 10px;
+    background-color: rgb(100, 200, 255);
+    border-width: 2px;
+    border-color: rgb(200, 230, 255);
+}
+
+.volume-slider .unity-base-slider__tracker {
+    height: 6px;
+    border-radius: 3px;
+    background-color: rgba(60, 70, 90, 0.8);
+}
+
+.volume-slider .unity-base-slider__drag-container {
+    height: 6px;
+}
+
+.slider-value {
+    font-size: 14px;
+    color: rgb(150, 200, 230);
+    min-width: 50px;
+    -unity-text-align: middle-right;
+}
+
+/* ========================================
+   Action Buttons
+   ======================================== */
+
+.action-row {
+    flex-direction: row;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.action-info {
+    flex-direction: column;
+}
+
+.action-button {
+    padding: 10px 24px;
+    font-size: 14px;
+    letter-spacing: 2px;
+    -unity-font-style: bold;
+    border-radius: 4px;
+    border-width: 1px;
+    background-color: rgba(60, 70, 90, 0.5);
+    border-color: rgba(100, 120, 150, 0.5);
+    color: rgb(180, 190, 200);
+    transition-property: background-color, border-color;
+    transition-duration: 0.15s;
+}
+
+.action-button:hover {
+    background-color: rgba(80, 90, 110, 0.6);
+    border-color: rgba(120, 140, 170, 0.7);
+}
+
+.action-button.danger {
+    background-color: rgba(180, 60, 60, 0.3);
+    border-color: rgba(255, 100, 100, 0.5);
+    color: rgb(255, 150, 150);
+}
+
+.action-button.danger:hover {
+    background-color: rgba(200, 70, 70, 0.5);
+    border-color: rgba(255, 120, 120, 0.8);
+}
+
+/* ========================================
+   Credits
+   ======================================== */
+
+.credits-content {
+    align-items: center;
+    padding: 16px;
+}
+
+.credits-title {
+    font-size: 20px;
+    color: rgb(200, 220, 240);
+    -unity-font-style: bold;
+    margin-bottom: 4px;
+}
+
+.credits-version {
+    font-size: 14px;
+    color: rgba(150, 170, 190, 0.7);
+    margin-bottom: 12px;
+}
+
+.credits-divider {
+    width: 100px;
+    height: 1px;
+    background-color: rgba(100, 200, 255, 0.3);
+    margin: 12px 0;
+}
+
+.credits-text {
+    font-size: 13px;
+    color: rgba(150, 160, 180, 0.8);
+    margin: 4px 0;
+    -unity-text-align: middle-center;
+}
+
+/* ========================================
+   Confirm Dialog Overlay
+   ======================================== */
+
+.confirm-overlay {
+    position: absolute;
+    left: 0;
+    top: 0;
+    right: 0;
+    bottom: 0;
+    background-color: rgba(0, 0, 0, 0.7);
+    justify-content: center;
+    align-items: center;
+    display: none;
+}
+
+.confirm-overlay.show {
+    display: flex;
+}
+
+.confirm-dialog {
+    background-color: rgb(25, 30, 45);
+    border-radius: 12px;
+    padding: 30px;
+    min-width: 400px;
+    border-width: 1px;
+    border-color: rgba(255, 100, 100, 0.3);
+}
+
+.confirm-title {
+    font-size: 24px;
+    color: rgb(255, 150, 150);
+    -unity-font-style: bold;
+    margin-bottom: 16px;
+    -unity-text-align: middle-center;
+}
+
+.confirm-message {
+    font-size: 15px;
+    color: rgb(180, 190, 200);
+    margin-bottom: 24px;
+    -unity-text-align: middle-center;
+    white-space: normal;
+}
+
+.confirm-buttons {
+    flex-direction: row;
+    justify-content: center;
+}
+
+.confirm-button {
+    padding: 12px 32px;
+    font-size: 14px;
+    letter-spacing: 2px;
+    -unity-font-style: bold;
+    border-radius: 6px;
+    border-width: 1px;
+    margin: 0 8px;
+    transition-property: background-color, border-color, scale;
+    transition-duration: 0.15s;
+}
+
+.confirm-button.cancel {
+    background-color: rgba(60, 70, 90, 0.5);
+    border-color: rgba(100, 120, 150, 0.5);
+    color: rgb(180, 190, 200);
+}
+
+.confirm-button.cancel:hover {
+    background-color: rgba(80, 90, 110, 0.6);
+    border-color: rgba(140, 160, 190, 0.7);
+    scale: 1.02;
+}
+
+.confirm-button.danger {
+    background-color: rgba(200, 60, 60, 0.4);
+    border-color: rgba(255, 100, 100, 0.6);
+    color: rgb(255, 180, 180);
+}
+
+.confirm-button.danger:hover {
+    background-color: rgba(220, 70, 70, 0.6);
+    border-color: rgba(255, 120, 120, 0.8);
+    scale: 1.02;
+}

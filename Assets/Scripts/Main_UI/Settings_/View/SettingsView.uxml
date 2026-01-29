@@ -1,0 +1,104 @@
+<ui:UXML xmlns:ui="UnityEngine.UIElements" xmlns:uie="UnityEditor.UIElements" editor-extension-mode="False">
+    <Style src="SettingsStyles.uss" />
+
+    <ui:VisualElement name="settings-container" class="settings-container">
+
+        <!-- ========================================
+             ヘッダー
+             ======================================== -->
+        <ui:VisualElement name="header" class="header">
+            <ui:Label text="SETTINGS" class="header-title" />
+            <ui:Label text="// SYSTEM CONFIGURATION" class="header-subtitle" />
+        </ui:VisualElement>
+
+        <!-- ========================================
+             コンテンツエリア
+             ======================================== -->
+        <ui:ScrollView name="settings-scroll" class="settings-scroll">
+
+            <!-- 音量設定セクション -->
+            <ui:VisualElement name="section-audio" class="settings-section">
+                <ui:Label text="AUDIO" class="section-title" />
+
+                <!-- マスター音量 -->
+                <ui:VisualElement class="setting-row">
+                    <ui:Label text="Master Volume" class="setting-label" />
+                    <ui:VisualElement class="slider-container">
+                        <ui:Slider name="slider-master" low-value="0" high-value="1" value="1" class="volume-slider" />
+                        <ui:Label name="value-master" text="100%" class="slider-value" />
+                    </ui:VisualElement>
+                </ui:VisualElement>
+
+                <!-- BGM音量 -->
+                <ui:VisualElement class="setting-row">
+                    <ui:Label text="BGM Volume" class="setting-label" />
+                    <ui:VisualElement class="slider-container">
+                        <ui:Slider name="slider-bgm" low-value="0" high-value="1" value="0.7" class="volume-slider" />
+                        <ui:Label name="value-bgm" text="70%" class="slider-value" />
+                    </ui:VisualElement>
+                </ui:VisualElement>
+
+                <!-- SE音量 -->
+                <ui:VisualElement class="setting-row">
+                    <ui:Label text="SE Volume" class="setting-label" />
+                    <ui:VisualElement class="slider-container">
+                        <ui:Slider name="slider-se" low-value="0" high-value="1" value="1" class="volume-slider" />
+                        <ui:Label name="value-se" text="100%" class="slider-value" />
+                    </ui:VisualElement>
+                </ui:VisualElement>
+
+                <!-- Voice音量 -->
+                <ui:VisualElement class="setting-row">
+                    <ui:Label text="Voice Volume" class="setting-label" />
+                    <ui:VisualElement class="slider-container">
+                        <ui:Slider name="slider-voice" low-value="0" high-value="1" value="1" class="volume-slider" />
+                        <ui:Label name="value-voice" text="100%" class="slider-value" />
+                    </ui:VisualElement>
+                </ui:VisualElement>
+            </ui:VisualElement>
+
+            <!-- データ管理セクション -->
+            <ui:VisualElement name="section-data" class="settings-section">
+                <ui:Label text="DATA" class="section-title" />
+
+                <!-- データ削除 -->
+                <ui:VisualElement class="setting-row action-row">
+                    <ui:VisualElement class="action-info">
+                        <ui:Label text="Reset Game Data" class="setting-label" />
+                        <ui:Label text="All progress will be lost" class="setting-hint danger" />
+                    </ui:VisualElement>
+                    <ui:Button name="btn-reset" text="RESET" class="action-button danger" />
+                </ui:VisualElement>
+            </ui:VisualElement>
+
+            <!-- クレジットセクション -->
+            <ui:VisualElement name="section-credits" class="settings-section">
+                <ui:Label text="CREDITS" class="section-title" />
+
+                <ui:VisualElement class="credits-content">
+                    <ui:Label text="Rhodes Island Clicker" class="credits-title" />
+                    <ui:Label text="Version 1.0.0" class="credits-version" />
+                    <ui:VisualElement class="credits-divider" />
+                    <ui:Label text="Arknights is property of Hypergryph/Yostar" class="credits-text" />
+                    <ui:Label text="This is a fan-made project" class="credits-text" />
+                </ui:VisualElement>
+            </ui:VisualElement>
+
+        </ui:ScrollView>
+
+        <!-- ========================================
+             確認ダイアログ（オーバーレイ）
+             ======================================== -->
+        <ui:VisualElement name="confirm-overlay" class="confirm-overlay">
+            <ui:VisualElement name="confirm-dialog" class="confirm-dialog">
+                <ui:Label name="confirm-title" text="Confirm Reset" class="confirm-title" />
+                <ui:Label name="confirm-message" text="Are you sure you want to delete all save data? This cannot be undone." class="confirm-message" />
+                <ui:VisualElement class="confirm-buttons">
+                    <ui:Button name="btn-confirm-cancel" text="CANCEL" class="confirm-button cancel" />
+                    <ui:Button name="btn-confirm-ok" text="DELETE" class="confirm-button danger" />
+                </ui:VisualElement>
+            </ui:VisualElement>
+        </ui:VisualElement>
+
+    </ui:VisualElement>
+</ui:UXML>

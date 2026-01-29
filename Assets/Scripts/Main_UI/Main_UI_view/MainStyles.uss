@@ -198,3 +198,59 @@
     transition-duration: 0.2s;
 }
 .sidebar-item.selected .selection-bar { translate: 0 0; }
+
+/* ========================================
+   Save Indicator (Global Overlay)
+   ======================================== */
+
+.save-indicator {
+    position: absolute;
+    top: 20px;
+    right: 20px;
+    opacity: 0;
+    translate: 20px 0;
+    transition-property: opacity, translate;
+    transition-duration: 0.3s;
+    transition-timing-function: ease-out;
+}
+
+.save-indicator.show {
+    opacity: 1;
+    translate: 0 0;
+}
+
+.save-indicator-content {
+    flex-direction: row;
+    align-items: center;
+    background-color: rgba(20, 25, 35, 0.9);
+    border-radius: 6px;
+    padding: 10px 16px;
+    border-width: 1px;
+    border-color: rgba(100, 200, 255, 0.3);
+}
+
+.save-spinner {
+    width: 16px;
+    height: 16px;
+    border-width: 2px;
+    border-color: rgba(100, 200, 255, 0.3);
+    border-top-color: rgb(100, 200, 255);
+    border-radius: 8px;
+    margin-right: 10px;
+}
+
+.save-text {
+    font-size: 14px;
+    color: rgb(180, 210, 230);
+    letter-spacing: 1px;
+}
+
+/* 保存完了状態 */
+.save-indicator.saved .save-spinner {
+    border-color: transparent;
+    background-color: rgb(100, 200, 100);
+}
+
+.save-indicator.saved .save-text {
+    color: rgb(150, 220, 150);
+}
